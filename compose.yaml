@@ -1,0 +1,74 @@
+# One command starts an agent session:
+#
+#     docker compose run --rm sandbox
+#
+# Adapted from golblok-app. The project name, image name and cache volume
+# are all deliberately different from that project's so the two sandboxes
+# can coexist on this host without colliding.
+#
+# CANARY - if builds ever slow down for no obvious reason, verify this is
+# still running on native Docker Engine inside WSL2 and not Docker Desktop:
+#
+#   docker version   Server must report Engine 29.7.2 (native, in-distro).
+#                    Docker Desktop reports 28.3.2, which means the Windows
+#                    filesystem translation is back under every Gradle read.
+#
+#   wsl -l -v        Ubuntu must NOT be the default distro (no leading *).
+#                    Docker Desktop's WSL integration targets whichever distro
+#                    is default and would hijack `docker` inside Ubuntu.
+#
+# Build timings for this project are recorded in docs/BUILD_TIMES.md.
+
+name: psmf
+
+services:
+  sandbox:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: psmf-sandbox:latest
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+    # No SSH agent, no ~/.gitconfig, no git credential helper is mounted.
+    # That absence is what stops the container pushing to origin.
+    #
+    # `--network host` is deliberately NOT set. On Docker Desktop it joined
+    # the docker-desktop utility VM's namespace, not the Windows host's, so
+    # it never did what it looked like it did. Default bridge networking.
+    volumes:
+      - .:/workspace
+
+      # Hides the host's Windows-path local.properties from the container.
+      # See docker/local.properties for why it is empty.
+      #
+      # IMPORTANT: docker creates a missing bind-mount source as a
+      # root-owned DIRECTORY. docker/local.properties must therefore exist
+      # and be tracked in git before compose is ever run, or the mount
+      # silently becomes a directory and AGP fails with a confusing error.
+      - ./docker/local.properties:/workspace/local.properties:ro
+
+      # Gradle cache, persisted across container runs so the dependency
+      # graph is downloaded once rather than every session. The volume name
+      # differs from golblok's `gradle-cache` on purpose - sharing one
+      # between two projects with different Kotlin and AGP versions is a
+      # source of confusing cache invalidations.
+      - psmf-gradle-cache:/home/developer/.gradle
+
+      # golblok, READ-ONLY. Reference for interaction design only: the live
+      # match console, the tabbed player list, undo, crash recovery, the
+      # match log sheet, left-handed mirroring.
+      #
+      # Do NOT copy code from it. Different stack, and several of its
+      # patterns are actively wrong here - Hilt is Android-only, manual
+      # org.json instead of kotlinx.serialization, AndroidViewModel, a
+      # foreground service running the clock. See CLAUDE.md for the table.
+      - ${HOME}/dev/golblok-app:/golblok-ref:ro
+
+      - ${HOME}/.claude:/home/developer/.claude
+      - ${HOME}/.android:/home/developer/.android
+
+volumes:
+  psmf-gradle-cache:

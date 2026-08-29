@@ -1,0 +1,30 @@
+# Gradle / build output
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+local.properties
+!docker/local.properties
+
+# IDE
+.idea/
+*.iml
+.kotlin/
+
+# Android
+*.apk
+*.aab
+*.keystore
+*.jks
+
+# Xcode / iOS
+xcuserdata/
+*.xcuserstate
+iosApp/Pods/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Per-machine agent settings. The committed .claude/settings.json is shared;
+# this one is not.
+.claude/settings.local.json
