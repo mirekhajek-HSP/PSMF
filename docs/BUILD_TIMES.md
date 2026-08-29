@@ -66,3 +66,32 @@ different build-tools package and re-downloaded it **on every container
 run**, because `docker compose run --rm` throws the writable layer away
 each time. It cost roughly 15 s per build and was invisible in the build
 output unless you were looking for it.
+
+## APK size, and why it tripled at minSdk 28
+
+| Build | minSdk 24 | minSdk 28 |
+|---|---|---|
+| release, unsigned | 9.5 MB | 25.7 MB |
+
+**This is not a regression, and nothing was added.** The uncompressed DEX
+is the same either way (24.5 MB before the domain model, 24.8 MB after).
+What changes is how it is *stored*: from **minSdk 28 AGP writes DEX into
+the APK uncompressed**, so that ART can memory-map it directly instead of
+extracting it at install time.
+
+The `.apk` file on disk is therefore larger, while the installed footprint
+and cold-start time both improve. Verified by building the same commit
+twice with only `androidMinSdk` changed:
+
+```
+minSdk 24   classes.dex   4,612,947 bytes in the APK (deflated)
+minSdk 28   classes.dex  13,275,416 bytes in the APK (stored)
+```
+
+Worth knowing before anyone reports it as bloat. The number to watch for
+real growth is the **uncompressed** DEX total, not the APK size.
+
+Neither figure is minified: `isMinifyEnabled` is false, because release
+signing and shrinking happen outside this workspace. Expect a substantial
+drop whenever R8 is switched on.
+
