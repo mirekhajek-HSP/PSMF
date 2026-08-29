@@ -1,0 +1,190 @@
+-- Storage for a match report in progress.
+--
+-- Losing a match record is the failure that ends a pilot: the referee
+-- cannot reconstruct twenty events from memory, and there is no paper
+-- fallback once they have stopped writing one. So the report is written
+-- through on every change rather than held in memory and saved at the end.
+--
+-- Normalised rather than a JSON blob in one column. It costs mapping code,
+-- and it buys the ability to ask questions like "which matches were left
+-- unfinished" without parsing every row.
+
+CREATE TABLE match_record (
+    id                TEXT    NOT NULL PRIMARY KEY,
+    fixture_id        TEXT    NOT NULL,
+    group_id          TEXT    NOT NULL,
+    status            TEXT    NOT NULL,
+    -- ISO-8601 instant. Null until the whistle goes. The clock is derived
+    -- from this, never ticked, so it survives the process dying.
+    kickoff_at        TEXT,
+
+    referee_name      TEXT,
+    referee_licensed  INTEGER,
+    assistant_name    TEXT,
+    assistant_licensed INTEGER,
+    -- Who gets fined for a bad report. Not either team playing.
+    delegating_team   TEXT,
+
+    half_time_home    INTEGER,
+    half_time_away    INTEGER,
+    full_time_home    INTEGER,
+    full_time_away    INTEGER,
+
+    home_best_player  INTEGER,
+    home_waiting      INTEGER NOT NULL DEFAULT 0,
+    home_shirts       INTEGER,
+    home_kit          INTEGER,
+    away_best_player  INTEGER,
+    away_waiting      INTEGER NOT NULL DEFAULT 0,
+    away_shirts       INTEGER,
+    away_kit          INTEGER,
+    commentary        TEXT    NOT NULL DEFAULT '',
+
+    -- NULL          = the referee has not accounted for the cards block
+    -- 'NONE_ISSUED' = the boxes were struck through
+    -- 'ISSUED'      = see card_record
+    cards_state       TEXT
+);
+
+CREATE TABLE lineup_record (
+    match_id    TEXT NOT NULL,
+    side        TEXT NOT NULL,
+    team_id     TEXT NOT NULL,
+    kit_colour  TEXT NOT NULL,
+    PRIMARY KEY (match_id, side)
+);
+
+CREATE TABLE appearance_record (
+    id                TEXT    NOT NULL PRIMARY KEY,
+    match_id          TEXT    NOT NULL,
+    side              TEXT    NOT NULL,
+    position          INTEGER NOT NULL,
+    player_id         TEXT    NOT NULL,
+    -- The number belongs here, not to the player: it changes per match.
+    jersey_number     INTEGER,
+    identifier_value  TEXT,
+    identifier_type   TEXT
+);
+
+CREATE TABLE goal_record (
+    match_id             TEXT    NOT NULL,
+    position             INTEGER NOT NULL,
+    -- PLAYED / HALF_TIME / AFTER_FINAL_WHISTLE. A minute is not an integer.
+    minute_kind          TEXT    NOT NULL,
+    minute_value         INTEGER,
+    side                 TEXT    NOT NULL,
+    -- Nullable: the worked example contains a goal with no scorer.
+    scorer_appearance_id TEXT,
+    score_home           INTEGER NOT NULL,
+    score_away           INTEGER NOT NULL,
+    PRIMARY KEY (match_id, position)
+);
+
+CREATE TABLE card_record (
+    match_id              TEXT    NOT NULL,
+    position              INTEGER NOT NULL,
+    colour                TEXT    NOT NULL,
+    minute_kind           TEXT    NOT NULL,
+    minute_value          INTEGER,
+    side                  TEXT    NOT NULL,
+    -- PLAYER or NAMED_PERSON: a card may be shown to someone with no
+    -- jersey number, as the worked example does to a deputy captain.
+    subject_kind          TEXT    NOT NULL,
+    subject_appearance_id TEXT,
+    subject_name          TEXT,
+    reason                TEXT    NOT NULL,
+    -- STRAIGHT or SECOND_YELLOW, red cards only. Suspension arithmetic
+    -- depends on the distinction.
+    dismissal             TEXT,
+    PRIMARY KEY (match_id, position)
+);
+
+CREATE TABLE confirmation_record (
+    match_id      TEXT    NOT NULL,
+    party         TEXT    NOT NULL,
+    confirmed_at  TEXT    NOT NULL,
+    confirmed_by  TEXT    NOT NULL,
+    as_deputy     INTEGER NOT NULL,
+    PRIMARY KEY (match_id, party)
+);
+
+-- ---------------------------------------------------------------------------
+
+upsertMatch:
+INSERT OR REPLACE INTO match_record (
+    id, fixture_id, group_id, status, kickoff_at,
+    referee_name, referee_licensed, assistant_name, assistant_licensed, delegating_team,
+    half_time_home, half_time_away, full_time_home, full_time_away,
+    home_best_player, home_waiting, home_shirts, home_kit,
+    away_best_player, away_waiting, away_shirts, away_kit,
+    commentary, cards_state
+) VALUES (
+    ?, ?, ?, ?, ?,
+    ?, ?, ?, ?, ?,
+    ?, ?, ?, ?,
+    ?, ?, ?, ?,
+    ?, ?, ?, ?,
+    ?, ?
+);
+
+selectMatch:
+SELECT * FROM match_record WHERE id = ?;
+
+selectMatchesByStatus:
+SELECT * FROM match_record WHERE status = ? ORDER BY id;
+
+deleteMatch:
+DELETE FROM match_record WHERE id = ?;
+
+insertLineup:
+INSERT OR REPLACE INTO lineup_record (match_id, side, team_id, kit_colour) VALUES (?, ?, ?, ?);
+
+selectLineups:
+SELECT * FROM lineup_record WHERE match_id = ?;
+
+deleteLineups:
+DELETE FROM lineup_record WHERE match_id = ?;
+
+insertAppearance:
+INSERT OR REPLACE INTO appearance_record (
+    id, match_id, side, position, player_id, jersey_number, identifier_value, identifier_type
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+selectAppearances:
+SELECT * FROM appearance_record WHERE match_id = ? ORDER BY side, position;
+
+deleteAppearances:
+DELETE FROM appearance_record WHERE match_id = ?;
+
+insertGoal:
+INSERT OR REPLACE INTO goal_record (
+    match_id, position, minute_kind, minute_value, side, scorer_appearance_id, score_home, score_away
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+selectGoals:
+SELECT * FROM goal_record WHERE match_id = ? ORDER BY position;
+
+deleteGoals:
+DELETE FROM goal_record WHERE match_id = ?;
+
+insertCard:
+INSERT OR REPLACE INTO card_record (
+    match_id, position, colour, minute_kind, minute_value, side,
+    subject_kind, subject_appearance_id, subject_name, reason, dismissal
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectCards:
+SELECT * FROM card_record WHERE match_id = ? ORDER BY position;
+
+deleteCards:
+DELETE FROM card_record WHERE match_id = ?;
+
+insertConfirmation:
+INSERT OR REPLACE INTO confirmation_record (match_id, party, confirmed_at, confirmed_by, as_deputy)
+VALUES (?, ?, ?, ?, ?);
+
+selectConfirmations:
+SELECT * FROM confirmation_record WHERE match_id = ?;
+
+deleteConfirmations:
+DELETE FROM confirmation_record WHERE match_id = ?;

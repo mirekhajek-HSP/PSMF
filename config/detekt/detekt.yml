@@ -5,14 +5,23 @@ build:
   maxIssues: 0
 
 complexity:
+  LongMethod:
+    # The ZoU header is genuinely wide -- page 1 alone carries pitch, date,
+    # time, group, two officials, a hire flag, the delegating team, both
+    # results and eight assessment ratings. Writing that row is one long
+    # statement, not tangled logic. Same reason as LongParameterList below.
+    threshold: 80
+  TooManyFunctions:
+    # A mapping file is many small functions by nature, and small is the
+    # point. The in-class threshold is left at its default.
+    thresholdInFiles: 25
+    thresholdInInterfaces: 15
   LongParameterList:
     # Domain constructors from the ZoU field spec are genuinely wide: the
     # match header alone carries pitch, date, time, group, referee,
     # assistant, hire flag and delegating team. See analysis section 2.5.
     functionThreshold: 8
     constructorThreshold: 12
-  TooManyFunctions:
-    thresholdInInterfaces: 15
 
 style:
   ReturnCount:
