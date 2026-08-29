@@ -22,7 +22,7 @@ builds only on the Mac.**
 ./gradlew build                          # everything buildable on this host
 ./gradlew :shared:allTests               # shared tests, all targets
 ./gradlew :shared:jvmTest                # shared tests, JVM only — fastest loop
-./gradlew :composeApp:assembleDebug      # Android APK
+./gradlew :androidApp:assembleDebug      # Android APK
 ./gradlew detekt                         # static analysis, must stay green
 ./gradlew :shared:iosSimulatorArm64Test  # macOS only
 ```
@@ -36,7 +36,11 @@ shared/       domain + data. No UI, no Compose imports.
                 commonMain/  — the default home for everything
                 androidMain/ — only what genuinely differs
                 iosMain/     — only what genuinely differs
-composeApp/   Compose Multiplatform UI + ViewModels
+composeApp/   Compose Multiplatform UI + ViewModels. Multiplatform.
+androidApp/   Android entry point ONLY — MainActivity, PsmfApplication,
+                the manifest, launcher resources. Uses src/main/, not
+                androidMain/. Put nothing here that could live in
+                composeApp; AGP 9 forces the split, it is not a design.
 iosApp/       Xcode wrapper. Touched rarely; changes here need the Mac.
 docs/         TECH_STACK.md, LEAGUE_APP_ANALYSIS.md
 ```
@@ -63,7 +67,12 @@ needs a reason — say what it is.
 - **Mocking in shared code: hand-written fakes.** MockK is JVM-only and must not
   appear in `commonMain` tests. Repositories are behind interfaces precisely so
   fakes are cheap — write a `FakeXRepository`, not a mock.
-- Android-target tests only (`composeApp/androidUnitTest`) may use JUnit 5 + MockK.
+- Android-target tests are permitted in principle, but **they do not run yet**:
+  the AGP 9 KMP library plugin builds no host-test compilation unless
+  `withHostTestBuilder { }` is added to that module. A test dropped into
+  `androidUnitTest` today is silently ignored — no task, no compile, no
+  warning. Add the builder first, verify it fails when it should, then write
+  the test. See `docs/BUILD_MATRIX.md`.
 - Every UseCase gets tests. Every domain rule in TECH_STACK.md §4 gets a test that
   would fail if the rule were violated.
 

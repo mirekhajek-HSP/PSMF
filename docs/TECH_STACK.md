@@ -1,8 +1,9 @@
 # Tech Stack — PSMF Electronic Match Report
 
-**Status:** Scaffold built, 2026-08-29. Two Gradle modules (`shared`,
-`composeApp`), an iOS wrapper that has never been compiled, and one
-placeholder screen. **No domain model and none of the six demo screens yet.**
+**Status:** Scaffold and domain built, 2026-08-29. Three Gradle modules
+(`shared`, `composeApp`, `androidApp`), an iOS wrapper that has never been
+compiled, and one placeholder screen. Domain model, seed loading and
+SQLDelight persistence exist. **None of the six demo screens yet.**
 **Source of requirements:** `docs/LEAGUE_APP_ANALYSIS.md` (business analysis, 2026-08-25).
 
 > **Rule for this document:** it describes what *is*, plus what has been *decided*
@@ -129,20 +130,30 @@ derive elapsed time on resume.** Nothing ticks in the background; the clock is a
 computation, not a process. What is lost is a live-updating notification. What is
 gained is a timer that cannot drift, cannot be killed, and survives a reboot.
 
-### The toolchain versions are chained, and several cannot be latest
+### AGP 9 requires a three-module layout
 
-Found while scaffolding, not documented anywhere upstream: **AGP 9 refuses
-to apply `com.android.application` alongside `org.jetbrains.kotlin.multiplatform`**,
-which is exactly how a Compose Multiplatform app is laid out. That single
-fact pins AGP to 8.x, which pins Gradle to 9.5 (AGP 8.x uses a Gradle
-internal API removed in 9.6), which caps `compileSdk` at 36, which pins
-Compose Multiplatform to 1.11.x and the lifecycle port to 2.10.0. Kotlin is
-separately pinned to 2.2.20, the version Compose Multiplatform is built
-against.
+**A module applying `org.jetbrains.kotlin.multiplatform` cannot also apply
+`com.android.application` or `com.android.library`.** That is not a
+temporary incompatibility, it is the shape AGP 9 expects, and the legacy
+path is removed entirely in AGP 10. The Android entry point therefore lives
+in its own module:
 
-**These move together or not at all.** The unlock is AGP becoming
-compatible with the KMP plugin. Full chain, evidence and the two
-workarounds: `docs/BUILD_MATRIX.md`.
+```
+androidApp/    com.android.application -- MainActivity, Application, manifest, launcher res
+composeApp/    KMP + com.android.kotlin.multiplatform.library -- shared Compose UI
+shared/        KMP + com.android.kotlin.multiplatform.library -- domain + data
+```
+
+Migrated 2026-08-29. Everything is on its latest stable release except
+where Compose Multiplatform 1.12.0 sets a `compileSdk` 37 floor, which is
+now the **only** real version constraint in the project. Evidence, the four
+traps the migration hides, and the two surviving workarounds:
+`docs/BUILD_MATRIX.md`.
+
+One trap deserves repeating here because it silently weakens testing: the
+KMP library plugin creates **no Android host-test compilation** unless
+`withHostTestBuilder` is declared. A test placed in `androidUnitTest` today
+does not run and does not warn.
 
 Also: **`iosX64` is no longer a viable target.** Neither Compose
 Multiplatform nor the lifecycle port publishes an `ios_x64` variant, so the
