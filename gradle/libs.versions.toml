@@ -10,9 +10,7 @@
 
 [versions]
 # --- toolchain ---------------------------------------------------------
-# Kotlin 2.4.10 exists. It cannot be used: Compose Multiplatform is built
-# against 2.2.20 and its tooling cannot read Kotlin 2.4 metadata.
-kotlin = "2.2.20"
+kotlin = "2.4.10"
 
 agp = "9.3.2"
 
