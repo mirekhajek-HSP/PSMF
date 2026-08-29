@@ -44,8 +44,7 @@ datetime = "0.8.0"
 # --- libraries ---------------------------------------------------------
 # The JetBrains org.jetbrains.androidx.lifecycle port is used rather than
 # androidx.lifecycle: it is the one built to sit under Compose Multiplatform.
-# 2.11.0 exists but requires compileSdk 37, so it follows Compose down.
-lifecycle = "2.10.0"
+lifecycle = "2.11.0"
 koin = "4.2.2"
 sqldelight = "2.3.2"
 # Ktor is versioned here but deliberately not applied to any module yet.
