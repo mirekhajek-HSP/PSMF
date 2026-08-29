@@ -1,0 +1,34 @@
+{
+  "$comment": [
+    "Committed, shared agent settings for this repository.",
+    "Per-machine overrides belong in .claude/settings.local.json, which is gitignored.",
+    "Hooks run inside the container sandbox; ktlint and jq are installed by the Dockerfile."
+  ],
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew:*)",
+      "Bash(git:*)",
+      "Bash(ktlint:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-shared-tests.sh\""
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/ktlint-format.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}

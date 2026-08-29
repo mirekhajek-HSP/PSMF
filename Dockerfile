@@ -25,6 +25,23 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# ktlint CLI and jq, both used by the agent hooks in .claude/settings.json.
+#
+# The hook runs ktlint directly rather than through Gradle: `./gradlew
+# ktlintFormat` costs seconds of Gradle startup on every single file edit,
+# where the CLI is near-instant.
+#
+# KTLINT_VERSION must match `ktlint` in gradle/libs.versions.toml, so that
+# the hook and the `ktlintCheck` task cannot disagree about style. Both
+# read the same .editorconfig.
+ARG KTLINT_VERSION=1.8.0
+RUN apt-get update && apt-get install -y --no-install-recommends jq \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && curl -sSLo /usr/local/bin/ktlint \
+         https://github.com/pinterest/ktlint/releases/download/${KTLINT_VERSION}/ktlint \
+    && chmod +x /usr/local/bin/ktlint
+
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV ANDROID_HOME=/opt/android-sdk
 ENV ANDROID_SDK_ROOT=/opt/android-sdk
