@@ -63,6 +63,11 @@ kotlin {
 
 android {
     namespace = "cz.hspinovace.psmf.shared"
+    // Pinned to what the container image already installs. Left to its
+    // own default, AGP asks sdkmanager for a different build-tools
+    // package and re-downloads it on every single container run, because
+    // `docker compose run --rm` discards the writable layer each time.
+    buildToolsVersion = libs.versions.androidBuildTools.get()
     compileSdk =
         libs.versions.androidCompileSdk
             .get()

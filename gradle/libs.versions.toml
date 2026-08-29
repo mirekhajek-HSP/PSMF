@@ -2,11 +2,25 @@
 #
 # RULE: no hardcoded coordinates in any build file, ever. golblok's catalog
 # was half-used and its versions drifted apart as a result.
+#
+# SEVERAL VERSIONS BELOW ARE DELIBERATELY NOT THE LATEST. They are pinned
+# by a chain of compatibility constraints that took a bisection to find.
+# Read docs/BUILD_MATRIX.md before bumping any of kotlin, agp, gradle,
+# composeMultiplatform or lifecycle -- they move together or not at all.
 
 [versions]
 # --- toolchain ---------------------------------------------------------
+# Kotlin 2.4.10 exists. It cannot be used: Compose Multiplatform is built
+# against 2.2.20 and its tooling cannot read Kotlin 2.4 metadata.
 kotlin = "2.2.20"
+
+# AGP 9.3.2 exists. It cannot be used: since AGP 9.0 the application and
+# library plugins refuse to apply alongside org.jetbrains.kotlin.multiplatform,
+# which is exactly how a Compose Multiplatform app is laid out.
 agp = "8.13.2"
+
+# Gradle is pinned in gradle/wrapper/gradle-wrapper.properties to 9.5.1.
+# AGP 8.x relies on a Gradle internal API removed in 9.6.
 jvmToolchain = "17"
 
 # --- android -----------------------------------------------------------
@@ -15,8 +29,13 @@ jvmToolchain = "17"
 androidMinSdk = "24"
 androidTargetSdk = "36"
 androidCompileSdk = "36"
+# Must match what the container image installs, or sdkmanager silently
+# downloads a different build-tools package on every container run.
+androidBuildTools = "36.0.0"
 
 # --- compose -----------------------------------------------------------
+# 1.12.0 exists. It pulls androidx.compose 1.12, which requires compileSdk
+# 37 and AGP 9.1+, and AGP 9 is unreachable (see above).
 composeMultiplatform = "1.11.1"
 androidxActivityCompose = "1.13.0"
 
@@ -28,6 +47,7 @@ datetime = "0.8.0"
 # --- libraries ---------------------------------------------------------
 # The JetBrains org.jetbrains.androidx.lifecycle port is used rather than
 # androidx.lifecycle: it is the one built to sit under Compose Multiplatform.
+# 2.11.0 exists but requires compileSdk 37, so it follows Compose down.
 lifecycle = "2.10.0"
 koin = "4.2.2"
 sqldelight = "2.3.2"
