@@ -1,0 +1,11 @@
+{
+  "groups": [
+    {
+      "id": "6k",
+      "name": "6. liga K",
+      "seasonId": "2026-podzim",
+      "seasonName": "Hanspaulská liga podzim 2026",
+      "file": "6k.json"
+    }
+  ]
+}

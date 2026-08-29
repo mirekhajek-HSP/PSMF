@@ -1,0 +1,1840 @@
+{
+  "id": "6k",
+  "name": "6. liga K",
+  "reportCode": "6K",
+  "halfLengthMinutes": 30,
+  "teams": [
+    {
+      "id": "t-kominici",
+      "name": "Kominíci",
+      "kitColour": "modrá",
+      "players": [
+        {
+          "id": "p-kominici-01",
+          "surname": "Růžička",
+          "givenName": "Radek",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 27
+        },
+        {
+          "id": "p-kominici-02",
+          "surname": "Kříž",
+          "givenName": "Ondřej",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 18
+        },
+        {
+          "id": "p-kominici-03",
+          "surname": "Růžička",
+          "givenName": "Marek",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 14
+        },
+        {
+          "id": "p-kominici-04",
+          "surname": "Zeman",
+          "givenName": "David",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 29
+        },
+        {
+          "id": "p-kominici-05",
+          "surname": "Jelínek",
+          "givenName": "Václav",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 25
+        },
+        {
+          "id": "p-kominici-06",
+          "surname": "Vlček",
+          "givenName": "Marek",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 4
+        },
+        {
+          "id": "p-kominici-07",
+          "surname": "Musil",
+          "givenName": "Michal",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 17
+        },
+        {
+          "id": "p-kominici-08",
+          "surname": "Beneš",
+          "givenName": "Marek",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 1
+        },
+        {
+          "id": "p-kominici-09",
+          "surname": "Kříž",
+          "givenName": "Petr",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 7
+        },
+        {
+          "id": "p-kominici-10",
+          "surname": "Čermák",
+          "givenName": "Daniel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 16
+        },
+        {
+          "id": "p-kominici-11",
+          "surname": "Vlček",
+          "givenName": "Josef",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 21
+        },
+        {
+          "id": "p-kominici-12",
+          "surname": "Kříž",
+          "givenName": "Marek",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 10
+        }
+      ]
+    },
+    {
+      "id": "t-sp-sumys",
+      "name": "Sp. Sumýš",
+      "kitColour": "černo-bílá",
+      "players": [
+        {
+          "id": "p-sp-sumys-01",
+          "surname": "Pospíšil",
+          "givenName": "Lukáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 16
+        },
+        {
+          "id": "p-sp-sumys-02",
+          "surname": "Němec",
+          "givenName": "Filip",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 10
+        },
+        {
+          "id": "p-sp-sumys-03",
+          "surname": "Doležal",
+          "givenName": "Lukáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 3
+        },
+        {
+          "id": "p-sp-sumys-04",
+          "surname": "Kolář",
+          "givenName": "Jan",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 5
+        },
+        {
+          "id": "p-sp-sumys-05",
+          "surname": "Lovec",
+          "givenName": "Daniel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 4
+        },
+        {
+          "id": "p-sp-sumys-06",
+          "surname": "Kučera",
+          "givenName": "Filip",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 18
+        },
+        {
+          "id": "p-sp-sumys-07",
+          "surname": "Sedláček",
+          "givenName": "Matěj",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 20
+        },
+        {
+          "id": "p-sp-sumys-08",
+          "surname": "Bartoš",
+          "givenName": "Tomáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 12
+        },
+        {
+          "id": "p-sp-sumys-09",
+          "surname": "Lovec",
+          "givenName": "Petr",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 11
+        },
+        {
+          "id": "p-sp-sumys-10",
+          "surname": "Dvořák",
+          "givenName": "Jan",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 22
+        },
+        {
+          "id": "p-sp-sumys-11",
+          "surname": "Čermák",
+          "givenName": "Tomáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 23
+        },
+        {
+          "id": "p-sp-sumys-12",
+          "surname": "Malý",
+          "givenName": "Ondřej",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 15
+        }
+      ]
+    },
+    {
+      "id": "t-celtic-thk",
+      "name": "Celtic THK",
+      "kitColour": "zeleno-bílá",
+      "players": [
+        {
+          "id": "p-celtic-thk-01",
+          "surname": "Vaněk",
+          "givenName": "Ondřej",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 20
+        },
+        {
+          "id": "p-celtic-thk-02",
+          "surname": "Konečný",
+          "givenName": "Adam",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 18
+        },
+        {
+          "id": "p-celtic-thk-03",
+          "surname": "Musil",
+          "givenName": "Filip",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 7
+        },
+        {
+          "id": "p-celtic-thk-04",
+          "surname": "Beneš",
+          "givenName": "Tomáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 23
+        },
+        {
+          "id": "p-celtic-thk-05",
+          "surname": "Bača",
+          "givenName": "Michal",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 3
+        },
+        {
+          "id": "p-celtic-thk-06",
+          "surname": "Poupě",
+          "givenName": "Filip",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 10
+        },
+        {
+          "id": "p-celtic-thk-07",
+          "surname": "Kulík",
+          "givenName": "Filip",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 29
+        },
+        {
+          "id": "p-celtic-thk-08",
+          "surname": "Dvořák",
+          "givenName": "Pavel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 14
+        },
+        {
+          "id": "p-celtic-thk-09",
+          "surname": "Sedláček",
+          "givenName": "Petr",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 9
+        },
+        {
+          "id": "p-celtic-thk-10",
+          "surname": "Musil",
+          "givenName": "Ondřej",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 26
+        },
+        {
+          "id": "p-celtic-thk-11",
+          "surname": "Blažek",
+          "givenName": "Daniel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 25
+        },
+        {
+          "id": "p-celtic-thk-12",
+          "surname": "Němec",
+          "givenName": "Václav",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 13
+        }
+      ]
+    },
+    {
+      "id": "t-dynamo-kotelna",
+      "name": "Dynamo Kotelna",
+      "kitColour": "červená",
+      "players": [
+        {
+          "id": "p-dynamo-kotelna-01",
+          "surname": "Vlček",
+          "givenName": "Václav",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 29
+        },
+        {
+          "id": "p-dynamo-kotelna-02",
+          "surname": "Doležal",
+          "givenName": "David",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 8
+        },
+        {
+          "id": "p-dynamo-kotelna-03",
+          "surname": "Kolář",
+          "givenName": "Tomáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 10
+        },
+        {
+          "id": "p-dynamo-kotelna-04",
+          "surname": "Kolář",
+          "givenName": "Josef",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 16
+        },
+        {
+          "id": "p-dynamo-kotelna-05",
+          "surname": "Hlok",
+          "givenName": "Adam",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 24
+        },
+        {
+          "id": "p-dynamo-kotelna-06",
+          "surname": "Pořízek",
+          "givenName": "Adam",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 25
+        },
+        {
+          "id": "p-dynamo-kotelna-07",
+          "surname": "Vaněk",
+          "givenName": "Filip",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 13
+        },
+        {
+          "id": "p-dynamo-kotelna-08",
+          "surname": "Jelínek",
+          "givenName": "Tomáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 4
+        },
+        {
+          "id": "p-dynamo-kotelna-09",
+          "surname": "Vaněk",
+          "givenName": "Vojtěch",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 11
+        },
+        {
+          "id": "p-dynamo-kotelna-10",
+          "surname": "Houžev",
+          "givenName": "Václav",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 26
+        },
+        {
+          "id": "p-dynamo-kotelna-11",
+          "surname": "Hlok",
+          "givenName": "Matěj",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 17
+        },
+        {
+          "id": "p-dynamo-kotelna-12",
+          "surname": "Horák",
+          "givenName": "Lukáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 6
+        }
+      ]
+    },
+    {
+      "id": "t-fc-podoli",
+      "name": "FC Podolí",
+      "kitColour": "žlutá",
+      "players": [
+        {
+          "id": "p-fc-podoli-01",
+          "surname": "Vlček",
+          "givenName": "Štěpán",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 11
+        },
+        {
+          "id": "p-fc-podoli-02",
+          "surname": "Poupě",
+          "givenName": "Daniel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 26
+        },
+        {
+          "id": "p-fc-podoli-03",
+          "surname": "Malý",
+          "givenName": "Matěj",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 2
+        },
+        {
+          "id": "p-fc-podoli-04",
+          "surname": "Pořízek",
+          "givenName": "Michal",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 6
+        },
+        {
+          "id": "p-fc-podoli-05",
+          "surname": "Lovec",
+          "givenName": "Jan",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 18
+        },
+        {
+          "id": "p-fc-podoli-06",
+          "surname": "Němec",
+          "givenName": "Petr",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 23
+        },
+        {
+          "id": "p-fc-podoli-07",
+          "surname": "Marek",
+          "givenName": "Jan",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 21
+        },
+        {
+          "id": "p-fc-podoli-08",
+          "surname": "Kříž",
+          "givenName": "Pavel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 15
+        },
+        {
+          "id": "p-fc-podoli-09",
+          "surname": "Dvořák",
+          "givenName": "Ondřej",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 16
+        },
+        {
+          "id": "p-fc-podoli-10",
+          "surname": "Zeman",
+          "givenName": "Michal",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 4
+        },
+        {
+          "id": "p-fc-podoli-11",
+          "surname": "Dvořák",
+          "givenName": "Daniel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 7
+        },
+        {
+          "id": "p-fc-podoli-12",
+          "surname": "Štěpánek",
+          "givenName": "Filip",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 24
+        }
+      ]
+    },
+    {
+      "id": "t-slavie-hanspaulka",
+      "name": "Slávie Hanspaulka",
+      "kitColour": "bílo-červená",
+      "players": [
+        {
+          "id": "p-slavie-hanspaulka-01",
+          "surname": "Novák",
+          "givenName": "Josef",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 3
+        },
+        {
+          "id": "p-slavie-hanspaulka-02",
+          "surname": "Houžev",
+          "givenName": "Vojtěch",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 19
+        },
+        {
+          "id": "p-slavie-hanspaulka-03",
+          "surname": "Blažek",
+          "givenName": "Matěj",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 4
+        },
+        {
+          "id": "p-slavie-hanspaulka-04",
+          "surname": "Kovář",
+          "givenName": "Pavel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 2
+        },
+        {
+          "id": "p-slavie-hanspaulka-05",
+          "surname": "Bartoš",
+          "givenName": "Vojtěch",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 5
+        },
+        {
+          "id": "p-slavie-hanspaulka-06",
+          "surname": "Lepiš",
+          "givenName": "Martin",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 17
+        },
+        {
+          "id": "p-slavie-hanspaulka-07",
+          "surname": "Vlček",
+          "givenName": "Martin",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 12
+        },
+        {
+          "id": "p-slavie-hanspaulka-08",
+          "surname": "Poupě",
+          "givenName": "Ondřej",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 8
+        },
+        {
+          "id": "p-slavie-hanspaulka-09",
+          "surname": "Bartoš",
+          "givenName": "Adam",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 15
+        },
+        {
+          "id": "p-slavie-hanspaulka-10",
+          "surname": "Konečný",
+          "givenName": "Vojtěch",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 26
+        },
+        {
+          "id": "p-slavie-hanspaulka-11",
+          "surname": "Bureš",
+          "givenName": "Radek",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 6
+        },
+        {
+          "id": "p-slavie-hanspaulka-12",
+          "surname": "Blažek",
+          "givenName": "Lukáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 13
+        }
+      ]
+    },
+    {
+      "id": "t-bohemians-dejvice",
+      "name": "Bohemians Dejvice",
+      "kitColour": "zelená",
+      "players": [
+        {
+          "id": "p-bohemians-dejvice-01",
+          "surname": "Král",
+          "givenName": "Ondřej",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 14
+        },
+        {
+          "id": "p-bohemians-dejvice-02",
+          "surname": "Konečný",
+          "givenName": "Filip",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 19
+        },
+        {
+          "id": "p-bohemians-dejvice-03",
+          "surname": "Kučera",
+          "givenName": "Michal",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 6
+        },
+        {
+          "id": "p-bohemians-dejvice-04",
+          "surname": "Kolář",
+          "givenName": "Ondřej",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 21
+        },
+        {
+          "id": "p-bohemians-dejvice-05",
+          "surname": "Doležal",
+          "givenName": "Vojtěch",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 1
+        },
+        {
+          "id": "p-bohemians-dejvice-06",
+          "surname": "Marek",
+          "givenName": "Josef",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 22
+        },
+        {
+          "id": "p-bohemians-dejvice-07",
+          "surname": "Hájek",
+          "givenName": "Filip",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 26
+        },
+        {
+          "id": "p-bohemians-dejvice-08",
+          "surname": "Zeman",
+          "givenName": "Ondřej",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 5
+        },
+        {
+          "id": "p-bohemians-dejvice-09",
+          "surname": "Poupě",
+          "givenName": "Adam",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 28
+        },
+        {
+          "id": "p-bohemians-dejvice-10",
+          "surname": "Černý",
+          "givenName": "Josef",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 29
+        },
+        {
+          "id": "p-bohemians-dejvice-11",
+          "surname": "Štěpánek",
+          "givenName": "Vojtěch",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 24
+        },
+        {
+          "id": "p-bohemians-dejvice-12",
+          "surname": "Polák",
+          "givenName": "Jan",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 12
+        }
+      ]
+    },
+    {
+      "id": "t-ac-stromovka",
+      "name": "AC Stromovka",
+      "kitColour": "oranžová",
+      "players": [
+        {
+          "id": "p-ac-stromovka-01",
+          "surname": "Král",
+          "givenName": "Michal",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 18
+        },
+        {
+          "id": "p-ac-stromovka-02",
+          "surname": "Bača",
+          "givenName": "Adam",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 22
+        },
+        {
+          "id": "p-ac-stromovka-03",
+          "surname": "Čermák",
+          "givenName": "Pavel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 7
+        },
+        {
+          "id": "p-ac-stromovka-04",
+          "surname": "Kučera",
+          "givenName": "Pavel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 28
+        },
+        {
+          "id": "p-ac-stromovka-05",
+          "surname": "Šimek",
+          "givenName": "Jakub",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 14
+        },
+        {
+          "id": "p-ac-stromovka-06",
+          "surname": "Marek",
+          "givenName": "Tomáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 20
+        },
+        {
+          "id": "p-ac-stromovka-07",
+          "surname": "Polák",
+          "givenName": "Tomáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 11
+        },
+        {
+          "id": "p-ac-stromovka-08",
+          "surname": "Marek",
+          "givenName": "Martin",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 19
+        },
+        {
+          "id": "p-ac-stromovka-09",
+          "surname": "Musil",
+          "givenName": "Tomáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 16
+        },
+        {
+          "id": "p-ac-stromovka-10",
+          "surname": "Sedláček",
+          "givenName": "Pavel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 21
+        },
+        {
+          "id": "p-ac-stromovka-11",
+          "surname": "Jelínek",
+          "givenName": "Ondřej",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 17
+        },
+        {
+          "id": "p-ac-stromovka-12",
+          "surname": "Černý",
+          "givenName": "Adam",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 9
+        }
+      ]
+    },
+    {
+      "id": "t-sk-vinohrady",
+      "name": "SK Vinohrady",
+      "kitColour": "fialová",
+      "players": [
+        {
+          "id": "p-sk-vinohrady-01",
+          "surname": "Hlok",
+          "givenName": "Lukáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 24
+        },
+        {
+          "id": "p-sk-vinohrady-02",
+          "surname": "Polák",
+          "givenName": "Daniel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 27
+        },
+        {
+          "id": "p-sk-vinohrady-03",
+          "surname": "Polák",
+          "givenName": "Petr",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 17
+        },
+        {
+          "id": "p-sk-vinohrady-04",
+          "surname": "Svoboda",
+          "givenName": "Matěj",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 20
+        },
+        {
+          "id": "p-sk-vinohrady-05",
+          "surname": "Navrátil",
+          "givenName": "Vojtěch",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 25
+        },
+        {
+          "id": "p-sk-vinohrady-06",
+          "surname": "Hájek",
+          "givenName": "Václav",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 10
+        },
+        {
+          "id": "p-sk-vinohrady-07",
+          "surname": "Vaněk",
+          "givenName": "Michal",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 11
+        },
+        {
+          "id": "p-sk-vinohrady-08",
+          "surname": "Dvořák",
+          "givenName": "Tomáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 3
+        },
+        {
+          "id": "p-sk-vinohrady-09",
+          "surname": "Čermák",
+          "givenName": "David",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 1
+        },
+        {
+          "id": "p-sk-vinohrady-10",
+          "surname": "Bača",
+          "givenName": "Lukáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 8
+        },
+        {
+          "id": "p-sk-vinohrady-11",
+          "surname": "Kulík",
+          "givenName": "Adam",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 14
+        },
+        {
+          "id": "p-sk-vinohrady-12",
+          "surname": "Musil",
+          "givenName": "David",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 18
+        }
+      ]
+    },
+    {
+      "id": "t-banik-brevnov",
+      "name": "Baník Břevnov",
+      "kitColour": "modro-bílá",
+      "players": [
+        {
+          "id": "p-banik-brevnov-01",
+          "surname": "Svoboda",
+          "givenName": "Marek",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 9
+        },
+        {
+          "id": "p-banik-brevnov-02",
+          "surname": "Doležal",
+          "givenName": "Radek",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 7
+        },
+        {
+          "id": "p-banik-brevnov-03",
+          "surname": "Pořízek",
+          "givenName": "Pavel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 13
+        },
+        {
+          "id": "p-banik-brevnov-04",
+          "surname": "Svoboda",
+          "givenName": "Václav",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 12
+        },
+        {
+          "id": "p-banik-brevnov-05",
+          "surname": "Houžev",
+          "givenName": "Marek",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 10
+        },
+        {
+          "id": "p-banik-brevnov-06",
+          "surname": "Němec",
+          "givenName": "Štěpán",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 28
+        },
+        {
+          "id": "p-banik-brevnov-07",
+          "surname": "Houžev",
+          "givenName": "Lukáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 21
+        },
+        {
+          "id": "p-banik-brevnov-08",
+          "surname": "Blažek",
+          "givenName": "Pavel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 2
+        },
+        {
+          "id": "p-banik-brevnov-09",
+          "surname": "Svoboda",
+          "givenName": "Petr",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 8
+        },
+        {
+          "id": "p-banik-brevnov-10",
+          "surname": "Novotný",
+          "givenName": "Matěj",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 17
+        },
+        {
+          "id": "p-banik-brevnov-11",
+          "surname": "Konečný",
+          "givenName": "Jan",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 18
+        },
+        {
+          "id": "p-banik-brevnov-12",
+          "surname": "Vaněk",
+          "givenName": "Daniel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 29
+        }
+      ]
+    },
+    {
+      "id": "t-fk-letna",
+      "name": "FK Letná",
+      "kitColour": "šedá",
+      "players": [
+        {
+          "id": "p-fk-letna-01",
+          "surname": "Sedláček",
+          "givenName": "David",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 27
+        },
+        {
+          "id": "p-fk-letna-02",
+          "surname": "Kolář",
+          "givenName": "Matěj",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 20
+        },
+        {
+          "id": "p-fk-letna-03",
+          "surname": "Urban",
+          "givenName": "Michal",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 21
+        },
+        {
+          "id": "p-fk-letna-04",
+          "surname": "Kříž",
+          "givenName": "David",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 28
+        },
+        {
+          "id": "p-fk-letna-05",
+          "surname": "Houžev",
+          "givenName": "Daniel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 22
+        },
+        {
+          "id": "p-fk-letna-06",
+          "surname": "Novák",
+          "givenName": "Lukáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 8
+        },
+        {
+          "id": "p-fk-letna-07",
+          "surname": "Beneš",
+          "givenName": "Adam",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 12
+        },
+        {
+          "id": "p-fk-letna-08",
+          "surname": "Kučera",
+          "givenName": "Martin",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 11
+        },
+        {
+          "id": "p-fk-letna-09",
+          "surname": "Konečný",
+          "givenName": "David",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 1
+        },
+        {
+          "id": "p-fk-letna-10",
+          "surname": "Černý",
+          "givenName": "Tomáš",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 16
+        },
+        {
+          "id": "p-fk-letna-11",
+          "surname": "Svoboda",
+          "givenName": "Josef",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 4
+        },
+        {
+          "id": "p-fk-letna-12",
+          "surname": "Blažek",
+          "givenName": "Petr",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 29
+        }
+      ]
+    },
+    {
+      "id": "t-united-smichov",
+      "name": "United Smíchov",
+      "kitColour": "černá",
+      "players": [
+        {
+          "id": "p-united-smichov-01",
+          "surname": "Pospíšil",
+          "givenName": "Adam",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 2
+        },
+        {
+          "id": "p-united-smichov-02",
+          "surname": "Polák",
+          "givenName": "Štěpán",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 19
+        },
+        {
+          "id": "p-united-smichov-03",
+          "surname": "Hlok",
+          "givenName": "Michal",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 13
+        },
+        {
+          "id": "p-united-smichov-04",
+          "surname": "Malý",
+          "givenName": "Vojtěch",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 25
+        },
+        {
+          "id": "p-united-smichov-05",
+          "surname": "Holub",
+          "givenName": "Pavel",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 8
+        },
+        {
+          "id": "p-united-smichov-06",
+          "surname": "Holub",
+          "givenName": "Filip",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 23
+        },
+        {
+          "id": "p-united-smichov-07",
+          "surname": "Hájek",
+          "givenName": "Michal",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 11
+        },
+        {
+          "id": "p-united-smichov-08",
+          "surname": "Kříž",
+          "givenName": "Filip",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 3
+        },
+        {
+          "id": "p-united-smichov-09",
+          "surname": "Svoboda",
+          "givenName": "Ondřej",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 29
+        },
+        {
+          "id": "p-united-smichov-10",
+          "surname": "Kříž",
+          "givenName": "Jakub",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 24
+        },
+        {
+          "id": "p-united-smichov-11",
+          "surname": "Němec",
+          "givenName": "Ondřej",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 4
+        },
+        {
+          "id": "p-united-smichov-12",
+          "surname": "Dvořák",
+          "givenName": "Štěpán",
+          "identifier": null,
+          "identifierType": null,
+          "defaultJerseyNumber": 17
+        }
+      ]
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "f-6k-r01-1",
+      "round": 1,
+      "date": "2026-08-31",
+      "time": "19:00",
+      "venue": "ZAKOS",
+      "home": "t-kominici",
+      "away": "t-united-smichov"
+    },
+    {
+      "id": "f-6k-r01-2",
+      "round": 1,
+      "date": "2026-09-01",
+      "time": "19:15",
+      "venue": "METE1",
+      "home": "t-sp-sumys",
+      "away": "t-fk-letna"
+    },
+    {
+      "id": "f-6k-r01-3",
+      "round": 1,
+      "date": "2026-09-03",
+      "time": "19:30",
+      "venue": "MOTO1",
+      "home": "t-celtic-thk",
+      "away": "t-banik-brevnov"
+    },
+    {
+      "id": "f-6k-r01-4",
+      "round": 1,
+      "date": "2026-09-04",
+      "time": "19:45",
+      "venue": "MIK",
+      "home": "t-dynamo-kotelna",
+      "away": "t-sk-vinohrady"
+    },
+    {
+      "id": "f-6k-r01-5",
+      "round": 1,
+      "date": "2026-08-31",
+      "time": "20:00",
+      "venue": "PRA",
+      "home": "t-fc-podoli",
+      "away": "t-ac-stromovka"
+    },
+    {
+      "id": "f-6k-r01-6",
+      "round": 1,
+      "date": "2026-09-01",
+      "time": "20:15",
+      "venue": "ZAK",
+      "home": "t-slavie-hanspaulka",
+      "away": "t-bohemians-dejvice"
+    },
+    {
+      "id": "f-6k-r02-1",
+      "round": 2,
+      "date": "2026-09-07",
+      "time": "19:15",
+      "venue": "P1",
+      "home": "t-fk-letna",
+      "away": "t-kominici"
+    },
+    {
+      "id": "f-6k-r02-2",
+      "round": 2,
+      "date": "2026-09-08",
+      "time": "19:30",
+      "venue": "ZAKOS",
+      "home": "t-banik-brevnov",
+      "away": "t-united-smichov"
+    },
+    {
+      "id": "f-6k-r02-3",
+      "round": 2,
+      "date": "2026-09-10",
+      "time": "19:45",
+      "venue": "METE1",
+      "home": "t-sk-vinohrady",
+      "away": "t-sp-sumys"
+    },
+    {
+      "id": "f-6k-r02-4",
+      "round": 2,
+      "date": "2026-09-11",
+      "time": "20:00",
+      "venue": "MOTO1",
+      "home": "t-ac-stromovka",
+      "away": "t-celtic-thk"
+    },
+    {
+      "id": "f-6k-r02-5",
+      "round": 2,
+      "date": "2026-09-07",
+      "time": "20:15",
+      "venue": "MIK",
+      "home": "t-bohemians-dejvice",
+      "away": "t-dynamo-kotelna"
+    },
+    {
+      "id": "f-6k-r02-6",
+      "round": 2,
+      "date": "2026-09-08",
+      "time": "20:30",
+      "venue": "PRA",
+      "home": "t-slavie-hanspaulka",
+      "away": "t-fc-podoli"
+    },
+    {
+      "id": "f-6k-r03-1",
+      "round": 3,
+      "date": "2026-09-14",
+      "time": "19:30",
+      "venue": "ZAK",
+      "home": "t-kominici",
+      "away": "t-banik-brevnov"
+    },
+    {
+      "id": "f-6k-r03-2",
+      "round": 3,
+      "date": "2026-09-15",
+      "time": "19:45",
+      "venue": "P1",
+      "home": "t-fk-letna",
+      "away": "t-sk-vinohrady"
+    },
+    {
+      "id": "f-6k-r03-3",
+      "round": 3,
+      "date": "2026-09-17",
+      "time": "20:00",
+      "venue": "ZAKOS",
+      "home": "t-united-smichov",
+      "away": "t-ac-stromovka"
+    },
+    {
+      "id": "f-6k-r03-4",
+      "round": 3,
+      "date": "2026-09-18",
+      "time": "20:15",
+      "venue": "METE1",
+      "home": "t-sp-sumys",
+      "away": "t-bohemians-dejvice"
+    },
+    {
+      "id": "f-6k-r03-5",
+      "round": 3,
+      "date": "2026-09-14",
+      "time": "20:30",
+      "venue": "MOTO1",
+      "home": "t-celtic-thk",
+      "away": "t-slavie-hanspaulka"
+    },
+    {
+      "id": "f-6k-r03-6",
+      "round": 3,
+      "date": "2026-09-15",
+      "time": "20:45",
+      "venue": "MIK",
+      "home": "t-dynamo-kotelna",
+      "away": "t-fc-podoli"
+    },
+    {
+      "id": "f-6k-r04-1",
+      "round": 4,
+      "date": "2026-09-21",
+      "time": "19:45",
+      "venue": "PRA",
+      "home": "t-sk-vinohrady",
+      "away": "t-kominici"
+    },
+    {
+      "id": "f-6k-r04-2",
+      "round": 4,
+      "date": "2026-09-22",
+      "time": "20:00",
+      "venue": "ZAK",
+      "home": "t-ac-stromovka",
+      "away": "t-banik-brevnov"
+    },
+    {
+      "id": "f-6k-r04-3",
+      "round": 4,
+      "date": "2026-09-24",
+      "time": "20:15",
+      "venue": "P1",
+      "home": "t-bohemians-dejvice",
+      "away": "t-fk-letna"
+    },
+    {
+      "id": "f-6k-r04-4",
+      "round": 4,
+      "date": "2026-09-25",
+      "time": "20:30",
+      "venue": "ZAKOS",
+      "home": "t-slavie-hanspaulka",
+      "away": "t-united-smichov"
+    },
+    {
+      "id": "f-6k-r04-5",
+      "round": 4,
+      "date": "2026-09-21",
+      "time": "20:45",
+      "venue": "METE1",
+      "home": "t-fc-podoli",
+      "away": "t-sp-sumys"
+    },
+    {
+      "id": "f-6k-r04-6",
+      "round": 4,
+      "date": "2026-09-22",
+      "time": "19:00",
+      "venue": "MOTO1",
+      "home": "t-dynamo-kotelna",
+      "away": "t-celtic-thk"
+    },
+    {
+      "id": "f-6k-r05-1",
+      "round": 5,
+      "date": "2026-09-28",
+      "time": "20:00",
+      "venue": "MIK",
+      "home": "t-kominici",
+      "away": "t-ac-stromovka"
+    },
+    {
+      "id": "f-6k-r05-2",
+      "round": 5,
+      "date": "2026-09-29",
+      "time": "20:15",
+      "venue": "PRA",
+      "home": "t-sk-vinohrady",
+      "away": "t-bohemians-dejvice"
+    },
+    {
+      "id": "f-6k-r05-3",
+      "round": 5,
+      "date": "2026-10-01",
+      "time": "20:30",
+      "venue": "ZAK",
+      "home": "t-banik-brevnov",
+      "away": "t-slavie-hanspaulka"
+    },
+    {
+      "id": "f-6k-r05-4",
+      "round": 5,
+      "date": "2026-10-02",
+      "time": "20:45",
+      "venue": "P1",
+      "home": "t-fk-letna",
+      "away": "t-fc-podoli"
+    },
+    {
+      "id": "f-6k-r05-5",
+      "round": 5,
+      "date": "2026-09-28",
+      "time": "19:00",
+      "venue": "ZAKOS",
+      "home": "t-united-smichov",
+      "away": "t-dynamo-kotelna"
+    },
+    {
+      "id": "f-6k-r05-6",
+      "round": 5,
+      "date": "2026-09-29",
+      "time": "19:15",
+      "venue": "METE1",
+      "home": "t-sp-sumys",
+      "away": "t-celtic-thk"
+    },
+    {
+      "id": "f-6k-r06-1",
+      "round": 6,
+      "date": "2026-10-05",
+      "time": "20:15",
+      "venue": "MOTO1",
+      "home": "t-bohemians-dejvice",
+      "away": "t-kominici"
+    },
+    {
+      "id": "f-6k-r06-2",
+      "round": 6,
+      "date": "2026-10-06",
+      "time": "20:30",
+      "venue": "MIK",
+      "home": "t-slavie-hanspaulka",
+      "away": "t-ac-stromovka"
+    },
+    {
+      "id": "f-6k-r06-3",
+      "round": 6,
+      "date": "2026-10-08",
+      "time": "20:45",
+      "venue": "PRA",
+      "home": "t-fc-podoli",
+      "away": "t-sk-vinohrady"
+    },
+    {
+      "id": "f-6k-r06-4",
+      "round": 6,
+      "date": "2026-10-09",
+      "time": "19:00",
+      "venue": "ZAK",
+      "home": "t-dynamo-kotelna",
+      "away": "t-banik-brevnov"
+    },
+    {
+      "id": "f-6k-r06-5",
+      "round": 6,
+      "date": "2026-10-05",
+      "time": "19:15",
+      "venue": "P1",
+      "home": "t-celtic-thk",
+      "away": "t-fk-letna"
+    },
+    {
+      "id": "f-6k-r06-6",
+      "round": 6,
+      "date": "2026-10-06",
+      "time": "19:30",
+      "venue": "ZAKOS",
+      "home": "t-sp-sumys",
+      "away": "t-united-smichov"
+    },
+    {
+      "id": "f-6k-r07-1",
+      "round": 7,
+      "date": "2026-10-12",
+      "time": "20:30",
+      "venue": "METE1",
+      "home": "t-kominici",
+      "away": "t-slavie-hanspaulka"
+    },
+    {
+      "id": "f-6k-r07-2",
+      "round": 7,
+      "date": "2026-10-13",
+      "time": "20:45",
+      "venue": "MOTO1",
+      "home": "t-bohemians-dejvice",
+      "away": "t-fc-podoli"
+    },
+    {
+      "id": "f-6k-r07-3",
+      "round": 7,
+      "date": "2026-10-15",
+      "time": "19:00",
+      "venue": "MIK",
+      "home": "t-ac-stromovka",
+      "away": "t-dynamo-kotelna"
+    },
+    {
+      "id": "f-6k-r07-4",
+      "round": 7,
+      "date": "2026-10-16",
+      "time": "19:15",
+      "venue": "PRA",
+      "home": "t-sk-vinohrady",
+      "away": "t-celtic-thk"
+    },
+    {
+      "id": "f-6k-r07-5",
+      "round": 7,
+      "date": "2026-10-12",
+      "time": "19:30",
+      "venue": "ZAK",
+      "home": "t-banik-brevnov",
+      "away": "t-sp-sumys"
+    },
+    {
+      "id": "f-6k-r07-6",
+      "round": 7,
+      "date": "2026-10-13",
+      "time": "19:45",
+      "venue": "P1",
+      "home": "t-fk-letna",
+      "away": "t-united-smichov"
+    },
+    {
+      "id": "f-6k-r08-1",
+      "round": 8,
+      "date": "2026-10-19",
+      "time": "20:45",
+      "venue": "ZAKOS",
+      "home": "t-fc-podoli",
+      "away": "t-kominici"
+    },
+    {
+      "id": "f-6k-r08-2",
+      "round": 8,
+      "date": "2026-10-20",
+      "time": "19:00",
+      "venue": "METE1",
+      "home": "t-dynamo-kotelna",
+      "away": "t-slavie-hanspaulka"
+    },
+    {
+      "id": "f-6k-r08-3",
+      "round": 8,
+      "date": "2026-10-22",
+      "time": "19:15",
+      "venue": "MOTO1",
+      "home": "t-celtic-thk",
+      "away": "t-bohemians-dejvice"
+    },
+    {
+      "id": "f-6k-r08-4",
+      "round": 8,
+      "date": "2026-10-23",
+      "time": "19:30",
+      "venue": "MIK",
+      "home": "t-sp-sumys",
+      "away": "t-ac-stromovka"
+    },
+    {
+      "id": "f-6k-r08-5",
+      "round": 8,
+      "date": "2026-10-19",
+      "time": "19:45",
+      "venue": "PRA",
+      "home": "t-united-smichov",
+      "away": "t-sk-vinohrady"
+    },
+    {
+      "id": "f-6k-r08-6",
+      "round": 8,
+      "date": "2026-10-20",
+      "time": "20:00",
+      "venue": "ZAK",
+      "home": "t-fk-letna",
+      "away": "t-banik-brevnov"
+    },
+    {
+      "id": "f-6k-r09-1",
+      "round": 9,
+      "date": "2026-10-26",
+      "time": "19:00",
+      "venue": "P1",
+      "home": "t-kominici",
+      "away": "t-dynamo-kotelna"
+    },
+    {
+      "id": "f-6k-r09-2",
+      "round": 9,
+      "date": "2026-10-27",
+      "time": "19:15",
+      "venue": "ZAKOS",
+      "home": "t-fc-podoli",
+      "away": "t-celtic-thk"
+    },
+    {
+      "id": "f-6k-r09-3",
+      "round": 9,
+      "date": "2026-10-29",
+      "time": "19:30",
+      "venue": "METE1",
+      "home": "t-slavie-hanspaulka",
+      "away": "t-sp-sumys"
+    },
+    {
+      "id": "f-6k-r09-4",
+      "round": 9,
+      "date": "2026-10-30",
+      "time": "19:45",
+      "venue": "MOTO1",
+      "home": "t-bohemians-dejvice",
+      "away": "t-united-smichov"
+    },
+    {
+      "id": "f-6k-r09-5",
+      "round": 9,
+      "date": "2026-10-26",
+      "time": "20:00",
+      "venue": "MIK",
+      "home": "t-ac-stromovka",
+      "away": "t-fk-letna"
+    },
+    {
+      "id": "f-6k-r09-6",
+      "round": 9,
+      "date": "2026-10-27",
+      "time": "20:15",
+      "venue": "PRA",
+      "home": "t-sk-vinohrady",
+      "away": "t-banik-brevnov"
+    },
+    {
+      "id": "f-6k-r10-1",
+      "round": 10,
+      "date": "2026-11-02",
+      "time": "19:15",
+      "venue": "ZAK",
+      "home": "t-celtic-thk",
+      "away": "t-kominici"
+    },
+    {
+      "id": "f-6k-r10-2",
+      "round": 10,
+      "date": "2026-11-03",
+      "time": "19:30",
+      "venue": "P1",
+      "home": "t-sp-sumys",
+      "away": "t-dynamo-kotelna"
+    },
+    {
+      "id": "f-6k-r10-3",
+      "round": 10,
+      "date": "2026-11-05",
+      "time": "19:45",
+      "venue": "ZAKOS",
+      "home": "t-united-smichov",
+      "away": "t-fc-podoli"
+    },
+    {
+      "id": "f-6k-r10-4",
+      "round": 10,
+      "date": "2026-11-06",
+      "time": "20:00",
+      "venue": "METE1",
+      "home": "t-fk-letna",
+      "away": "t-slavie-hanspaulka"
+    },
+    {
+      "id": "f-6k-r10-5",
+      "round": 10,
+      "date": "2026-11-02",
+      "time": "20:15",
+      "venue": "MOTO1",
+      "home": "t-banik-brevnov",
+      "away": "t-bohemians-dejvice"
+    },
+    {
+      "id": "f-6k-r10-6",
+      "round": 10,
+      "date": "2026-11-03",
+      "time": "20:30",
+      "venue": "MIK",
+      "home": "t-sk-vinohrady",
+      "away": "t-ac-stromovka"
+    },
+    {
+      "id": "f-6k-r11-1",
+      "round": 11,
+      "date": "2026-11-09",
+      "time": "19:30",
+      "venue": "PRA",
+      "home": "t-kominici",
+      "away": "t-sp-sumys"
+    },
+    {
+      "id": "f-6k-r11-2",
+      "round": 11,
+      "date": "2026-11-10",
+      "time": "19:45",
+      "venue": "ZAK",
+      "home": "t-celtic-thk",
+      "away": "t-united-smichov"
+    },
+    {
+      "id": "f-6k-r11-3",
+      "round": 11,
+      "date": "2026-11-12",
+      "time": "20:00",
+      "venue": "P1",
+      "home": "t-dynamo-kotelna",
+      "away": "t-fk-letna"
+    },
+    {
+      "id": "f-6k-r11-4",
+      "round": 11,
+      "date": "2026-11-13",
+      "time": "20:15",
+      "venue": "ZAKOS",
+      "home": "t-fc-podoli",
+      "away": "t-banik-brevnov"
+    },
+    {
+      "id": "f-6k-r11-5",
+      "round": 11,
+      "date": "2026-11-09",
+      "time": "20:30",
+      "venue": "METE1",
+      "home": "t-slavie-hanspaulka",
+      "away": "t-sk-vinohrady"
+    },
+    {
+      "id": "f-6k-r11-6",
+      "round": 11,
+      "date": "2026-11-10",
+      "time": "20:45",
+      "venue": "MOTO1",
+      "home": "t-bohemians-dejvice",
+      "away": "t-ac-stromovka"
+    }
+  ]
+}

@@ -14,6 +14,14 @@ kotlin {
             .toInt(),
     )
 
+    // expect/actual *classes* are still flagged Beta, and the driver
+    // factory is a legitimate use: Android needs a Context to construct
+    // one and iOS does not. The warning is expected, so silence it rather
+    // than let real warnings hide behind it.
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
