@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  CZECH. The default language, so it lives in values/ with no qualifier and
+  is what any unmatched locale falls back to.
+
+  These are UI strings only. Labels for the generated ZoU are NOT here and
+  must never be: the report is always Czech whatever the UI language is, so
+  those live in shared as fixed strings in ZouLabels.kt.
+-->
+<resources>
+    <string name="app_name">Zápis o utkání</string>
+    <string name="language_self_name">Čeština</string>
+    <string name="scaffold_title">Zápis o utkání</string>
+    <string name="scaffold_notice">Základ projektu. Obrazovky přijdou v další fázi.</string>
+</resources>

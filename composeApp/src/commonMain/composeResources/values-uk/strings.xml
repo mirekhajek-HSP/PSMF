@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  UKRAINIAN. Cyrillic, and Ukrainian strings run longer than Czech, so no
+  layout may assume a fixed width or a single line.
+-->
+<resources>
+    <string name="app_name">Протокол матчу</string>
+    <string name="language_self_name">Українська</string>
+    <string name="scaffold_title">Протокол матчу</string>
+    <string name="scaffold_notice">Основа проєкту. Екрани зʼявляться в наступній фазі.</string>
+</resources>

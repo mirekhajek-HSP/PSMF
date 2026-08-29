@@ -1,0 +1,98 @@
+# Single source of truth for every dependency and plugin version.
+#
+# RULE: no hardcoded coordinates in any build file, ever. golblok's catalog
+# was half-used and its versions drifted apart as a result.
+
+[versions]
+# --- toolchain ---------------------------------------------------------
+kotlin = "2.4.10"
+agp = "8.13.2"
+jvmToolchain = "17"
+
+# --- android -----------------------------------------------------------
+# minSdk is PROVISIONAL. TECH_STACK.md section 5 lists it as open: the
+# referee population skews older, so this needs device data, not a guess.
+androidMinSdk = "24"
+androidTargetSdk = "36"
+androidCompileSdk = "36"
+
+# --- compose -----------------------------------------------------------
+composeMultiplatform = "1.12.0"
+androidxActivityCompose = "1.13.0"
+
+# --- kotlinx -----------------------------------------------------------
+coroutines = "1.11.0"
+serialization = "1.11.0"
+datetime = "0.8.0"
+
+# --- libraries ---------------------------------------------------------
+# The JetBrains org.jetbrains.androidx.lifecycle port is used rather than
+# androidx.lifecycle: it is the one built to sit under Compose Multiplatform.
+lifecycle = "2.11.0"
+koin = "4.2.2"
+sqldelight = "2.3.2"
+# Ktor is versioned here but deliberately not applied to any module yet.
+# See docs/TECH_STACK.md section 6: no backend exists and the demo makes no
+# network call, so wiring it into a module would be aspiration, not fact.
+ktor = "3.5.2"
+
+# --- testing -----------------------------------------------------------
+turbine = "1.2.1"
+
+# --- quality -----------------------------------------------------------
+detekt = "1.23.8"
+ktlint = "1.8.0"
+ktlintGradle = "14.2.0"
+
+[libraries]
+# kotlinx
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "datetime" }
+
+# lifecycle / viewmodel (multiplatform)
+lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "lifecycle" }
+lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+
+# di
+koin-core = { module = "io.insert-koin:koin-core", version.ref = "koin" }
+koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
+koin-compose = { module = "io.insert-koin:koin-compose", version.ref = "koin" }
+koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel", version.ref = "koin" }
+koin-test = { module = "io.insert-koin:koin-test", version.ref = "koin" }
+
+# persistence
+sqldelight-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqldelight" }
+sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
+sqldelight-driver-android = { module = "app.cash.sqldelight:android-driver", version.ref = "sqldelight" }
+sqldelight-driver-native = { module = "app.cash.sqldelight:native-driver", version.ref = "sqldelight" }
+sqldelight-driver-jvm = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
+
+# http -- catalogued, not yet applied to any module
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+
+# android ui
+androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivityCompose" }
+
+# testing
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+
+# quality -- referenced by the detekt plugin block, not by a module
+detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
+
+[plugins]
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle" }

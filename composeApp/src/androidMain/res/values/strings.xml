@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Default locale is Czech. English and Ukrainian are in values-en and values-uk. -->
+<resources>
+    <string name="app_name">Zápis o utkání</string>
+</resources>

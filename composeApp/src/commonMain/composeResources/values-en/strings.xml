@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Match Report</string>
+    <string name="language_self_name">English</string>
+    <string name="scaffold_title">Match Report</string>
+    <string name="scaffold_notice">Project scaffold. Screens arrive in the next phase.</string>
+</resources>

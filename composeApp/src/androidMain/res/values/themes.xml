@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Compose draws everything; this only stops the system showing an
+         action bar behind the Compose content before it draws. -->
+    <style name="Theme.Psmf" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>
