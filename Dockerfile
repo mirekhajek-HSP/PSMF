@@ -58,7 +58,16 @@ RUN yes | sdkmanager --licenses > /dev/null
 
 # build-tools must match compileSdk. golblok learned this the hard way with
 # build-tools 34.0.0 against an SDK 36 compile.
-RUN sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+#
+# Note the platform is "android-37.0", not "android-37": Android now
+# versions platforms with a minor component, and sdkmanager will not
+# resolve the bare major. AGP still takes `compileSdk = 37` and finds it.
+#
+# These two must stay in step with androidCompileSdk and androidBuildTools
+# in gradle/libs.versions.toml. When they drift, AGP asks sdkmanager for
+# the missing package and re-downloads it on EVERY container run, because
+# `docker compose run --rm` throws the writable layer away each time.
+RUN sdkmanager "platform-tools" "platforms;android-37.0" "build-tools;37.0.0"
 
 RUN chown -R 1000:1000 ${ANDROID_HOME}
 
