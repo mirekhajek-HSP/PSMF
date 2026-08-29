@@ -13,12 +13,13 @@ import org.koin.dsl.module
  * Koin rather than Hilt: Hilt is Android-only and cannot compile into
  * shared code. See docs/TECH_STACK.md section 2.
  */
-val appModule: Module = module {
-    // Lazy, so nothing touches the disk until something actually asks for
-    // the database. The domain schema and its repositories arrive in
-    // Phase 2; this binding proves the graph resolves.
-    single { PsmfDatabase(get<DatabaseDriverFactory>().create()) }
-}
+val appModule: Module =
+    module {
+        // Lazy, so nothing touches the disk until something actually asks for
+        // the database. The domain schema and its repositories arrive in
+        // Phase 2; this binding proves the graph resolves.
+        single { PsmfDatabase(get<DatabaseDriverFactory>().create()) }
+    }
 
 /**
  * Bindings that genuinely differ per platform. The Android driver needs a

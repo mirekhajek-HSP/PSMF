@@ -17,7 +17,6 @@ package cz.hspinovace.psmf.export
  * `docs/LEAGUE_APP_ANALYSIS.md` section 2.5.
  */
 object ZouLabels {
-
     /** Page 1 header, filled by the referee. Analysis section 2.5. */
     object Header {
         const val PITCH = "Hřiště"

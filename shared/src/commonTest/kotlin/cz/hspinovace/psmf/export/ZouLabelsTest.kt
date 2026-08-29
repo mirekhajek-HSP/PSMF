@@ -16,7 +16,6 @@ import kotlin.test.assertTrue
  * Source for every value: docs/LEAGUE_APP_ANALYSIS.md section 2.5.
  */
 class ZouLabelsTest {
-
     @Test
     fun headerLabelsMatchTheOfficialForm() {
         assertEquals("Hřiště", ZouLabels.Header.PITCH)
@@ -54,13 +53,14 @@ class ZouLabelsTest {
 
     @Test
     fun labelsCarryCzechDiacriticsAndAreThereforeNotATranslation() {
-        val czechSpecific = listOf(
-            ZouLabels.Header.PITCH,
-            ZouLabels.Header.REFEREE,
-            ZouLabels.Lineup.KIT_COLOUR,
-            ZouLabels.Result.WINNER,
-            ZouLabels.Signatures.REFEREE,
-        )
+        val czechSpecific =
+            listOf(
+                ZouLabels.Header.PITCH,
+                ZouLabels.Header.REFEREE,
+                ZouLabels.Lineup.KIT_COLOUR,
+                ZouLabels.Result.WINNER,
+                ZouLabels.Signatures.REFEREE,
+            )
         val diacritics = "áčďéěíňóřšťúůýž".toSet()
         czechSpecific.forEach { label ->
             assertTrue(

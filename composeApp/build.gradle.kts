@@ -9,7 +9,11 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(libs.versions.jvmToolchain.get().toInt())
+    jvmToolchain(
+        libs.versions.jvmToolchain
+            .get()
+            .toInt(),
+    )
 
     androidTarget {
         compilerOptions {
@@ -19,7 +23,8 @@ kotlin {
 
     // Declared so the iOS wrapper in iosApp/ has a framework to link
     // against. Cannot be built on Linux; that is a macOS session.
-    listOf(iosX64(), iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
+    // iosX64 is omitted -- see the note in shared/build.gradle.kts.
+    listOf(iosArm64(), iosSimulatorArm64()).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
@@ -62,7 +67,10 @@ compose.resources {
 
 android {
     namespace = "cz.hspinovace.psmf"
-    compileSdk = libs.versions.androidCompileSdk.get().toInt()
+    compileSdk =
+        libs.versions.androidCompileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
         // NOT FINAL. This becomes permanent the moment the app is
@@ -71,8 +79,14 @@ android {
         // store upload; golblok uses cz.hsp.footballmatch.
         applicationId = "cz.hspinovace.psmf"
 
-        minSdk = libs.versions.androidMinSdk.get().toInt()
-        targetSdk = libs.versions.androidTargetSdk.get().toInt()
+        minSdk =
+            libs.versions.androidMinSdk
+                .get()
+                .toInt()
+        targetSdk =
+            libs.versions.androidTargetSdk
+                .get()
+                .toInt()
         versionCode = 1
         versionName = "0.1.0"
     }

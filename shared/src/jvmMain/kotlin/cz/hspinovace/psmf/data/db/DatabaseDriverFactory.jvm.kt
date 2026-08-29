@@ -10,7 +10,9 @@ import cz.hspinovace.psmf.db.PsmfDatabase
  *
  * [url] defaults to an in-memory database so tests do not touch the disk.
  */
-actual class DatabaseDriverFactory(private val url: String = JdbcSqliteDriver.IN_MEMORY) {
+actual class DatabaseDriverFactory(
+    private val url: String = JdbcSqliteDriver.IN_MEMORY,
+) {
     actual fun create(): SqlDriver =
         JdbcSqliteDriver(url).also { driver ->
             PsmfDatabase.Schema.create(driver)

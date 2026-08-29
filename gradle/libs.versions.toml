@@ -5,7 +5,7 @@
 
 [versions]
 # --- toolchain ---------------------------------------------------------
-kotlin = "2.4.10"
+kotlin = "2.2.20"
 agp = "8.13.2"
 jvmToolchain = "17"
 
@@ -17,7 +17,7 @@ androidTargetSdk = "36"
 androidCompileSdk = "36"
 
 # --- compose -----------------------------------------------------------
-composeMultiplatform = "1.12.0"
+composeMultiplatform = "1.11.1"
 androidxActivityCompose = "1.13.0"
 
 # --- kotlinx -----------------------------------------------------------
@@ -28,7 +28,7 @@ datetime = "0.8.0"
 # --- libraries ---------------------------------------------------------
 # The JetBrains org.jetbrains.androidx.lifecycle port is used rather than
 # androidx.lifecycle: it is the one built to sit under Compose Multiplatform.
-lifecycle = "2.11.0"
+lifecycle = "2.10.0"
 koin = "4.2.2"
 sqldelight = "2.3.2"
 # Ktor is versioned here but deliberately not applied to any module yet.

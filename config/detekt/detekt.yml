@@ -32,7 +32,7 @@ naming:
     # @Composable functions are PascalCase by convention.
     ignoreAnnotated: ['Composable']
 
-formatting:
-  active: true
-  # ktlint runs as its own task; the detekt formatting ruleset is not
-  # enabled here so the two cannot report the same finding twice.
+# No `formatting:` section: the detekt-formatting ruleset is not on the
+# classpath. ktlint runs as its own task instead, so the two tools cannot
+# report the same finding twice. Adding a section for a ruleset detekt
+# cannot see fails the run with "Property is misspelled or does not exist".

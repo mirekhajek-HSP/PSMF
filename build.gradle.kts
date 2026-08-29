@@ -1,3 +1,24 @@
+// Gradle pins `org.jetbrains:annotations` to 13.0 on the buildscript
+// classpath, because that is what its own embedded Kotlin stdlib uses. The
+// Android plugin drags in 23.0.0 through ddmlib and layoutlib-api, and the
+// two collide the moment SQLDelight's plugin and the Compose compiler
+// plugin are both present, failing with "Pinned to the embedded Kotlin".
+//
+// Verified by bisection: AGP alone, AGP + Compose, and AGP + SQLDelight
+// all resolve; AGP + SQLDelight + the Compose compiler plugin does not.
+// SQLDelight 2.1.0 also avoids it, but freezing a dependency for a reason
+// nobody will remember is worse than one line that says why.
+//
+// Nothing on the classpath actually needs annotations 13.0 at runtime;
+// 23.0.0 is backwards compatible.
+buildscript {
+    configurations.classpath {
+        resolutionStrategy {
+            force("org.jetbrains:annotations:23.0.0")
+        }
+    }
+}
+
 plugins {
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.kotlinSerialization) apply false

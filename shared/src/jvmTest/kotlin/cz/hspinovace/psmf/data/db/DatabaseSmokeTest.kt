@@ -12,7 +12,6 @@ import kotlin.test.assertEquals
  * The domain schema arrives in Phase 2; this only guards the plumbing.
  */
 class DatabaseSmokeTest {
-
     @Test
     fun schemaIsCreatedAndSurvivesARoundTrip() {
         val driver = DatabaseDriverFactory().create()

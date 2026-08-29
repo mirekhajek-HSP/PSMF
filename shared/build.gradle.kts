@@ -8,7 +8,11 @@ plugins {
 }
 
 kotlin {
-    jvmToolchain(libs.versions.jvmToolchain.get().toInt())
+    jvmToolchain(
+        libs.versions.jvmToolchain
+            .get()
+            .toInt(),
+    )
 
     androidTarget {
         compilerOptions {
@@ -23,7 +27,11 @@ kotlin {
     // Declared so the shared module is genuinely multiplatform from the
     // start. They cannot be BUILT on Linux; the Kotlin plugin disables
     // their compile tasks on a non-macOS host and the build skips them.
-    iosX64()
+    //
+    // iosX64 (the Intel simulator) is deliberately absent: Compose
+    // Multiplatform 1.12.0 and lifecycle 2.11.0 no longer publish an
+    // ios_x64 variant, so declaring it fails dependency resolution.
+    // Device is arm64 and the simulator is arm64 on Apple Silicon.
     iosArm64()
     iosSimulatorArm64()
 
@@ -55,10 +63,16 @@ kotlin {
 
 android {
     namespace = "cz.hspinovace.psmf.shared"
-    compileSdk = libs.versions.androidCompileSdk.get().toInt()
+    compileSdk =
+        libs.versions.androidCompileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
-        minSdk = libs.versions.androidMinSdk.get().toInt()
+        minSdk =
+            libs.versions.androidMinSdk
+                .get()
+                .toInt()
     }
 
     compileOptions {
