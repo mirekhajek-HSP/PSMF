@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
 }
@@ -15,9 +15,32 @@ kotlin {
             .toInt(),
     )
 
-    androidTarget {
+    android {
+        // Distinct from :androidApp's cz.hspinovace.psmf. Two modules in
+        // one APK may not share a namespace -- their R classes would
+        // collide. The Kotlin package is unaffected and stays
+        // cz.hspinovace.psmf.
+        namespace = "cz.hspinovace.psmf.composeapp"
+        // See the note in shared/build.gradle.kts.
+        buildToolsVersion = libs.versions.androidBuildTools.get()
+        compileSdk =
+            libs.versions.androidCompileSdk
+                .get()
+                .toInt()
+        minSdk =
+            libs.versions.androidMinSdk
+                .get()
+                .toInt()
+
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
+        }
+
+        // Compose Multiplatform packages its resources through the Android
+        // resource pipeline, so this module genuinely has Android
+        // resources even though it contains no res/ directory.
+        androidResources {
+            enable = true
         }
     }
 
@@ -65,28 +88,4 @@ compose.resources {
     publicResClass = true
     packageOfResClass = "cz.hspinovace.psmf.resources"
     generateResClass = ResourcesExtension.ResourceClassGeneration.Always
-}
-
-android {
-    // Distinct from :androidApp's cz.hspinovace.psmf. Two modules in one
-    // APK may not share a namespace -- their R classes would collide.
-    // The Kotlin package is unaffected and stays cz.hspinovace.psmf.
-    namespace = "cz.hspinovace.psmf.composeapp"
-    buildToolsVersion = libs.versions.androidBuildTools.get()
-    compileSdk =
-        libs.versions.androidCompileSdk
-            .get()
-            .toInt()
-
-    defaultConfig {
-        minSdk =
-            libs.versions.androidMinSdk
-                .get()
-                .toInt()
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
 }

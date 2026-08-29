@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.androidKmpLibrary)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqldelight)
 }
@@ -22,14 +22,36 @@ kotlin {
         freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
-    androidTarget {
+    // AGP 9's KMP library target, from com.android.kotlin.multiplatform.library.
+    // It replaces androidTarget {} plus a separate top-level android {}
+    // block: the Android configuration is now part of the Kotlin target.
+    //
+    // NOTE: the JetBrains migration guide still says `androidLibrary {}`.
+    // That spelling is deprecated as of AGP 9.3; the block is `android {}`
+    // nested inside `kotlin {}`.
+    android {
+        namespace = "cz.hspinovace.psmf.shared"
+        // Pinned to what the container image already installs. Left to its
+        // own default, AGP asks sdkmanager for a different build-tools
+        // package and re-downloads it on every single container run,
+        // because `docker compose run --rm` discards the writable layer.
+        buildToolsVersion = libs.versions.androidBuildTools.get()
+        compileSdk =
+            libs.versions.androidCompileSdk
+                .get()
+                .toInt()
+        minSdk =
+            libs.versions.androidMinSdk
+                .get()
+                .toInt()
+
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
     // The fast test loop. CLAUDE.md documents `:shared:jvmTest` as the
-    // inner loop, and the Stop hook added in Phase 2 runs exactly that.
+    // inner loop, and the Stop hook runs exactly that.
     jvm()
 
     // Declared so the shared module is genuinely multiplatform from the
@@ -37,9 +59,9 @@ kotlin {
     // their compile tasks on a non-macOS host and the build skips them.
     //
     // iosX64 (the Intel simulator) is deliberately absent: Compose
-    // Multiplatform 1.12.0 and lifecycle 2.11.0 no longer publish an
-    // ios_x64 variant, so declaring it fails dependency resolution.
-    // Device is arm64 and the simulator is arm64 on Apple Silicon.
+    // Multiplatform and lifecycle no longer publish an ios_x64 variant,
+    // so declaring it fails dependency resolution. Device is arm64 and
+    // the simulator is arm64 on Apple Silicon.
     iosArm64()
     iosSimulatorArm64()
 
@@ -66,31 +88,6 @@ kotlin {
         jvmMain.dependencies {
             implementation(libs.sqldelight.driver.jvm)
         }
-    }
-}
-
-android {
-    namespace = "cz.hspinovace.psmf.shared"
-    // Pinned to what the container image already installs. Left to its
-    // own default, AGP asks sdkmanager for a different build-tools
-    // package and re-downloads it on every single container run, because
-    // `docker compose run --rm` discards the writable layer each time.
-    buildToolsVersion = libs.versions.androidBuildTools.get()
-    compileSdk =
-        libs.versions.androidCompileSdk
-            .get()
-            .toInt()
-
-    defaultConfig {
-        minSdk =
-            libs.versions.androidMinSdk
-                .get()
-                .toInt()
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 

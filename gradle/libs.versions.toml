@@ -14,13 +14,10 @@
 # against 2.2.20 and its tooling cannot read Kotlin 2.4 metadata.
 kotlin = "2.2.20"
 
-# AGP 9.3.2 exists. It cannot be used: since AGP 9.0 the application and
-# library plugins refuse to apply alongside org.jetbrains.kotlin.multiplatform,
-# which is exactly how a Compose Multiplatform app is laid out.
-agp = "8.13.2"
+agp = "9.3.2"
 
-# Gradle is pinned in gradle/wrapper/gradle-wrapper.properties to 9.5.1.
-# AGP 8.x relies on a Gradle internal API removed in 9.6.
+# Gradle is set in gradle/wrapper/gradle-wrapper.properties to 9.7.1.
+# AGP 9 requires 9.1.0 or newer.
 jvmToolchain = "17"
 
 # --- android -----------------------------------------------------------
@@ -111,13 +108,12 @@ detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", 
 [plugins]
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-# :androidApp is a plain Android module, not multiplatform, so it needs the
-# Kotlin Android plugin. AGP 9 makes Kotlin support built in and this goes away.
-kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 androidApplication = { id = "com.android.application", version.ref = "agp" }
-androidLibrary = { id = "com.android.library", version.ref = "agp" }
+# The AGP 9 plugin for multiplatform modules. It replaces com.android.library,
+# which since AGP 9.0 refuses to apply alongside the KMP plugin.
+androidKmpLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintGradle" }

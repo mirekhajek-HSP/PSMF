@@ -9,7 +9,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 // What is left here is genuinely Android-only: an Application class, an
 // Activity, a manifest and the launcher resources.
 plugins {
-    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
