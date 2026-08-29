@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
-    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.androidLibrary)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
 }
@@ -50,7 +50,9 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
         }
         androidMain.dependencies {
-            implementation(libs.androidx.activity.compose)
+            // Only for the actual of platformModule(), which needs
+            // androidContext(). The Activity and Application are in
+            // :androidApp.
             implementation(libs.koin.android)
         }
         commonTest.dependencies {
@@ -66,11 +68,10 @@ compose.resources {
 }
 
 android {
-    namespace = "cz.hspinovace.psmf"
-    // Pinned to what the container image already installs. Left to its
-    // own default, AGP asks sdkmanager for a different build-tools
-    // package and re-downloads it on every single container run, because
-    // `docker compose run --rm` discards the writable layer each time.
+    // Distinct from :androidApp's cz.hspinovace.psmf. Two modules in one
+    // APK may not share a namespace -- their R classes would collide.
+    // The Kotlin package is unaffected and stays cz.hspinovace.psmf.
+    namespace = "cz.hspinovace.psmf.composeapp"
     buildToolsVersion = libs.versions.androidBuildTools.get()
     compileSdk =
         libs.versions.androidCompileSdk
@@ -78,36 +79,10 @@ android {
             .toInt()
 
     defaultConfig {
-        // NOT FINAL. This becomes permanent the moment the app is
-        // published, and docs/TECH_STACK.md section 5 still lists it as
-        // open. Confirm it against the company convention before any
-        // store upload; golblok uses cz.hsp.footballmatch.
-        applicationId = "cz.hspinovace.psmf"
-
         minSdk =
             libs.versions.androidMinSdk
                 .get()
                 .toInt()
-        targetSdk =
-            libs.versions.androidTargetSdk
-                .get()
-                .toInt()
-        versionCode = 1
-        versionName = "0.1.0"
-    }
-
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-
-    buildTypes {
-        getByName("release") {
-            // Release signing happens outside this workspace. No keystore
-            // is present in the container and none should ever be.
-            isMinifyEnabled = false
-        }
     }
 
     compileOptions {

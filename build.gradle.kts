@@ -22,6 +22,7 @@ buildscript {
 plugins {
     alias(libs.plugins.kotlinMultiplatform) apply false
     alias(libs.plugins.kotlinSerialization) apply false
+    alias(libs.plugins.kotlinAndroid) apply false
     alias(libs.plugins.androidApplication) apply false
     alias(libs.plugins.androidLibrary) apply false
     alias(libs.plugins.composeMultiplatform) apply false
@@ -52,6 +53,8 @@ subprojects {
             "src/commonMain/kotlin",
             "src/commonTest/kotlin",
             "src/androidMain/kotlin",
+            // :androidApp is a plain Android module and uses the JVM layout.
+            "src/main/kotlin",
             "src/androidUnitTest/kotlin",
             "src/iosMain/kotlin",
             "src/jvmMain/kotlin",

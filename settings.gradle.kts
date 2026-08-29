@@ -28,3 +28,4 @@ rootProject.name = "psmf-app"
 
 include(":shared")
 include(":composeApp")
+include(":androidApp")
