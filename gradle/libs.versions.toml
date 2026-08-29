@@ -24,9 +24,11 @@ agp = "8.13.2"
 jvmToolchain = "17"
 
 # --- android -----------------------------------------------------------
-# minSdk is PROVISIONAL. TECH_STACK.md section 5 lists it as open: the
-# referee population skews older, so this needs device data, not a guess.
-androidMinSdk = "24"
+# minSdk 28 (Android 9). Chosen by the project owner, who uses 28 for
+# other apps. TECH_STACK.md section 5 listed this as open pending device
+# data; 28 is a decision, not a guess, and can still be lowered if the
+# referee population turns out to skew older than expected.
+androidMinSdk = "28"
 androidTargetSdk = "36"
 androidCompileSdk = "36"
 # Must match what the container image installs, or sdkmanager silently

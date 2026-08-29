@@ -36,6 +36,10 @@ never code.
 | Team-facing surface | **None for the pilot.** Captains write lineups at the pitch and always have — see analysis §5.1 |
 | Web | Not now. Revisit only if lineups move to advance submission |
 
+**Android `minSdk` is 28** (Android 9), settled 2026-08-29 by the project
+owner for consistency with their other apps. Can be lowered if the referee
+population turns out to skew to older devices than expected.
+
 Shared Compose UI rather than native SwiftUI: the UI is utilitarian data entry for
 a small audience, and one implementation is worth more here than platform-idiomatic
 polish. Platform code is confined to what genuinely differs.
@@ -49,7 +53,7 @@ polish. Platform code is confined to what genuinely differs.
 | Async | Coroutines + Flow | as golblok |
 | DI | **Koin** | Hilt is Android-only and does not work in shared code |
 | Serialization | kotlinx.serialization | replaces golblok's hand-written `org.json` |
-| HTTP | Ktor client | |
+| HTTP | Ktor client | **Versioned in the catalog, applied to no module.** Settled 2026-08-29: no network calls for now. The report leaves by platform email intent, which is not an HTTP call |
 | Local storage | SQLDelight | KMP-native; offline is a hard requirement |
 | ViewModels | `androidx.lifecycle` multiplatform | |
 
@@ -189,7 +193,6 @@ default.
 | Question | Blocks | Reference |
 |---|---|---|
 | `applicationId` / iOS bundle ID | Permanent at publication | **`cz.hspinovace.psmf` is in the build files and the Xcode project, and is NOT settled.** golblok uses `cz.hsp.footballmatch`; align with the company's existing convention before any store upload |
-| Android `minSdk` | Device reach | **Provisionally 24** so the scaffold builds. Still open: the referee population skews older, so this needs device data, not a guess |
 | Does the store hold RP numbers? | Whether a backend is needed at all | A1, A2 |
 | `rodné číslo` vs date of birth | Data-protection weight | A28 — largest legal exposure |
 | Export format | What gets built | A8 |
