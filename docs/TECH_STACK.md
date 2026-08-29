@@ -1,6 +1,8 @@
 # Tech Stack — PSMF Electronic Match Report
 
-**Status:** Pre-implementation. Nothing has been built yet.
+**Status:** Scaffold built, 2026-08-29. Two Gradle modules (`shared`,
+`composeApp`), an iOS wrapper that has never been compiled, and one
+placeholder screen. **No domain model and none of the six demo screens yet.**
 **Source of requirements:** `docs/LEAGUE_APP_ANALYSIS.md` (business analysis, 2026-08-25).
 
 > **Rule for this document:** it describes what *is*, plus what has been *decided*
@@ -123,6 +125,26 @@ derive elapsed time on resume.** Nothing ticks in the background; the clock is a
 computation, not a process. What is lost is a live-updating notification. What is
 gained is a timer that cannot drift, cannot be killed, and survives a reboot.
 
+### The toolchain versions are chained, and several cannot be latest
+
+Found while scaffolding, not documented anywhere upstream: **AGP 9 refuses
+to apply `com.android.application` alongside `org.jetbrains.kotlin.multiplatform`**,
+which is exactly how a Compose Multiplatform app is laid out. That single
+fact pins AGP to 8.x, which pins Gradle to 9.5 (AGP 8.x uses a Gradle
+internal API removed in 9.6), which caps `compileSdk` at 36, which pins
+Compose Multiplatform to 1.11.x and the lifecycle port to 2.10.0. Kotlin is
+separately pinned to 2.2.20, the version Compose Multiplatform is built
+against.
+
+**These move together or not at all.** The unlock is AGP becoming
+compatible with the KMP plugin. Full chain, evidence and the two
+workarounds: `docs/BUILD_MATRIX.md`.
+
+Also: **`iosX64` is no longer a viable target.** Neither Compose
+Multiplatform nor the lifecycle port publishes an `ios_x64` variant, so the
+Intel simulator is gone; the targets are `iosArm64` and
+`iosSimulatorArm64`, and the simulator therefore needs an Apple Silicon Mac.
+
 ### PDF and spreadsheet generation do not belong in the app
 JSON, CSV and formatted text are shared code and effectively free. PDF and `.xlsx`
 have no good shared-Kotlin library, so building them in the app means writing each
@@ -166,8 +188,8 @@ default.
 
 | Question | Blocks | Reference |
 |---|---|---|
-| `applicationId` / iOS bundle ID | Permanent at publication | golblok uses `cz.hsp.footballmatch`; align with the company's existing convention |
-| Android `minSdk` | Device reach | Referee population skews older, so may skew to older devices. Needs data, not a guess |
+| `applicationId` / iOS bundle ID | Permanent at publication | **`cz.hspinovace.psmf` is in the build files and the Xcode project, and is NOT settled.** golblok uses `cz.hsp.footballmatch`; align with the company's existing convention before any store upload |
+| Android `minSdk` | Device reach | **Provisionally 24** so the scaffold builds. Still open: the referee population skews older, so this needs device data, not a guess |
 | Does the store hold RP numbers? | Whether a backend is needed at all | A1, A2 |
 | `rodné číslo` vs date of birth | Data-protection weight | A28 — largest legal exposure |
 | Export format | What gets built | A8 |
