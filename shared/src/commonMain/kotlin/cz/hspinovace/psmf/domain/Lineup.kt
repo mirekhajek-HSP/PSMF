@@ -44,12 +44,13 @@ data class Lineup(
     val kitColour: String,
 ) {
     init {
-        val duplicateNumbers = appearances
-            .mapNotNull { it.jerseyNumber }
-            .groupingBy { it }
-            .eachCount()
-            .filterValues { it > 1 }
-            .keys
+        val duplicateNumbers =
+            appearances
+                .mapNotNull { it.jerseyNumber }
+                .groupingBy { it }
+                .eachCount()
+                .filterValues { it > 1 }
+                .keys
         require(duplicateNumbers.isEmpty()) {
             "Two players in one lineup share jersey number(s) $duplicateNumbers; " +
                 "goals and cards are attributed by number, so this would be ambiguous."
@@ -61,8 +62,7 @@ data class Lineup(
 
     fun appearance(id: AppearanceId): Appearance? = appearances.firstOrNull { it.id == id }
 
-    fun byJerseyNumber(number: JerseyNumber): Appearance? =
-        appearances.firstOrNull { it.jerseyNumber == number }
+    fun byJerseyNumber(number: JerseyNumber): Appearance? = appearances.firstOrNull { it.jerseyNumber == number }
 
     /** Maximum on the field per side, including the goalkeeper: 5+1. */
     companion object {

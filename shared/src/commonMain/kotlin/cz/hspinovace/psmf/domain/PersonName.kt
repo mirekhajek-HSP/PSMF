@@ -1,7 +1,7 @@
 package cz.hspinovace.psmf.domain
 
-import kotlin.jvm.JvmInline
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 
 /**
  * A person's name as it may appear in PSMF's records.
@@ -16,8 +16,9 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 @JvmInline
-value class PersonName private constructor(val value: String) {
-
+value class PersonName private constructor(
+    val value: String,
+) {
     override fun toString(): String = value
 
     companion object {
@@ -31,12 +32,17 @@ value class PersonName private constructor(val value: String) {
          * Extended-A/B. Covers every Czech and Slovak diacritic; excludes
          * Cyrillic, Greek and everything else.
          */
-        private fun isLatinLetter(c: Char): Boolean = when (c) {
-            in 'A'..'Z', in 'a'..'z' -> true
-            '×', '÷' -> false // multiplication and division signs
-            in 'À'..'ɏ' -> true
-            else -> false
-        }
+        private fun isLatinLetter(c: Char): Boolean =
+            when (c) {
+                in 'A'..'Z', in 'a'..'z' -> true
+
+                '×', '÷' -> false
+
+                // multiplication and division signs
+                in 'À'..'ɏ' -> true
+
+                else -> false
+            }
 
         /** Returns null if [raw] is not a usable Latin name. */
         fun orNull(raw: String): PersonName? {
@@ -48,8 +54,7 @@ value class PersonName private constructor(val value: String) {
         }
 
         /** As [orNull], but throws. Use only where the value is already trusted. */
-        fun of(raw: String): PersonName =
-            orNull(raw) ?: error("Not a valid Latin name: '$raw'")
+        fun of(raw: String): PersonName = orNull(raw) ?: error("Not a valid Latin name: '$raw'")
     }
 }
 

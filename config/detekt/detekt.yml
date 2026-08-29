@@ -15,6 +15,11 @@ complexity:
     thresholdInInterfaces: 15
 
 style:
+  ReturnCount:
+    # Guard clauses. Parsing and validation read better as a sequence of
+    # early returns than as nested conditionals, and the default of 2 is
+    # low for that style. Raised deliberately, not baselined.
+    max: 4
   MagicNumber:
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true

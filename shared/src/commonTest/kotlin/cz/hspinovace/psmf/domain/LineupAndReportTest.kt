@@ -14,7 +14,6 @@ import kotlin.test.assertTrue
  * numbered at all, which is only worth asking because numbering is loose.
  */
 class JerseyNumberOwnershipTest {
-
     @Test
     fun onePlayerCanWearDifferentNumbersInDifferentMatches() {
         val player = Fixtures.player("p-baca", "Bača", "Petr", number = 13)
@@ -37,14 +36,20 @@ class JerseyNumberOwnershipTest {
     fun theIdentifierWrittenOnTheDayAlsoBelongsToTheAppearance() {
         // A player may turn up without their card, so what goes in the
         // `Číslo RP` column is decided at the pitch, per match.
-        val withCard = Fixtures.appearance(
-            "app-1", "p-1", 13,
-            identifier = PlayerIdentifier("59001", PlayerIdentifierType.RP),
-        )
-        val withoutCard = Fixtures.appearance(
-            "app-2", "p-1", 13,
-            identifier = PlayerIdentifier("990121", PlayerIdentifierType.DATE_OF_BIRTH),
-        )
+        val withCard =
+            Fixtures.appearance(
+                "app-1",
+                "p-1",
+                13,
+                identifier = PlayerIdentifier("59001", PlayerIdentifierType.RP),
+            )
+        val withoutCard =
+            Fixtures.appearance(
+                "app-2",
+                "p-1",
+                13,
+                identifier = PlayerIdentifier("990121", PlayerIdentifierType.DATE_OF_BIRTH),
+            )
 
         assertNotEquals(withCard.identifier?.type, withoutCard.identifier?.type)
     }
@@ -76,11 +81,12 @@ class JerseyNumberOwnershipTest {
     @Test
     fun aPlayerWithoutANumberIsAllowed() {
         // Not every carded person has a number, and a lineup may be part-filled.
-        val lineup = Fixtures.lineup(
-            TeamSide.HOME,
-            Fixtures.appearance("a", "p1", null),
-            Fixtures.appearance("b", "p2", null),
-        )
+        val lineup =
+            Fixtures.lineup(
+                TeamSide.HOME,
+                Fixtures.appearance("a", "p1", null),
+                Fixtures.appearance("b", "p2", null),
+            )
         assertEquals(2, lineup.appearances.size)
     }
 
@@ -99,15 +105,15 @@ class JerseyNumberOwnershipTest {
  * process does not have (analysis section 6).
  */
 class SingleRecorderTest {
-
     @Test
     fun confirmingChangesNothingExceptTheConfirmations() {
-        val recorded = Fixtures.matchInSetup().copy(
-            goals = listOf(GoalEvent(Minute.Played(5), TeamSide.HOME, null, Score(1, 0))),
-            cards = CardsSection.NoneIssued,
-            assessment = Assessment(commentary = "Bez pozoruhodných událostí."),
-            result = MatchResult(halfTime = Score(1, 0), fullTime = Score(1, 0)),
-        )
+        val recorded =
+            Fixtures.matchInSetup().copy(
+                goals = listOf(GoalEvent(Minute.Played(5), TeamSide.HOME, null, Score(1, 0))),
+                cards = CardsSection.NoneIssued,
+                assessment = Assessment(commentary = "Bez pozoruhodných událostí."),
+                result = MatchResult(halfTime = Score(1, 0), fullTime = Score(1, 0)),
+            )
 
         val afterCaptain = recorded.confirmedBy(Fixtures.confirmation(ConfirmingParty.HOME_CAPTAIN))
 
@@ -139,8 +145,10 @@ class SingleRecorderTest {
 
     @Test
     fun aReportNeedsAllThreeConfirmations() {
-        val match = Fixtures.matchInSetup()
-            .confirmedBy(Fixtures.confirmation(ConfirmingParty.HOME_CAPTAIN))
+        val match =
+            Fixtures
+                .matchInSetup()
+                .confirmedBy(Fixtures.confirmation(ConfirmingParty.HOME_CAPTAIN))
 
         val missing = match.reportProblems().filterIsInstance<ReportProblem.MissingConfirmation>()
         assertEquals(
@@ -155,15 +163,15 @@ class SingleRecorderTest {
  * commentary (analysis section 2.5). `Č` and `B` feed directly into fines.
  */
 class AssessmentTest {
-
     @Test
     fun theBlockCarriesTheFoursRatingsTheFormAsksFor() {
-        val assessed = TeamAssessment(
-            bestPlayer = JerseyNumber(9),
-            waitingTimeMinutes = 5,
-            shirtsProperlyNumbered = false,
-            uniformKitColour = false,
-        )
+        val assessed =
+            TeamAssessment(
+                bestPlayer = JerseyNumber(9),
+                waitingTimeMinutes = 5,
+                shirtsProperlyNumbered = false,
+                uniformKitColour = false,
+            )
 
         // NH is a jersey number, not a name — that is what the form records.
         assertEquals(JerseyNumber(9), assessed.bestPlayer)
@@ -201,20 +209,22 @@ class AssessmentTest {
 
 /** The recap screen has to say what is missing, so problems are a list. */
 class ReportReadinessTest {
-
-    private fun completeMatch(): Match = Fixtures.matchInSetup().copy(
-        goals = listOf(GoalEvent(Minute.Played(5), TeamSide.HOME, null, Score(1, 0))),
-        cards = CardsSection.NoneIssued,
-        assessment = Assessment(
-            home = TeamAssessment(shirtsProperlyNumbered = true, uniformKitColour = true),
-            away = TeamAssessment(shirtsProperlyNumbered = true, uniformKitColour = true),
-            commentary = "Utkání bez pozoruhodných událostí.",
-        ),
-        result = MatchResult(halfTime = Score(1, 0), fullTime = Score(1, 0)),
-    )
-        .confirmedBy(Fixtures.confirmation(ConfirmingParty.HOME_CAPTAIN))
-        .confirmedBy(Fixtures.confirmation(ConfirmingParty.AWAY_CAPTAIN))
-        .confirmedBy(Fixtures.confirmation(ConfirmingParty.REFEREE))
+    private fun completeMatch(): Match =
+        Fixtures
+            .matchInSetup()
+            .copy(
+                goals = listOf(GoalEvent(Minute.Played(5), TeamSide.HOME, null, Score(1, 0))),
+                cards = CardsSection.NoneIssued,
+                assessment =
+                    Assessment(
+                        home = TeamAssessment(shirtsProperlyNumbered = true, uniformKitColour = true),
+                        away = TeamAssessment(shirtsProperlyNumbered = true, uniformKitColour = true),
+                        commentary = "Utkání bez pozoruhodných událostí.",
+                    ),
+                result = MatchResult(halfTime = Score(1, 0), fullTime = Score(1, 0)),
+            ).confirmedBy(Fixtures.confirmation(ConfirmingParty.HOME_CAPTAIN))
+            .confirmedBy(Fixtures.confirmation(ConfirmingParty.AWAY_CAPTAIN))
+            .confirmedBy(Fixtures.confirmation(ConfirmingParty.REFEREE))
 
     @Test
     fun aFullyFilledReportHasNothingOutstanding() {
@@ -227,9 +237,11 @@ class ReportReadinessTest {
         // Today nobody notices until the transcription crew does, a week later.
         val wrong = completeMatch().copy(result = MatchResult(Score(1, 0), Score(3, 0)))
 
-        val problem = wrong.reportProblems()
-            .filterIsInstance<ReportProblem.ScoreDisagreesWithGoals>()
-            .single()
+        val problem =
+            wrong
+                .reportProblems()
+                .filterIsInstance<ReportProblem.ScoreDisagreesWithGoals>()
+                .single()
 
         assertEquals(Score(3, 0), problem.recorded)
         assertEquals(Score(1, 0), problem.fromGoals)
@@ -251,24 +263,26 @@ class ReportReadinessTest {
 
     @Test
     fun theTimelineMergesGoalsAndCardsInTheFormsOwnOrder() {
-        val match = completeMatch().copy(
-            cards = CardsSection.Issued(
-                listOf(
-                    YellowCard(
-                        Minute.HalfTime,
-                        TeamSide.AWAY,
-                        CardSubject.NamedPerson(PersonName.of("Lepis A.")),
-                        CardReason("nesp. chování"),
+        val match =
+            completeMatch().copy(
+                cards =
+                    CardsSection.Issued(
+                        listOf(
+                            YellowCard(
+                                Minute.HalfTime,
+                                TeamSide.AWAY,
+                                CardSubject.NamedPerson(PersonName.of("Lepis A.")),
+                                CardReason("nesp. chování"),
+                            ),
+                            YellowCard(
+                                Minute.Played(20),
+                                TeamSide.AWAY,
+                                CardSubject.Player(Fixtures.bacaAppearance.id),
+                                CardReason("podražení"),
+                            ),
+                        ),
                     ),
-                    YellowCard(
-                        Minute.Played(20),
-                        TeamSide.AWAY,
-                        CardSubject.Player(Fixtures.bacaAppearance.id),
-                        CardReason("podražení"),
-                    ),
-                ),
-            ),
-        )
+            )
 
         assertEquals(
             listOf(Minute.Played(5), Minute.Played(20), Minute.HalfTime),

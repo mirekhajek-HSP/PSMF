@@ -14,23 +14,24 @@ import kotlin.test.assertTrue
  * - "no cards" is an **affirmation**, not an empty list
  */
 class CardTest {
-
     private val reason = CardReason("podražení")
 
     @Test
     fun aRedCardMustSayWhetherItWasStraightOrASecondYellow() {
-        val straight = RedCard(
-            minute = Minute.Played(40),
-            side = TeamSide.HOME,
-            subject = CardSubject.Player(Fixtures.houzevAppearance.id),
-            reason = CardReason("oplácení, vražení do protihráče v přerušené hře"),
-            dismissal = Dismissal.STRAIGHT,
-        )
-        val secondYellow = straight.copy(
-            minute = Minute.Played(49),
-            reason = CardReason("2. ŽK"),
-            dismissal = Dismissal.SECOND_YELLOW,
-        )
+        val straight =
+            RedCard(
+                minute = Minute.Played(40),
+                side = TeamSide.HOME,
+                subject = CardSubject.Player(Fixtures.houzevAppearance.id),
+                reason = CardReason("oplácení, vražení do protihráče v přerušené hře"),
+                dismissal = Dismissal.STRAIGHT,
+            )
+        val secondYellow =
+            straight.copy(
+                minute = Minute.Played(49),
+                reason = CardReason("2. ŽK"),
+                dismissal = Dismissal.SECOND_YELLOW,
+            )
 
         // The distinction is not cosmetic: yellows accumulate per group per
         // season and ban on even totals, but two yellows in one match count
@@ -51,12 +52,13 @@ class CardTest {
         // The form asks for "čas, číslo, jméno a důvod" on both blocks, not
         // just on reds. Reason is part of the type, so a card without one
         // cannot be constructed at all.
-        val yellow = YellowCard(
-            minute = Minute.Played(20),
-            side = TeamSide.AWAY,
-            subject = CardSubject.Player(Fixtures.bacaAppearance.id),
-            reason = reason,
-        )
+        val yellow =
+            YellowCard(
+                minute = Minute.Played(20),
+                side = TeamSide.AWAY,
+                subject = CardSubject.Player(Fixtures.bacaAppearance.id),
+                reason = reason,
+            )
         assertEquals("podražení", yellow.reason.text)
     }
 
@@ -65,12 +67,13 @@ class CardTest {
         // From the worked example: `30´+ Lepiš A. - nesp. chování` — a card
         // with a name and no number, shown to a deputy captain. Requiring a
         // lineup appearance would make this unrecordable.
-        val card = YellowCard(
-            minute = Minute.HalfTime,
-            side = TeamSide.AWAY,
-            subject = CardSubject.NamedPerson(PersonName.of("Lepis A.")),
-            reason = CardReason("nesp. chování"),
-        )
+        val card =
+            YellowCard(
+                minute = Minute.HalfTime,
+                side = TeamSide.AWAY,
+                subject = CardSubject.NamedPerson(PersonName.of("Lepis A.")),
+                reason = CardReason("nesp. chování"),
+            )
 
         val subject = card.subject
         assertTrue(subject is CardSubject.NamedPerson)

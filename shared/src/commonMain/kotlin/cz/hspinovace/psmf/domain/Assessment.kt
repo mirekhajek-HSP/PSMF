@@ -53,10 +53,11 @@ data class Assessment(
     val away: TeamAssessment = TeamAssessment(),
     val commentary: String = "",
 ) {
-    fun forSide(side: TeamSide): TeamAssessment = when (side) {
-        TeamSide.HOME -> home
-        TeamSide.AWAY -> away
-    }
+    fun forSide(side: TeamSide): TeamAssessment =
+        when (side) {
+            TeamSide.HOME -> home
+            TeamSide.AWAY -> away
+        }
 
     val hasCommentary: Boolean get() = commentary.isNotBlank()
 }
@@ -81,11 +82,12 @@ data class MatchResult(
     }
 
     /** `Vítěz utkání`. */
-    val winner: TeamSide? get() = when {
-        fullTime.home > fullTime.away -> TeamSide.HOME
-        fullTime.away > fullTime.home -> TeamSide.AWAY
-        else -> null // a draw; the league awards 1 point each
-    }
+    val winner: TeamSide? get() =
+        when {
+            fullTime.home > fullTime.away -> TeamSide.HOME
+            fullTime.away > fullTime.home -> TeamSide.AWAY
+            else -> null // a draw; the league awards 1 point each
+        }
 
     val isDraw: Boolean get() = winner == null
 }

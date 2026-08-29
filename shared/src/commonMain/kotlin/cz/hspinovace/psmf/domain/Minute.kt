@@ -18,7 +18,6 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 sealed interface Minute : Comparable<Minute> {
-
     /** As written on the form, e.g. `5´`, `30´+`, `60´+`. */
     val written: String
 
@@ -32,7 +31,9 @@ sealed interface Minute : Comparable<Minute> {
 
     /** A minute of play. The clock runs continuously and the referee may add time. */
     @Serializable
-    data class Played(val value: Int) : Minute {
+    data class Played(
+        val value: Int,
+    ) : Minute {
         init {
             require(value >= 0) { "Minute of play cannot be negative, was $value" }
         }
@@ -90,8 +91,11 @@ sealed interface Minute : Comparable<Minute> {
 
             return when {
                 !isOpenEnded -> if (value >= 0) Played(value) else null
+
                 value == HALF_LENGTH -> HalfTime
+
                 value == FULL_LENGTH -> AfterFinalWhistle
+
                 // A "+" on any other minute is not something the form defines.
                 else -> null
             }

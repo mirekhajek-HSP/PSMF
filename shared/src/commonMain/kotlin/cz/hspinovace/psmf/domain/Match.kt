@@ -1,7 +1,7 @@
 package cz.hspinovace.psmf.domain
 
-import kotlin.time.Instant
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 @Serializable
 enum class MatchStatus {
@@ -58,10 +58,11 @@ data class Match(
     val result: MatchResult? = null,
     val confirmations: List<Confirmation> = emptyList(),
 ) {
-    fun lineup(side: TeamSide): Lineup? = when (side) {
-        TeamSide.HOME -> homeLineup
-        TeamSide.AWAY -> awayLineup
-    }
+    fun lineup(side: TeamSide): Lineup? =
+        when (side) {
+            TeamSide.HOME -> homeLineup
+            TeamSide.AWAY -> awayLineup
+        }
 
     /** Every card issued, empty if none were or the block is unaccounted for. */
     val cardEvents: List<CardEvent> get() = cards?.cards().orEmpty()
@@ -73,8 +74,7 @@ data class Match(
     fun timeline(): List<MatchEvent> = (goals + cardEvents).sortedBy { it.minute }
 
     /** Looks an appearance up in either lineup. */
-    fun appearance(id: AppearanceId): Appearance? =
-        homeLineup?.appearance(id) ?: awayLineup?.appearance(id)
+    fun appearance(id: AppearanceId): Appearance? = homeLineup?.appearance(id) ?: awayLineup?.appearance(id)
 
     /**
      * Records that a party has confirmed the report.
@@ -88,8 +88,7 @@ data class Match(
     fun confirmedBy(confirmation: Confirmation): Match =
         copy(confirmations = confirmations.filterNot { it.party == confirmation.party } + confirmation)
 
-    fun hasConfirmationFrom(party: ConfirmingParty): Boolean =
-        confirmations.any { it.party == party }
+    fun hasConfirmationFrom(party: ConfirmingParty): Boolean = confirmations.any { it.party == party }
 
     /** The score implied by the recorded goals, for cross-checking `Stav`. */
     fun scoreFromGoals(): Score =

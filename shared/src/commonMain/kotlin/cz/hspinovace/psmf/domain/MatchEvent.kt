@@ -1,7 +1,7 @@
 package cz.hspinovace.psmf.domain
 
-import kotlin.jvm.JvmInline
 import kotlinx.serialization.Serializable
+import kotlin.jvm.JvmInline
 
 /**
  * Anything the referee records against a minute of the match.
@@ -45,7 +45,9 @@ data class GoalEvent(
  */
 @Serializable
 @JvmInline
-value class CardReason(val text: String) {
+value class CardReason(
+    val text: String,
+) {
     init {
         require(text.isNotBlank()) {
             "Every card carries a mandatory free-text reason (analysis section 2.5)."
@@ -66,13 +68,16 @@ value class CardReason(val text: String) {
  */
 @Serializable
 sealed interface CardSubject {
-
     @Serializable
-    data class Player(val appearance: AppearanceId) : CardSubject
+    data class Player(
+        val appearance: AppearanceId,
+    ) : CardSubject
 
     /** Someone with no jersey number on the sheet. */
     @Serializable
-    data class NamedPerson(val name: PersonName) : CardSubject
+    data class NamedPerson(
+        val name: PersonName,
+    ) : CardSubject
 }
 
 /** Why a player was sent off. The distinction is not cosmetic. */
@@ -131,13 +136,14 @@ data class RedCard(
  */
 @Serializable
 sealed interface CardsSection {
-
     /** The referee struck the boxes through: nothing was issued. */
     @Serializable
     data object NoneIssued : CardsSection
 
     @Serializable
-    data class Issued(val cards: List<CardEvent>) : CardsSection {
+    data class Issued(
+        val cards: List<CardEvent>,
+    ) : CardsSection {
         init {
             require(cards.isNotEmpty()) {
                 "Use NoneIssued to affirm that no cards were issued; " +
@@ -152,13 +158,13 @@ sealed interface CardsSection {
          * one. Only for places where the referee has genuinely accounted for
          * the block — never as a default.
          */
-        fun of(cards: List<CardEvent>): CardsSection =
-            if (cards.isEmpty()) NoneIssued else Issued(cards)
+        fun of(cards: List<CardEvent>): CardsSection = if (cards.isEmpty()) NoneIssued else Issued(cards)
     }
 }
 
 /** The cards actually in the section, empty for [CardsSection.NoneIssued]. */
-fun CardsSection.cards(): List<CardEvent> = when (this) {
-    is CardsSection.NoneIssued -> emptyList()
-    is CardsSection.Issued -> cards
-}
+fun CardsSection.cards(): List<CardEvent> =
+    when (this) {
+        is CardsSection.NoneIssued -> emptyList()
+        is CardsSection.Issued -> cards
+    }

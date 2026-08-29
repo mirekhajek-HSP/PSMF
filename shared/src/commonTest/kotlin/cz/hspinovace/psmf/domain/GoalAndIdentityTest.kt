@@ -16,15 +16,15 @@ import kotlin.test.assertTrue
  * resulting score and no scorer at all.
  */
 class GoalTest {
-
     @Test
     fun aGoalCanBeRecordedWithNoScorer() {
-        val unattributed = GoalEvent(
-            minute = Minute.Played(13),
-            side = TeamSide.HOME,
-            scorer = null,
-            scoreAfter = Score(2, 1),
-        )
+        val unattributed =
+            GoalEvent(
+                minute = Minute.Played(13),
+                side = TeamSide.HOME,
+                scorer = null,
+                scoreAfter = Score(2, 1),
+            )
 
         assertNull(unattributed.scorer)
         assertEquals("2:1", unattributed.scoreAfter.asWrittenOnReport)
@@ -32,14 +32,15 @@ class GoalTest {
 
     @Test
     fun theWholeWorkedExampleScorelineCanBeRepresented() {
-        val goals = listOf(
-            GoalEvent(Minute.Played(5), TeamSide.AWAY, Fixtures.bacaAppearance.id, Score(0, 1)),
-            GoalEvent(Minute.Played(11), TeamSide.HOME, Fixtures.poupeAppearance.id, Score(1, 1)),
-            GoalEvent(Minute.Played(13), TeamSide.HOME, null, Score(2, 1)),
-            GoalEvent(Minute.Played(29), TeamSide.AWAY, Fixtures.bacaAppearance.id, Score(2, 2)),
-            GoalEvent(Minute.Played(45), TeamSide.HOME, Fixtures.houzevAppearance.id, Score(3, 2)),
-            GoalEvent(Minute.Played(58), TeamSide.HOME, Fixtures.poupeAppearance.id, Score(4, 2)),
-        )
+        val goals =
+            listOf(
+                GoalEvent(Minute.Played(5), TeamSide.AWAY, Fixtures.bacaAppearance.id, Score(0, 1)),
+                GoalEvent(Minute.Played(11), TeamSide.HOME, Fixtures.poupeAppearance.id, Score(1, 1)),
+                GoalEvent(Minute.Played(13), TeamSide.HOME, null, Score(2, 1)),
+                GoalEvent(Minute.Played(29), TeamSide.AWAY, Fixtures.bacaAppearance.id, Score(2, 2)),
+                GoalEvent(Minute.Played(45), TeamSide.HOME, Fixtures.houzevAppearance.id, Score(3, 2)),
+                GoalEvent(Minute.Played(58), TeamSide.HOME, Fixtures.poupeAppearance.id, Score(4, 2)),
+            )
 
         val match = Fixtures.matchInSetup().copy(goals = goals)
 
@@ -49,10 +50,11 @@ class GoalTest {
 
     @Test
     fun theRunningScoreDerivedFromGoalsMatchesTheRecordedOne() {
-        val goals = listOf(
-            GoalEvent(Minute.Played(5), TeamSide.HOME, null, Score(1, 0)),
-            GoalEvent(Minute.Played(9), TeamSide.AWAY, null, Score(1, 1)),
-        )
+        val goals =
+            listOf(
+                GoalEvent(Minute.Played(5), TeamSide.HOME, null, Score(1, 0)),
+                GoalEvent(Minute.Played(9), TeamSide.AWAY, null, Score(1, 1)),
+            )
         assertEquals(Score(1, 1), Fixtures.matchInSetup().copy(goals = goals).scoreFromGoals())
     }
 
@@ -71,7 +73,6 @@ class GoalTest {
  * RP numbers (analysis section 2.5).
  */
 class PlayerIdentifierTest {
-
     @Test
     fun oneValueCarriesItsOwnKind() {
         val rp = PlayerIdentifier("59001", PlayerIdentifierType.RP)
@@ -117,7 +118,6 @@ class PlayerIdentifierTest {
  * cannot match against its own card cabinet.
  */
 class PersonNameTest {
-
     @Test
     fun czechDiacriticsAreLatinAndAreAccepted() {
         listOf("Pořízek", "Žák", "Křížová", "Ďurica", "Ňuňo", "Šťastný")

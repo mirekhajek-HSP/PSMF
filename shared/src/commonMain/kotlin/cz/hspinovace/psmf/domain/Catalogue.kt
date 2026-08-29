@@ -98,8 +98,9 @@ data class Fixture(
         require(homeTeamId != awayTeamId) { "A team cannot play itself" }
     }
 
-    fun teamId(side: TeamSide): TeamId = when (side) {
-        TeamSide.HOME -> homeTeamId
-        TeamSide.AWAY -> awayTeamId
-    }
+    fun teamId(side: TeamSide): TeamId =
+        when (side) {
+            TeamSide.HOME -> homeTeamId
+            TeamSide.AWAY -> awayTeamId
+        }
 }

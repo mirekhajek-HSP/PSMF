@@ -16,7 +16,6 @@ import kotlin.test.assertTrue
  * Every test here fails if someone "simplifies" Minute back to an Int.
  */
 class MinuteTest {
-
     @Test
     fun halfTimeAndAfterFinalWhistleAreRepresentableAtAll() {
         // The rule in one assertion: these two exist and are not numbers.
@@ -37,11 +36,12 @@ class MinuteTest {
 
     @Test
     fun halfTimeSortsAfterMinuteThirtyAndBeforeMinuteThirtyOne() {
-        val ordered = listOf(
-            Minute.Played(31),
-            Minute.HalfTime,
-            Minute.Played(30),
-        ).sorted()
+        val ordered =
+            listOf(
+                Minute.Played(31),
+                Minute.HalfTime,
+                Minute.Played(30),
+            ).sorted()
 
         assertEquals(listOf(Minute.Played(30), Minute.HalfTime, Minute.Played(31)), ordered)
     }
@@ -50,11 +50,12 @@ class MinuteTest {
     fun afterTheFinalWhistleSortsLastEvenBeyondAddedTime() {
         // The clock runs continuously and the referee may add time, so a
         // played minute can exceed 60. `60´+` still means "after the whistle".
-        val ordered = listOf(
-            Minute.AfterFinalWhistle,
-            Minute.Played(65),
-            Minute.Played(60),
-        ).sorted()
+        val ordered =
+            listOf(
+                Minute.AfterFinalWhistle,
+                Minute.Played(65),
+                Minute.Played(60),
+            ).sorted()
 
         assertEquals(
             listOf(Minute.Played(60), Minute.Played(65), Minute.AfterFinalWhistle),
