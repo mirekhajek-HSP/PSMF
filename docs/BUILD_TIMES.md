@@ -1,8 +1,9 @@
 # Build times
 
 Reference figures for the container sandbox, so that a future slowdown is
-visible rather than merely suspected. Measured 2026-08-29 on the Phase 1
-scaffold (two modules, ~15 Kotlin files — expect these to grow).
+visible rather than merely suspected. Measured 2026-08-29, first on the
+Phase 1 scaffold and then again with the Phase 2 domain model, seed
+loading and persistence in place (84 shared tests).
 
 Host: Windows 11, WSL2 Ubuntu, native Docker Engine 29.7.2 in-distro.
 Toolchain: Gradle 9.5.1, AGP 8.13.2, Kotlin 2.2.20, Compose 1.11.1.
@@ -17,6 +18,29 @@ Toolchain: Gradle 9.5.1, AGP 8.13.2, Kotlin 2.2.20, Compose 1.11.1.
 | `:shared:jvmTest`, forced rerun | 6 s |
 | `:shared:allTests`, forced rerun | 12 s |
 | `detekt`, forced rerun | 2 s |
+
+## With the Phase 2 suite (84 shared tests)
+
+| Scenario | Time |
+|---|---|
+| Clean recompile, build cache off, `build` | 26 s |
+| Warm `build`, nothing changed | 1 s |
+| **`:shared:jvmTest`, up to date** | **0 s** |
+| `:shared:jvmTest`, forced rerun | 13 s |
+| `:shared:allTests`, forced rerun | 15 s |
+| `detekt`, forced rerun | 3 s |
+
+### The Stop hook
+
+`.claude/hooks/run-shared-tests.sh` runs `:shared:jvmTest` when a session
+finishes. **Measured at ~1 s in the common case**, because Gradle finds
+the task up to date when no Kotlin changed; it costs the 13 s only after
+an actual edit.
+
+That is far enough under the one-minute mark that it runs unconditionally.
+The hook carries a `GATE_ON_KOTLIN_CHANGES` switch, off by default: flip
+it to 1 if the suite ever gets slow enough that paying it every turn
+stops being worth it.
 
 The cold figure is dominated by dependency download. The clean figure with
 the build cache **enabled** is only ~3 s, because Gradle restores task

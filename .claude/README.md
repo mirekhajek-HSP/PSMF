@@ -48,7 +48,8 @@ project mostly is. Everything else is upstream and untouched.
 
 ## Hooks
 
-Both are `PostToolUse` on `Edit|Write`, and both are verified to fire.
+Three hooks. All three are verified to fire in a real session, not
+merely written.
 
 **`ktlint-format.sh`** runs `ktlint -F` on the Kotlin file just written.
 It uses the CLI, not `./gradlew ktlintFormat`, which would pay Gradle
@@ -69,8 +70,30 @@ feeds the explanation back to the model.
 > added because it has to inspect tool input rather than the file, which is
 > more fragile across Edit and Write. Worth revisiting.
 
-There is deliberately **no `Stop` hook yet**. Phase 2 adds one running
-`./gradlew :shared:jvmTest` once there is a suite worth running.
+**`run-shared-tests.sh`** is a `Stop` hook running
+`./gradlew :shared:jvmTest` when a session finishes, added in Phase 2 now
+that there is a suite worth running. `jvmTest` and not `allTests`: the JVM
+target is the fast loop and covers every line of common code, where
+`allTests` also runs the Android variants of the same common sources.
+
+It costs **~1 s** in the common case, because Gradle finds the task up to
+date when nothing Kotlin changed, and 13 s after a real edit — so it runs
+unconditionally. A `GATE_ON_KOTLIN_CHANGES` switch inside the script,
+off by default, restricts it to sessions that touched `.kt`/`.kts`/`.sq`
+if it ever gets slow.
+
+It guards against re-entry: a `Stop` hook that blocks is re-invoked, and
+without the `stop_hook_active` check a failing suite would make the
+session unable to ever finish.
+
+Verified by breaking a domain rule and watching a real session be stopped
+with the failing test named:
+
+```
+The shared test suite is failing, so the work is not finished.
+
+CardTest[jvm] > everyCardCarriesAReasonAndABlankOneIsRejected[jvm] FAILED
+```
 
 ### Testing a hook by hand
 
