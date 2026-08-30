@@ -10,6 +10,7 @@ import cz.hspinovace.psmf.domain.ConfirmingParty
 import cz.hspinovace.psmf.domain.Dismissal
 import cz.hspinovace.psmf.domain.Fixtures
 import cz.hspinovace.psmf.domain.GoalEvent
+import cz.hspinovace.psmf.domain.Lineup
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
@@ -25,6 +26,7 @@ import java.io.File
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -186,6 +188,43 @@ class MatchPersistenceTest {
                 original.homeLineup!!.appearances.map { it.reportedIdentification },
                 restored.homeLineup!!.appearances.map { it.reportedIdentification },
             )
+
+            // Barva dresů is stored the same way and for the same reason.
+            // Both halves come back: the label for the report, the reference
+            // for the screen.
+            assertEquals("modrá", restored.homeLineup!!.kitLabel)
+            assertEquals(Fixtures.homePrimaryKit.id, restored.homeLineup!!.kitId)
+        }
+
+    @Test
+    fun renamingAKitAfterTheMatchDoesNotChangeTheStoredReport() =
+        runTest {
+            // A stored report is NOT a view over reference data. Kits live in
+            // seed data and a match lives in the database; a rename in one
+            // must not reach backwards into the other. Same principle as
+            // reportedIdentification, and both print on the ZoU.
+            val original = matchInProgress()
+            val playedInTheAlternateKit =
+                original.copy(
+                    homeLineup =
+                        Lineup.wearing(
+                            side = TeamSide.HOME,
+                            teamId = Fixtures.homeTeamId,
+                            appearances = original.homeLineup!!.appearances,
+                            kit = Fixtures.homeAlternateKit,
+                        ),
+                )
+            session { it.save(playedInTheAlternateKit) }
+
+            // Weeks later PSMF renames that kit. Nothing writes to the
+            // database; the reference data simply now says something else.
+            val renamed = Fixtures.homeAlternateKit.copy(label = "světle modrá")
+
+            val restored = session { it.load(original.id) }!!
+            assertEquals("bílo-modrá", restored.homeLineup!!.kitLabel)
+            assertNotEquals(renamed.label, restored.homeLineup!!.kitLabel)
+            // The reference is still there, and still points at that kit.
+            assertEquals(renamed.id, restored.homeLineup!!.kitId)
         }
 
     @Test

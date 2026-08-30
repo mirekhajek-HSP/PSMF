@@ -67,12 +67,18 @@ needs a reason — say what it is.
 - **Mocking in shared code: hand-written fakes.** MockK is JVM-only and must not
   appear in `commonMain` tests. Repositories are behind interfaces precisely so
   fakes are cheap — write a `FakeXRepository`, not a mock.
-- Android-target tests are permitted in principle, but **they do not run yet**:
-  the AGP 9 KMP library plugin builds no host-test compilation unless
-  `withHostTestBuilder { }` is added to that module. A test dropped into
-  `androidUnitTest` today is silently ignored — no task, no compile, no
-  warning. Add the builder first, verify it fails when it should, then write
-  the test. See `docs/BUILD_MATRIX.md`.
+- **Android-target tests run, and live in `shared/src/androidHostTest/`.**
+  Two things had to be true and both are silent when they are not. The AGP 9
+  KMP library plugin builds no host-test compilation unless
+  `withHostTestBuilder { }` is declared; and the source set is
+  **`androidHostTest`**, not `androidUnitTest` — a file in the latter is
+  ignored with the builder correctly in place. Neither produces a task, a
+  compile or a warning, so a planted `fail()` comes back green.
+  `AndroidHostTestCanaryTest` says how to re-prove it in a minute.
+- `sourceSetTreeName = "test"` puts that compilation under `commonTest`, so
+  **the shared suite runs twice** — once on the JVM, once on the Android
+  target. `:shared:jvmTest` stays the fast inner loop; `:shared:allTests`
+  is what runs both.
 - Every UseCase gets tests. Every domain rule in TECH_STACK.md §4 gets a test that
   would fail if the rule were violated.
 

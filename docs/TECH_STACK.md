@@ -150,10 +150,13 @@ now the **only** real version constraint in the project. Evidence, the four
 traps the migration hides, and the two surviving workarounds:
 `docs/BUILD_MATRIX.md`.
 
-One trap deserves repeating here because it silently weakens testing: the
-KMP library plugin creates **no Android host-test compilation** unless
-`withHostTestBuilder` is declared. A test placed in `androidUnitTest` today
-does not run and does not warn.
+One trap deserves repeating here because it silently weakened testing
+until 2026-08-30: the KMP library plugin creates **no Android host-test
+compilation** unless `withHostTestBuilder` is declared — and even once it
+is, the source set is **`androidHostTest`**, not `androidUnitTest`. A file
+in the wrong directory is ignored exactly as silently as a missing
+compilation. Both are now correct; the shared suite runs on the JVM and on
+the Android target.
 
 Also: **`iosX64` is no longer a viable target.** Neither Compose
 Multiplatform nor the lifecycle port publishes an `ios_x64` variant, so the

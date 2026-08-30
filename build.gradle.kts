@@ -54,7 +54,10 @@ subprojects {
             "src/androidMain/kotlin",
             // :androidApp is a plain Android module and uses the JVM layout.
             "src/main/kotlin",
-            "src/androidUnitTest/kotlin",
+            // androidHostTest, NOT androidUnitTest: the AGP KMP library
+            // plugin names it the first and ignores the second. This list
+            // said the wrong one, so nothing here was ever analysed.
+            "src/androidHostTest/kotlin",
             "src/iosMain/kotlin",
             "src/jvmMain/kotlin",
             "src/jvmTest/kotlin",

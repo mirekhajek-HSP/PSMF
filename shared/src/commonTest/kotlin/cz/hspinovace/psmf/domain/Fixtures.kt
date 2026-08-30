@@ -112,12 +112,13 @@ object Fixtures {
     fun lineup(
         side: TeamSide,
         vararg appearances: Appearance,
-        kitId: KitId? = null,
-    ) = Lineup(
+        kit: Kit? = null,
+    ) = Lineup.wearing(
         side = side,
         teamId = if (side == TeamSide.HOME) homeTeamId else awayTeamId,
         appearances = appearances.toList(),
-        kitId = kitId ?: if (side == TeamSide.HOME) homePrimaryKit.id else awayPrimaryKit.id,
+        // Snapshots the label as well as the reference; see Lineup.kitLabel.
+        kit = kit ?: if (side == TeamSide.HOME) homePrimaryKit else awayPrimaryKit,
     )
 
     val officials =

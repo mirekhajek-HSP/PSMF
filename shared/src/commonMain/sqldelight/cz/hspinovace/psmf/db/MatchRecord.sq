@@ -50,10 +50,15 @@ CREATE TABLE lineup_record (
     match_id    TEXT NOT NULL,
     side        TEXT NOT NULL,
     team_id     TEXT NOT NULL,
-    -- Which of the team's two kit sets was worn. A reference, not a colour
-    -- string: a team owns its kits and the label written on the report is
-    -- theirs, so the report resolves this against the team record.
+    -- Which of the team's two kit sets was selected. FOR THE UI ONLY.
     kit_id      TEXT NOT NULL,
+    -- Barva dresů, AS IT STOOD ON THE DAY.
+    --
+    -- A snapshot, for the same reason identification_value below is one: a
+    -- report says what was written at the time. Renaming a kit in reference
+    -- data must not rewrite a match played last month. The report reads
+    -- this column and never kit_id.
+    kit_label   TEXT NOT NULL,
     PRIMARY KEY (match_id, side)
 );
 
@@ -164,7 +169,8 @@ deleteMatch:
 DELETE FROM match_record WHERE id = ?;
 
 insertLineup:
-INSERT OR REPLACE INTO lineup_record (match_id, side, team_id, kit_id) VALUES (?, ?, ?, ?);
+INSERT OR REPLACE INTO lineup_record (match_id, side, team_id, kit_id, kit_label)
+VALUES (?, ?, ?, ?, ?);
 
 selectLineups:
 SELECT * FROM lineup_record WHERE match_id = ?;

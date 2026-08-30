@@ -38,6 +38,13 @@ data class Appearance(
  * fifteen (analysis section 6). The screen builds this by **marking who is
  * absent**, since most of the squad turns up — three to five taps rather
  * than writing ten names (section 5.1).
+ *
+ * # `Barva dresů` is stored twice, on purpose
+ *
+ * [kitLabel] is what the report says. [kitId] is what the UI shows as
+ * selected. They are not redundant: one is a **snapshot** and the other is
+ * a **reference**, and they disagree the moment PSMF renames a kit.
+ * Build both together with [wearing] so they cannot drift apart.
  */
 @Serializable
 data class Lineup(
@@ -45,21 +52,33 @@ data class Lineup(
     val teamId: TeamId,
     val appearances: List<Appearance>,
     /**
-     * `Barva dresů` — **which of the team's two kit sets was worn**.
+     * Which of the team's two kit sets was selected. **For the UI only.**
      *
-     * A reference rather than a colour string, because the team owns the
-     * kits and the label written on the report is theirs. Selected on
-     * screen 3, defaulting to [Team.primaryKit]; recorded per match because
-     * the two sides must not clash and the referee separately rates whether
-     * the team turned out in uniform kit at all (`B`).
-     *
-     * Resolve it with [Team.kit]. This type cannot check the reference
-     * itself — a lineup does not know its team — so that check lives in the
-     * seed loader and in [Team.owns].
+     * Resolve it with [Team.kit] to show which chip is active, or to hint
+     * at a clash with the other side. Never read it to build the report —
+     * that is [kitLabel]'s job, and the two can legitimately differ.
      */
     val kitId: KitId,
+    /**
+     * `Barva dresů` — **the label as it stood on the day, copied here.**
+     *
+     * A snapshot, not a lookup, for exactly the reason
+     * [Appearance.reportedIdentification] is: a report states what was
+     * written at the time. If PSMF renames Kominíci's second kit from
+     * "bílo-modrá" to "světle modrá" next month, a match played today must
+     * still read "bílo-modrá" — otherwise editing reference data silently
+     * rewrites history, which is the failure mode analysis section 5.3
+     * exists to prevent.
+     *
+     * The reference in [kitId] survives alongside it because the UI still
+     * needs to know *which* kit is selected. The report never asks.
+     */
+    val kitLabel: String,
 ) {
     init {
+        require(kitLabel.isNotBlank()) {
+            "Barva dresů cannot be blank: the ZoU cannot be generated without it."
+        }
         val duplicateNumbers =
             appearances
                 .mapNotNull { it.jerseyNumber }
@@ -80,11 +99,52 @@ data class Lineup(
 
     fun byJerseyNumber(number: JerseyNumber): Appearance? = appearances.firstOrNull { it.jerseyNumber == number }
 
-    /** True when [kitId] is one this team actually owns. */
+    /**
+     * True when [kitId] is one this team actually owns.
+     *
+     * A check on the *reference*, and therefore on the UI rather than on
+     * the report: [kitLabel] stays valid whatever happens to the team's
+     * kit list afterwards.
+     */
     fun kitBelongsTo(team: Team): Boolean = team.id == teamId && team.owns(kitId)
 
-    /** Maximum on the field per side, including the goalkeeper: 5+1. */
+    /**
+     * True when the stored label no longer matches the referenced kit —
+     * i.e. the kit has been renamed since this match.
+     *
+     * Not an error. The report is right and the reference is stale, which
+     * is the whole point of keeping both. Exposed so the UI can say so
+     * rather than quietly showing a name the report does not use.
+     */
+    fun kitLabelHasDriftedFrom(team: Team): Boolean {
+        val current = team.kit(kitId) ?: return false
+        return current.label != kitLabel
+    }
+
     companion object {
+        /** Maximum on the field per side, including the goalkeeper: 5+1. */
         const val PLAYERS_ON_FIELD = 6
+
+        /**
+         * The only way a lineup should be built at a screen: pass the [Kit]
+         * that was selected and let the snapshot be taken here.
+         *
+         * Calling the constructor directly is still possible and is what
+         * the repository does when rehydrating a stored match — at that
+         * point the label is being *read back*, not taken.
+         */
+        fun wearing(
+            side: TeamSide,
+            teamId: TeamId,
+            appearances: List<Appearance>,
+            kit: Kit,
+        ): Lineup =
+            Lineup(
+                side = side,
+                teamId = teamId,
+                appearances = appearances,
+                kitId = kit.id,
+                kitLabel = kit.label,
+            )
     }
 }

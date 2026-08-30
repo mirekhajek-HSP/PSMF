@@ -48,6 +48,24 @@ kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
         }
+
+        // WITHOUT THIS THERE IS NO ANDROID TEST COMPILATION AT ALL.
+        //
+        // The KMP library plugin creates host-test and device-test
+        // compilations only on request. Until this line existed, a test in
+        // src/androidUnitTest/ was not compiled, not run and not reported:
+        // it did not fail, it did not pass, it simply was not there. A
+        // planted `fail()` came back green, which is the same failure mode
+        // as a JUnit 4 test on a JUnit 5 platform.
+        //
+        // sourceSetTreeName = "test" is what names the source set
+        // `androidUnitTest` and puts it under commonTest, so the shared
+        // suite runs on the Android target too rather than only on the JVM.
+        withHostTestBuilder {
+            sourceSetTreeName = "test"
+        }.configure {
+            isReturnDefaultValues = true
+        }
     }
 
     // The fast test loop. CLAUDE.md documents `:shared:jvmTest` as the

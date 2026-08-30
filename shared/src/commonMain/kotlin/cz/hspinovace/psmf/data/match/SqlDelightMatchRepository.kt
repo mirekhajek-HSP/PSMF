@@ -185,7 +185,14 @@ private fun MatchRecordQueries.clearChildren(matchId: String) {
 
 private fun MatchRecordQueries.writeLineups(match: Match) {
     listOfNotNull(match.homeLineup, match.awayLineup).forEach { lineup ->
-        insertLineup(match.id.value, lineup.side.name, lineup.teamId.value, lineup.kitId.value)
+        insertLineup(
+            match_id = match.id.value,
+            side = lineup.side.name,
+            team_id = lineup.teamId.value,
+            kit_id = lineup.kitId.value,
+            // The label as it stood on the day, not a lookup.
+            kit_label = lineup.kitLabel,
+        )
         lineup.appearances.forEachIndexed { index, appearance ->
             insertAppearance(
                 id = appearance.id.value,
@@ -281,6 +288,7 @@ private fun MatchRecordQueries.hydrate(row: Match_record): Match {
                     teamId = TeamId(lineupRow.team_id),
                     appearances = appearances.filter { it.side == lineupRow.side }.map { it.toDomain() },
                     kitId = KitId(lineupRow.kit_id),
+                    kitLabel = lineupRow.kit_label,
                 )
         }
 

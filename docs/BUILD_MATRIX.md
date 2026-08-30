@@ -124,27 +124,42 @@ kotlin {
 all on `KotlinMultiplatformAndroidLibraryExtension`. There is **no**
 `targetSdk` — that belongs to the application module.
 
-### 2. Android unit tests are silently dropped
+### 2. Android unit tests are silently dropped — for two separate reasons
 
-The KMP library plugin creates **no** Android host-test compilation unless
-you ask for one. Verified by planting a test in
-`shared/src/androidUnitTest/` that calls `fail()`: `./gradlew build` and
-`:shared:allTests` both passed, no task ran, no file was compiled, and
-nothing warned.
+**Resolved 2026-08-30.** The trap had two halves and each is silent on its
+own, so fixing one and not the other looks identical to fixing neither.
 
-This matters because `CLAUDE.md` permits Android-target tests. If any are
-ever written, the module first needs:
+*Half one: no compilation.* The KMP library plugin creates **no** Android
+host-test compilation unless you ask for one. Verified by planting a test
+calling `fail()`: `./gradlew build` and `:shared:allTests` both passed, no
+task ran, no file was compiled, and nothing warned.
+
+*Half two: the wrong directory.* The source set is **`androidHostTest`**,
+not `androidUnitTest`. Verified the same way, and this is the more
+dangerous half: with the builder correctly declared, a file in
+`src/androidUnitTest/` is still ignored — `testAndroidHostTest` runs, the
+build goes green, and the planted failure never appears. Every version of
+this document before today named the wrong directory.
+
+What `:shared` now declares:
 
 ```kotlin
 kotlin {
     android {
-        withHostTestBuilder { }.configure { }
+        withHostTestBuilder {
+            // Puts the compilation under commonTest, so the shared suite
+            // runs on the Android target as well as the JVM.
+            sourceSetTreeName = "test"
+        }.configure {
+            isReturnDefaultValues = true
+        }
     }
 }
 ```
 
-Not added pre-emptively — there are no such tests — but a test that never
-runs is worse than no test, so it is written down here.
+The task is `:shared:testAndroidHostTest`, reached by `:shared:allTests`.
+`AndroidHostTestCanaryTest` gives the compilation a reason to exist and
+carries the two-line recipe for re-proving all of this in a minute.
 
 ### 3. `platforms;android-37.0`, not `platforms;android-37`
 
