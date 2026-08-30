@@ -39,6 +39,11 @@ data class LineupUiState(
     val confirmedParties: Set<ConfirmingParty> = emptySet(),
     val problems: List<LineupProblem> = emptyList(),
     val showProblems: Boolean = false,
+    /**
+     * Continue was pressed and nothing was missing. The route turns this
+     * into navigation to screen 4 and then clears it.
+     */
+    val readyToContinue: Boolean = false,
 ) {
     val selected: TeamLineupEntry? get() = entry?.side(selectedSide)
 
@@ -210,7 +215,7 @@ class LineupViewModel(
             }
 
             LineupEvent.ContinuePressed -> {
-                _state.update { it.copy(showProblems = true, problems = it.entry?.problems().orEmpty()) }
+                commitBothLineups()
             }
         }
     }
@@ -266,6 +271,30 @@ class LineupViewModel(
                 )
             }
         }
+    }
+
+    /**
+     * Writes both blocks, then lets the route move on.
+     *
+     * Both, not just the one on screen: a team with nobody absent and every
+     * number already correct is never edited, so its block has never been
+     * written through.
+     */
+    private fun commitBothLineups() {
+        val entry = _state.value.entry
+        val problems = entry?.problems().orEmpty()
+        _state.update { it.copy(showProblems = true, problems = problems) }
+        if (entry == null || problems.isNotEmpty()) return
+
+        viewModelScope.launch {
+            match?.let { match = saveLineup(it, entry) }
+            _state.update { it.copy(readyToContinue = true) }
+        }
+    }
+
+    /** Called by the route once it has acted on [LineupUiState.readyToContinue]. */
+    fun continued() {
+        _state.update { it.copy(readyToContinue = false) }
     }
 
     private fun editTeam(change: (TeamLineupEntry) -> TeamLineupEntry) {

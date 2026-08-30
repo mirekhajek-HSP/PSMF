@@ -10,6 +10,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
@@ -17,11 +20,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.resources.Res
 import cz.hspinovace.psmf.resources.action_back
+import cz.hspinovace.psmf.resources.console_title
 import cz.hspinovace.psmf.resources.fixtures_title
 import cz.hspinovace.psmf.resources.header_title
 import cz.hspinovace.psmf.resources.lineup_title
+import cz.hspinovace.psmf.ui.console.ConsoleScreen
+import cz.hspinovace.psmf.ui.console.ConsoleViewModel
 import cz.hspinovace.psmf.ui.fixtures.FixturesScreen
 import cz.hspinovace.psmf.ui.fixtures.FixturesViewModel
+import cz.hspinovace.psmf.ui.fixtures.OpenMatch
 import cz.hspinovace.psmf.ui.header.MatchHeaderScreen
 import cz.hspinovace.psmf.ui.header.MatchHeaderViewModel
 import cz.hspinovace.psmf.ui.lineup.LineupScreen
@@ -29,10 +36,13 @@ import cz.hspinovace.psmf.ui.lineup.LineupViewModel
 import cz.hspinovace.psmf.ui.navigation.AppNavigator
 import cz.hspinovace.psmf.ui.navigation.Destination
 import cz.hspinovace.psmf.ui.theme.PsmfTheme
+import cz.hspinovace.psmf.usecase.ResumePoint
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * The whole app: a wizard over one back stack.
@@ -74,7 +84,7 @@ fun App() {
                 Destination.Fixtures -> {
                     FixturesRoute(
                         modifier = modifier,
-                        onOpenMatch = { navigator.goTo(Destination.MatchHeader(it)) },
+                        onOpenMatch = { navigator.goTo(it.destination()) },
                     )
                 }
 
@@ -87,7 +97,15 @@ fun App() {
                 }
 
                 is Destination.Lineup -> {
-                    LineupRoute(matchId = current.matchId, modifier = modifier)
+                    LineupRoute(
+                        matchId = current.matchId,
+                        onContinue = { navigator.goTo(Destination.Console(it)) },
+                        modifier = modifier,
+                    )
+                }
+
+                is Destination.Console -> {
+                    ConsoleRoute(matchId = current.matchId, modifier = modifier)
                 }
             }
         }
@@ -100,6 +118,7 @@ private fun Destination.title(): String =
         Destination.Fixtures -> stringResource(Res.string.fixtures_title)
         is Destination.MatchHeader -> stringResource(Res.string.header_title)
         is Destination.Lineup -> stringResource(Res.string.lineup_title)
+        is Destination.Console -> stringResource(Res.string.console_title)
     }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -132,9 +151,19 @@ private fun AppScaffold(
     }
 }
 
+/**
+ * Tapping a fixture lands where the work is: a match already under way
+ * opens on the console rather than on a header filled in an hour ago.
+ */
+private fun OpenMatch.destination(): Destination =
+    when (resumePoint) {
+        ResumePoint.HEADER -> Destination.MatchHeader(matchId)
+        ResumePoint.CONSOLE -> Destination.Console(matchId)
+    }
+
 @Composable
 private fun FixturesRoute(
-    onOpenMatch: (MatchId) -> Unit,
+    onOpenMatch: (OpenMatch) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val viewModel: FixturesViewModel = koinViewModel()
@@ -187,10 +216,48 @@ private fun MatchHeaderRoute(
 @Composable
 private fun LineupRoute(
     matchId: MatchId,
+    onContinue: (MatchId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val viewModel: LineupViewModel = koinViewModel(key = matchId.value) { parametersOf(matchId) }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    LaunchedEffect(state.readyToContinue) {
+        if (state.readyToContinue) {
+            onContinue(matchId)
+            viewModel.continued()
+        }
+    }
+
     LineupScreen(state = state, onEvent = viewModel::onEvent, modifier = modifier)
 }
+
+/**
+ * The one place a clock reading is produced.
+ *
+ * A one-second re-read of the system clock, **not** a timer that counts:
+ * the elapsed time is `now - kickoffAt`, so this loop only decides how
+ * often the screen is redrawn. Stopping it — going to the background,
+ * being killed — loses nothing, which is the whole reason the clock is
+ * derived rather than ticked.
+ */
+@Composable
+private fun ConsoleRoute(
+    matchId: MatchId,
+    modifier: Modifier = Modifier,
+) {
+    val viewModel: ConsoleViewModel = koinViewModel(key = matchId.value) { parametersOf(matchId) }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    var now by remember { mutableStateOf(viewModel.now()) }
+    LaunchedEffect(state.entry?.kickoffAt) {
+        while (true) {
+            now = viewModel.now()
+            delay(CLOCK_REFRESH)
+        }
+    }
+
+    ConsoleScreen(state = state, now = now, onEvent = viewModel::onEvent, modifier = modifier)
+}
+
+private val CLOCK_REFRESH = 1.seconds

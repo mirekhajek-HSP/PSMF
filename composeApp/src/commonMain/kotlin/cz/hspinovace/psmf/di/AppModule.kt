@@ -12,18 +12,25 @@ import cz.hspinovace.psmf.data.seed.SeedFileReader
 import cz.hspinovace.psmf.data.seed.SeedLeagueCatalog
 import cz.hspinovace.psmf.db.PsmfDatabase
 import cz.hspinovace.psmf.domain.MatchId
+import cz.hspinovace.psmf.ui.console.ConsoleViewModel
 import cz.hspinovace.psmf.ui.fixtures.FixturesViewModel
 import cz.hspinovace.psmf.ui.header.MatchHeaderViewModel
 import cz.hspinovace.psmf.ui.lineup.LineupViewModel
 import cz.hspinovace.psmf.ui.navigation.AppNavigator
 import cz.hspinovace.psmf.usecase.AddPlayerAtThePitch
 import cz.hspinovace.psmf.usecase.AddPlayerToLineup
+import cz.hspinovace.psmf.usecase.BuildConsoleEntry
 import cz.hspinovace.psmf.usecase.BuildLineupEntry
+import cz.hspinovace.psmf.usecase.FinishMatch
 import cz.hspinovace.psmf.usecase.ListFixtures
+import cz.hspinovace.psmf.usecase.LogCard
+import cz.hspinovace.psmf.usecase.LogGoal
 import cz.hspinovace.psmf.usecase.NewId
 import cz.hspinovace.psmf.usecase.SaveLineup
 import cz.hspinovace.psmf.usecase.SaveMatchHeader
+import cz.hspinovace.psmf.usecase.StartMatch
 import cz.hspinovace.psmf.usecase.StartOrResumeMatch
+import cz.hspinovace.psmf.usecase.UndoLastEvent
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -69,6 +76,9 @@ val appModule: Module =
         viewModel { FixturesViewModel(get(), get()) }
         viewModel { (matchId: MatchId) -> MatchHeaderViewModel(matchId, get(), get(), get()) }
         viewModel { (matchId: MatchId) -> LineupViewModel(matchId, get(), get(), get(), get()) }
+        viewModel { (matchId: MatchId) ->
+            ConsoleViewModel(matchId, get(), get(), get(), get(), get(), get(), get())
+        }
     }
 
 /**
@@ -83,6 +93,12 @@ private fun Module.factoryOfUseCases() {
     factory { SaveLineup(get()) }
     factory { AddPlayerAtThePitch(get(), get()) }
     factory { AddPlayerToLineup(get(), get(), get()) }
+    factory { BuildConsoleEntry(get(), get()) }
+    factory { StartMatch(get()) }
+    factory { FinishMatch(get()) }
+    factory { LogGoal(get()) }
+    factory { LogCard(get()) }
+    factory { UndoLastEvent(get()) }
 }
 
 /**

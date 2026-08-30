@@ -7,6 +7,33 @@ import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.MatchStatus
 
+/**
+ * Where tapping a fixture should put the referee.
+ *
+ * **The recovery gesture is tapping the row**, so it has to land where the
+ * work is. A phone that died at minute 40 must come back to the console,
+ * not to a header filled in an hour earlier.
+ */
+enum class ResumePoint {
+    /** Nothing has been recorded yet; start at the top of the report. */
+    HEADER,
+
+    /**
+     * The whistle has gone, or the match is over. Straight to the console.
+     *
+     * FINISHED and CONFIRMED will point at the recap once that screen
+     * exists; until then the console is the last thing built and the
+     * nearest right answer.
+     */
+    CONSOLE,
+}
+
+fun MatchStatus.resumePoint(): ResumePoint =
+    when (this) {
+        MatchStatus.SETUP -> ResumePoint.HEADER
+        MatchStatus.IN_PROGRESS, MatchStatus.FINISHED, MatchStatus.CONFIRMED -> ResumePoint.CONSOLE
+    }
+
 /** Mints ids for things the app creates. Injected so tests are deterministic. */
 fun interface NewId {
     operator fun invoke(): String

@@ -272,3 +272,31 @@ class DelegatingTeamOptionsTest {
             assertEquals(listOf("Sokol"), withAThirdTeam.delegatingTeamOptions())
         }
 }
+
+/**
+ * RULE: **tapping the row is the recovery gesture, so it lands where the
+ * work is.**
+ *
+ * A referee whose phone died at minute 40 must come back to the console,
+ * not to a header they filled in an hour earlier. Found on a device: the
+ * data all survived, and the referee was still put two screens away from
+ * it.
+ */
+class ResumePointTest {
+    @Test
+    fun aReportWithNothingRecordedStartsAtTheTop() {
+        assertEquals(ResumePoint.HEADER, MatchStatus.SETUP.resumePoint())
+    }
+
+    @Test
+    fun aMatchUnderWayResumesAtTheConsole() {
+        assertEquals(ResumePoint.CONSOLE, MatchStatus.IN_PROGRESS.resumePoint())
+    }
+
+    @Test
+    fun aFinishedMatchDoesNotSendTheRefereeBackToTheHeader() {
+        // Will point at the recap once that screen exists.
+        assertEquals(ResumePoint.CONSOLE, MatchStatus.FINISHED.resumePoint())
+        assertEquals(ResumePoint.CONSOLE, MatchStatus.CONFIRMED.resumePoint())
+    }
+}

@@ -116,6 +116,20 @@ private fun Appearance.usedTheRegistrationCard(): Boolean = reportedIdentificati
 class SaveLineup(
     private val matches: MatchRepository,
 ) {
+    /**
+     * Both blocks at once.
+     *
+     * What "Continue" means: the lineups stand as they are. Needed because
+     * write-through happens on *edit*, and a team with nobody absent and
+     * every number already right is never edited — so without this its
+     * block would never be written, and the console would have nobody on
+     * it.
+     */
+    suspend operator fun invoke(
+        match: Match,
+        entry: LineupEntry,
+    ): Match = invoke(invoke(match, entry.home), entry.away)
+
     suspend operator fun invoke(
         match: Match,
         entry: TeamLineupEntry,

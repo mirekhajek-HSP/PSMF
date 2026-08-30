@@ -83,4 +83,44 @@
     <string name="lineup_error_nobody">Není označen nikdo přítomný.</string>
     <string name="lineup_error_duplicate_number">Dres č. %1$d nosí víc hráčů.</string>
     <string name="lineup_error_no_identification">Chybí údaj do sloupce Číslo RP.</string>
+
+    <!-- Screen 4: the live console, page 2 of the ZoU -->
+    <string name="console_title">Zápis utkání</string>
+    <string name="console_loading">Načítání zápisu…</string>
+    <string name="console_before_kickoff">Před výkopem</string>
+    <string name="console_not_started">Utkání ještě nezačalo. Hodiny se rozběhnou výkopem a už se nezastaví.</string>
+    <string name="console_start">Zahájit utkání</string>
+    <string name="console_finish">Ukončit utkání</string>
+    <string name="console_finished">Utkání ukončeno</string>
+    <string name="console_undo">Vzít zpět</string>
+    <string name="console_goal">Gól</string>
+    <string name="console_card">Karta</string>
+    <string name="console_goal_no_scorer">Gól bez střelce</string>
+    <string name="console_card_other">Karta jiné osobě</string>
+    <string name="console_dismissed">Vyloučen</string>
+    <string name="console_yellows">ŽK %1$d</string>
+    <string name="console_marker_yellow">ŽK</string>
+    <string name="console_marker_red">ČK</string>
+    <string name="console_power_play">Oslabení: %1$s, zbývá %2$s</string>
+    <string name="console_log_title">Průběh utkání</string>
+    <string name="console_log_empty">Zatím nic nezaznamenáno.</string>
+
+    <string name="card_title">Osobní trest</string>
+    <string name="card_colour_yellow">Žlutá karta</string>
+    <string name="card_colour_red">Červená karta</string>
+    <string name="card_dismissal_straight">Přímá ČK</string>
+    <string name="card_dismissal_second">2. ŽK</string>
+    <string name="card_minute">Čas</string>
+    <string name="card_minute_played">Minuta hry</string>
+    <string name="card_minute_half">30´+ (poločas)</string>
+    <string name="card_minute_end">60´+ (po skončení)</string>
+    <string name="card_person">Jméno</string>
+    <string name="card_reason">Důvod</string>
+    <string name="card_reason_note">Důvod je povinný u každé karty. U červené musí být jednoznačný — „zmaření vyložené šance“ nestačí, protože mohlo být provedeno čistě.</string>
+    <string name="card_save">Uložit</string>
+    <string name="card_second_yellow_hint">Hráč už v tomto utkání ŽK má. Druhá znamená vyloučení a na zápis se píše 2. ŽK.</string>
+    <string name="card_error_subject">Zadejte jméno.</string>
+    <string name="card_error_reason">Zadejte důvod.</string>
+    <string name="card_error_dismissal">Vyberte, zda jde o přímou ČK, nebo o 2. ŽK.</string>
+    <string name="card_error_minute">Zadejte minutu.</string>
 </resources>

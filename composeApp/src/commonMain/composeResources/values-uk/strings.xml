@@ -79,4 +79,44 @@
     <string name="lineup_error_nobody">Нікого не позначено присутнім.</string>
     <string name="lineup_error_duplicate_number">Номер %1$d носить більше ніж один гравець.</string>
     <string name="lineup_error_no_identification">Немає що записати в колонку «Номер RP».</string>
+
+    <!-- Screen 4: the live console, page 2 of the ZoU -->
+    <string name="console_title">Протокол матчу</string>
+    <string name="console_loading">Завантаження матчу…</string>
+    <string name="console_before_kickoff">До початку</string>
+    <string name="console_not_started">Матч ще не розпочався. Годинник почне йти зі стартовим свистком і вже не зупиниться.</string>
+    <string name="console_start">Розпочати матч</string>
+    <string name="console_finish">Завершити матч</string>
+    <string name="console_finished">Матч завершено</string>
+    <string name="console_undo">Скасувати останнє</string>
+    <string name="console_goal">Гол</string>
+    <string name="console_card">Картка</string>
+    <string name="console_goal_no_scorer">Гол без автора</string>
+    <string name="console_card_other">Картка іншій особі</string>
+    <string name="console_dismissed">Вилучений</string>
+    <string name="console_yellows">ЖК %1$d</string>
+    <string name="console_marker_yellow">ЖК</string>
+    <string name="console_marker_red">ЧК</string>
+    <string name="console_power_play">У меншості: %1$s, лишилось %2$s</string>
+    <string name="console_log_title">Хід матчу</string>
+    <string name="console_log_empty">Поки нічого не записано.</string>
+
+    <string name="card_title">Особисте покарання</string>
+    <string name="card_colour_yellow">Жовта картка</string>
+    <string name="card_colour_red">Червона картка</string>
+    <string name="card_dismissal_straight">Пряма ЧК</string>
+    <string name="card_dismissal_second">2. ŽK</string>
+    <string name="card_minute">Час</string>
+    <string name="card_minute_played">Хвилина гри</string>
+    <string name="card_minute_half">30´+ (перерва)</string>
+    <string name="card_minute_end">60´+ (після свистка)</string>
+    <string name="card_person">Імʼя</string>
+    <string name="card_reason">Причина</string>
+    <string name="card_reason_note">Причина обовʼязкова для кожної картки. Для червоної вона має бути однозначною — «зрив явного моменту» не годиться, бо могло бути зроблено чисто.</string>
+    <string name="card_save">Зберегти</string>
+    <string name="card_second_yellow_hint">У цього гравця вже є ЖК у цьому матчі. Друга означає вилучення і записується як 2. ŽK.</string>
+    <string name="card_error_subject">Введіть імʼя.</string>
+    <string name="card_error_reason">Введіть причину.</string>
+    <string name="card_error_dismissal">Виберіть: пряма ЧК або друга ЖК.</string>
+    <string name="card_error_minute">Введіть хвилину.</string>
 </resources>

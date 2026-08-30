@@ -7,11 +7,19 @@ import cz.hspinovace.psmf.domain.FixtureId
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.usecase.FixtureListing
 import cz.hspinovace.psmf.usecase.ListFixtures
+import cz.hspinovace.psmf.usecase.ResumePoint
 import cz.hspinovace.psmf.usecase.StartOrResumeMatch
+import cz.hspinovace.psmf.usecase.resumePoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+
+/** A report to open, and where in it to land. */
+data class OpenMatch(
+    val matchId: MatchId,
+    val resumePoint: ResumePoint,
+)
 
 sealed interface FixturesUiState {
     data object Loading : FixturesUiState
@@ -48,11 +56,14 @@ class FixturesViewModel(
     val state: StateFlow<FixturesUiState> = _state.asStateFlow()
 
     /**
-     * Set when a report is ready to be opened. The route navigates and
-     * calls [matchOpened]; the ViewModel does not know what a screen is.
+     * Set when a report is ready to be opened, with **how far it has got**
+     * — a match in progress resumes at the console, not at the header.
+     *
+     * The route navigates and calls [matchOpened]; the ViewModel does not
+     * know what a screen is.
      */
-    private val _openMatch = MutableStateFlow<MatchId?>(null)
-    val openMatch: StateFlow<MatchId?> = _openMatch.asStateFlow()
+    private val _openMatch = MutableStateFlow<OpenMatch?>(null)
+    val openMatch: StateFlow<OpenMatch?> = _openMatch.asStateFlow()
 
     init {
         load()
@@ -80,7 +91,9 @@ class FixturesViewModel(
      */
     fun onFixtureSelected(fixtureId: FixtureId) {
         viewModelScope.launch {
-            startOrResumeMatch(fixtureId)?.let { _openMatch.value = it.id }
+            startOrResumeMatch(fixtureId)?.let {
+                _openMatch.value = OpenMatch(it.id, it.status.resumePoint())
+            }
         }
     }
 

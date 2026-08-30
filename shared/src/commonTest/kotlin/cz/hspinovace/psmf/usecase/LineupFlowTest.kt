@@ -384,3 +384,57 @@ class AddPlayerToLineupTest {
             assertEquals(emptyList(), added.forMatch(MatchId("m1")))
         }
 }
+
+/**
+ * RULE: **Continue commits both blocks, including the one nobody touched.**
+ *
+ * Write-through happens on edit, and a team with nobody absent and every
+ * number already right is never edited. Without this its block is never
+ * written, and the console opens with nobody on that side to tap — which
+ * is exactly what a device showed and what every earlier test missed,
+ * because each of them saved the side it was asserting on.
+ */
+class SaveBothLineupsTest {
+    private var minted = 0
+
+    private suspend fun entryFor(match: Match) =
+        assertNotNull(
+            BuildLineupEntry(TestLeague.repository(), FakeAddedPlayerRepository()) { "id-${++minted}" }(match),
+        )
+
+    @Test
+    fun bothBlocksAreWrittenEvenWhenNeitherWasEdited() =
+        runTest {
+            val matches = FakeMatchRepository(listOf(match()))
+            val entry = entryFor(match())
+
+            val updated = SaveLineup(matches)(match(), entry)
+
+            assertNotNull(updated.homeLineup, "The home block was not written")
+            assertNotNull(updated.awayLineup, "The away block was not written")
+            assertEquals(updated, matches.load(MatchId("m1")))
+        }
+
+    @Test
+    fun everyPlayerIsInTheirBlockBecauseNobodyWasMarkedAbsent() =
+        runTest {
+            val matches = FakeMatchRepository(listOf(match()))
+            val updated = SaveLineup(matches)(match(), entryFor(match()))
+
+            assertEquals(TestLeague.homeSquad.size, updated.homeLineup?.appearances?.size)
+            assertEquals(TestLeague.awaySquad.size, updated.awayLineup?.appearances?.size)
+        }
+
+    @Test
+    fun anEditOnOneSideDoesNotLoseTheOther() =
+        runTest {
+            val matches = FakeMatchRepository(listOf(match()))
+            val entry = entryFor(match())
+            val edited = entry.with(entry.home.withMember(TestLeague.homeSquad.first().id) { it.copy(absent = true) })
+
+            val updated = SaveLineup(matches)(match(), edited)
+
+            assertEquals(TestLeague.homeSquad.size - 1, updated.homeLineup?.appearances?.size)
+            assertEquals(TestLeague.awaySquad.size, updated.awayLineup?.appearances?.size)
+        }
+}

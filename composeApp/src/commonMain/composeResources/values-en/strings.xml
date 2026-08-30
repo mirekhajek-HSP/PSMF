@@ -75,4 +75,44 @@
     <string name="lineup_error_nobody">Nobody is marked present.</string>
     <string name="lineup_error_duplicate_number">Shirt number %1$d is worn by more than one player.</string>
     <string name="lineup_error_no_identification">Nothing to write in the RP number column.</string>
+
+    <!-- Screen 4: the live console, page 2 of the ZoU -->
+    <string name="console_title">Match console</string>
+    <string name="console_loading">Loading the match…</string>
+    <string name="console_before_kickoff">Before kickoff</string>
+    <string name="console_not_started">The match has not started. The clock starts at kickoff and never stops.</string>
+    <string name="console_start">Start the match</string>
+    <string name="console_finish">End the match</string>
+    <string name="console_finished">Match ended</string>
+    <string name="console_undo">Undo</string>
+    <string name="console_goal">Goal</string>
+    <string name="console_card">Card</string>
+    <string name="console_goal_no_scorer">Goal with no scorer</string>
+    <string name="console_card_other">Card to someone else</string>
+    <string name="console_dismissed">Sent off</string>
+    <string name="console_yellows">YC %1$d</string>
+    <string name="console_marker_yellow">YC</string>
+    <string name="console_marker_red">RC</string>
+    <string name="console_power_play">A player short: %1$s, %2$s left</string>
+    <string name="console_log_title">Match log</string>
+    <string name="console_log_empty">Nothing recorded yet.</string>
+
+    <string name="card_title">Personal punishment</string>
+    <string name="card_colour_yellow">Yellow card</string>
+    <string name="card_colour_red">Red card</string>
+    <string name="card_dismissal_straight">Straight red</string>
+    <string name="card_dismissal_second">2. ŽK</string>
+    <string name="card_minute">Time</string>
+    <string name="card_minute_played">Minute of play</string>
+    <string name="card_minute_half">30´+ (half-time)</string>
+    <string name="card_minute_end">60´+ (after the whistle)</string>
+    <string name="card_person">Name</string>
+    <string name="card_reason">Reason</string>
+    <string name="card_reason_note">A reason is required on every card. On a red it must be unambiguous — “denying a clear chance” will not do, because it might have been done cleanly.</string>
+    <string name="card_save">Save</string>
+    <string name="card_second_yellow_hint">This player already has a yellow in this match. A second one is a dismissal, written 2. ŽK on the report.</string>
+    <string name="card_error_subject">Enter a name.</string>
+    <string name="card_error_reason">Enter a reason.</string>
+    <string name="card_error_dismissal">Choose whether this is a straight red or a second yellow.</string>
+    <string name="card_error_minute">Enter the minute.</string>
 </resources>
