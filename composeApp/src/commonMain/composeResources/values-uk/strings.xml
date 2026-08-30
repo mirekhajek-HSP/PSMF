@@ -40,8 +40,43 @@
     <string name="header_delegating_other">Інша команда</string>
     <string name="header_delegating_other_label">Назва команди</string>
     <string name="header_continue">Далі до складів</string>
-    <string name="header_saved">Заголовок збережено. Склади зʼявляться в наступній фазі.</string>
     <string name="header_error_referee_missing">Введіть імʼя судді.</string>
     <string name="header_error_name_not_latin">Імена записуються латиницею, як в обліку PSMF.</string>
     <string name="header_error_delegating_missing">Оберіть команду, що делегує.</string>
+
+    <string name="action_cancel">Скасувати</string>
+
+    <!-- Screen 3: lineups, page 1 of the ZoU -->
+    <string name="lineup_title">Склади</string>
+    <string name="lineup_loading">Завантаження складів…</string>
+    <string name="lineup_kit">Колір форми</string>
+    <string name="lineup_present_count">Присутні: %1$d із %2$d</string>
+    <string name="lineup_mark_absent_hint">Торкніться імені, щоб позначити, хто не прийшов.</string>
+    <string name="lineup_absent">Відсутній</string>
+    <string name="lineup_added_at_pitch">Дописаний на полі</string>
+    <string name="lineup_jersey">Номер</string>
+    <string name="lineup_rp_column">Номер RP</string>
+    <string name="lineup_no_card">Без картки</string>
+    <string name="lineup_suspension_warning">%1$d ЖК станом на %2$s — можливе відсторонення</string>
+    <string name="lineup_suspension_note">Дані про картки — лише орієнтовні й можуть бути застарілими. Перевіряйте їх у PSMF. Застосунок не підтверджує, що гравець має право виходити на поле — відсутність попередження не означає, що все гаразд.</string>
+    <string name="lineup_add_player">Додати гравця поза списком</string>
+    <string name="lineup_add_player_title">Гравець поза списком</string>
+    <string name="lineup_add_player_note">Номер RP не вводиться — його видає PSMF. Гравця буде позначено, щоб PSMF міг його звірити.</string>
+    <string name="lineup_surname">Прізвище</string>
+    <string name="lineup_first_name">Імʼя</string>
+    <string name="lineup_date_of_birth">Дата народження</string>
+    <string name="lineup_date_of_birth_hint">напр. 18.5.1992 або 18051992</string>
+    <string name="lineup_add_confirm">Додати</string>
+    <string name="lineup_error_new_player">Перевірте прізвище, імʼя та дату народження.</string>
+    <string name="lineup_captain_section">Підтвердження капітана</string>
+    <string name="lineup_captain_confirm">Капітан підтверджує склад</string>
+    <string name="lineup_captain_confirmed">Підтверджено капітаном</string>
+    <string name="lineup_captain_attestation">Капітани підтверджують, що всі гравці мають право виступати.</string>
+    <string name="lineup_captain_pick">Хто підтверджує склад?</string>
+    <string name="lineup_captain_deputy">Заступник капітана</string>
+    <string name="lineup_continue">Далі до матчу</string>
+    <string name="lineup_saved">Склади збережено. Консоль матчу зʼявиться в наступній фазі.</string>
+    <string name="lineup_error_nobody">Нікого не позначено присутнім.</string>
+    <string name="lineup_error_duplicate_number">Номер %1$d носить більше ніж один гравець.</string>
+    <string name="lineup_error_no_identification">Немає що записати в колонку «Номер RP».</string>
 </resources>

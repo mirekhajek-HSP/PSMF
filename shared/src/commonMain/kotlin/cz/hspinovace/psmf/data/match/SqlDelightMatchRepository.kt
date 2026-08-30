@@ -106,6 +106,10 @@ class SqlDelightMatchRepository(
         withContext(dispatcher) {
             database.transaction {
                 queries.clearChildren(id.value)
+                // Deliberately not in clearChildren, which runs on every
+                // save: a pitch-added player is not one of the report's own
+                // rows and must survive the report being rewritten.
+                queries.deleteAddedPlayersForMatch(id.value)
                 queries.deleteMatch(id.value)
             }
         }

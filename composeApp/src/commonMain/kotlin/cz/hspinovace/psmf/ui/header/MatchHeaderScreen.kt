@@ -42,7 +42,6 @@ import cz.hspinovace.psmf.resources.header_licensed_hire_referee
 import cz.hspinovace.psmf.resources.header_officials_section
 import cz.hspinovace.psmf.resources.header_pitch
 import cz.hspinovace.psmf.resources.header_referee
-import cz.hspinovace.psmf.resources.header_saved
 import cz.hspinovace.psmf.resources.header_time
 import cz.hspinovace.psmf.ui.common.ActionRow
 import cz.hspinovace.psmf.ui.common.PrimaryAction
@@ -79,15 +78,6 @@ fun MatchHeaderScreen(
             state.fixture?.let { FixtureSection(it) }
             OfficialsSection(state, onEvent)
             DelegatingTeamSection(state, onEvent)
-            if (state.complete) {
-                // The header is already on disk -- it was written through as
-                // it was typed. The lineup screen is the next phase.
-                Text(
-                    text = stringResource(Res.string.header_saved),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
             ActionRow {
                 PrimaryAction(
                     text = stringResource(Res.string.header_continue),

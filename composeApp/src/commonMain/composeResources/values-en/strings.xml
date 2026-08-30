@@ -36,8 +36,43 @@
     <string name="header_delegating_other">Another team</string>
     <string name="header_delegating_other_label">Team name</string>
     <string name="header_continue">Continue to lineups</string>
-    <string name="header_saved">The header is saved. Lineups arrive in the next phase.</string>
     <string name="header_error_referee_missing">Enter the name of the referee.</string>
     <string name="header_error_name_not_latin">Names are written in the Latin alphabet, as in PSMF records.</string>
     <string name="header_error_delegating_missing">Choose the delegating team.</string>
+
+    <string name="action_cancel">Cancel</string>
+
+    <!-- Screen 3: lineups, page 1 of the ZoU -->
+    <string name="lineup_title">Lineups</string>
+    <string name="lineup_loading">Loading lineups…</string>
+    <string name="lineup_kit">Kit</string>
+    <string name="lineup_present_count">%1$d of %2$d present</string>
+    <string name="lineup_mark_absent_hint">Tap a name to mark who did not turn up.</string>
+    <string name="lineup_absent">Absent</string>
+    <string name="lineup_added_at_pitch">Added at the pitch</string>
+    <string name="lineup_jersey">Shirt</string>
+    <string name="lineup_rp_column">RP number</string>
+    <string name="lineup_no_card">No card</string>
+    <string name="lineup_suspension_warning">%1$d yellows as at %2$s — may be suspended</string>
+    <string name="lineup_suspension_note">Card counts are advisory and may be out of date. Check them with PSMF. The app does not confirm that a player may take the field — the absence of a warning does not mean everything is in order.</string>
+    <string name="lineup_add_player">Add a player not on the list</string>
+    <string name="lineup_add_player_title">Player not on the squad list</string>
+    <string name="lineup_add_player_note">No RP number is entered — PSMF issues those. The player is flagged so PSMF can reconcile them.</string>
+    <string name="lineup_surname">Surname</string>
+    <string name="lineup_first_name">First name</string>
+    <string name="lineup_date_of_birth">Date of birth</string>
+    <string name="lineup_date_of_birth_hint">e.g. 18.5.1992 or 18051992</string>
+    <string name="lineup_add_confirm">Add</string>
+    <string name="lineup_error_new_player">Check the surname, first name and date of birth.</string>
+    <string name="lineup_captain_section">Captain’s confirmation</string>
+    <string name="lineup_captain_confirm">Captain confirms the lineup</string>
+    <string name="lineup_captain_confirmed">Confirmed by the captain</string>
+    <string name="lineup_captain_attestation">The captains confirm that every player is entitled to play.</string>
+    <string name="lineup_captain_pick">Who is confirming?</string>
+    <string name="lineup_captain_deputy">Deputy captain</string>
+    <string name="lineup_continue">Continue to the match</string>
+    <string name="lineup_saved">The lineups are saved. The match console arrives in the next phase.</string>
+    <string name="lineup_error_nobody">Nobody is marked present.</string>
+    <string name="lineup_error_duplicate_number">Shirt number %1$d is worn by more than one player.</string>
+    <string name="lineup_error_no_identification">Nothing to write in the RP number column.</string>
 </resources>

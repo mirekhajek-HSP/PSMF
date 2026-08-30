@@ -98,6 +98,27 @@ CREATE TABLE power_play_record (
     PRIMARY KEY (match_id, position)
 );
 
+-- Someone turned up who is not in PSMF's squad list.
+--
+-- Scoped to the match: a pitch-added player is a fact about one afternoon
+-- until PSMF reconciles them and issues an RP number. Promoting them to
+-- league reference data on a referee's say-so is exactly the data-integrity
+-- failure the read-only squad list exists to prevent.
+--
+-- THERE IS NO rp_number COLUMN AND THERE MUST NOT BE ONE. RP numbers are
+-- issued by PSMF. Nothing a user types can become one.
+CREATE TABLE added_player_record (
+    id                    TEXT    NOT NULL PRIMARY KEY,
+    match_id              TEXT    NOT NULL,
+    team_id               TEXT    NOT NULL,
+    player_ref            TEXT    NOT NULL,
+    surname               TEXT    NOT NULL,
+    first_name            TEXT    NOT NULL,
+    -- NOT NULL: it is the only identification such a player has.
+    date_of_birth         TEXT    NOT NULL,
+    default_jersey_number INTEGER
+);
+
 CREATE TABLE goal_record (
     match_id             TEXT    NOT NULL,
     position             INTEGER NOT NULL,
@@ -195,6 +216,23 @@ SELECT * FROM appearance_record WHERE match_id = ? ORDER BY side, position;
 
 deleteAppearances:
 DELETE FROM appearance_record WHERE match_id = ?;
+
+insertAddedPlayer:
+INSERT OR REPLACE INTO added_player_record (
+    id, match_id, team_id, player_ref, surname, first_name, date_of_birth, default_jersey_number
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+selectAddedPlayers:
+SELECT * FROM added_player_record WHERE match_id = ? ORDER BY surname, first_name;
+
+deleteAddedPlayer:
+DELETE FROM added_player_record WHERE id = ?;
+
+-- Only on deleting the whole match. NOT part of clearChildren: saving a
+-- report rewrites its own rows, and these are not its rows -- they are
+-- people who were at the ground.
+deleteAddedPlayersForMatch:
+DELETE FROM added_player_record WHERE match_id = ?;
 
 insertGoal:
 INSERT OR REPLACE INTO goal_record (

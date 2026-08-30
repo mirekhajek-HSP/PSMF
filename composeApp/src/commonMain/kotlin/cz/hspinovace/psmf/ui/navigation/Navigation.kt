@@ -21,6 +21,10 @@ sealed interface Destination {
     data class MatchHeader(
         val matchId: MatchId,
     ) : Destination
+
+    data class Lineup(
+        val matchId: MatchId,
+    ) : Destination
 }
 
 /**

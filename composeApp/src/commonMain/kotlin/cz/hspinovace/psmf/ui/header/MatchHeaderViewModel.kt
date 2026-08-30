@@ -58,10 +58,8 @@ data class MatchHeaderUiState(
     /**
      * The referee pressed Continue and nothing was missing.
      *
-     * In the finished app this is the moment the lineup screen opens. That
-     * screen is the next phase, so for now it is what turns the
-     * confirmation line on -- the header itself is already on disk, having
-     * been written through as it was typed.
+     * The route turns this into navigation to screen 3 and then clears it;
+     * the ViewModel does not know what a screen is.
      */
     val complete: Boolean = false,
 ) {
@@ -189,6 +187,11 @@ class MatchHeaderViewModel(
                 _state.update { it.copy(problems = problems, complete = problems.isEmpty()) }
             }
         }
+    }
+
+    /** Called by the route once it has acted on [MatchHeaderUiState.complete]. */
+    fun continued() {
+        _state.update { it.copy(complete = false) }
     }
 
     /**

@@ -5,6 +5,7 @@ import cz.hspinovace.psmf.data.league.LoadedFixture
 import cz.hspinovace.psmf.data.match.MatchRepository
 import cz.hspinovace.psmf.data.match.MatchSummary
 import cz.hspinovace.psmf.data.seed.LeagueGroup
+import cz.hspinovace.psmf.domain.DisciplinaryRecord
 import cz.hspinovace.psmf.domain.Fixture
 import cz.hspinovace.psmf.domain.FixtureId
 import cz.hspinovace.psmf.domain.Fixtures
@@ -106,12 +107,37 @@ object TestLeague {
         awayTeamId = Fixtures.homeTeamId,
     )
 
+    /**
+     * A squad small enough to assert on and large enough to have absences
+     * in. Numbers are distinct, as a real squad's are.
+     */
+    val homeSquad =
+        listOf(
+            Fixtures.player("novak", "Novák", "Jan", 9),
+            Fixtures.player("poupe", "Poupě", "Petr", 11),
+            // On an even yellow total, so the advisory badge has something
+            // to show. Advisory, never a block.
+            Fixtures.player(
+                "kriz",
+                "Kříž",
+                "Ondřej",
+                18,
+                discipline = DisciplinaryRecord(2, LocalDate(2026, 8, 24)),
+            ),
+        )
+
+    val awaySquad =
+        listOf(
+            Fixtures.player("baca", "Bača", "Tomáš", 13),
+            Fixtures.player("houzev", "Houžev", "Karel", 12),
+        ).map { it.copy(teamId = Fixtures.awayTeamId) }
+
     val group =
         LeagueGroup(
             season = season,
             group = Fixtures.group,
             teams = listOf(Fixtures.homeTeam, Fixtures.awayTeam),
-            players = emptyList(),
+            players = homeSquad + awaySquad,
             // Out of order on purpose: the use case is what puts them right.
             fixtures = listOf(secondRoundLate, secondRoundEarly, Fixtures.fixture),
             venues = listOf(venue, otherVenue),

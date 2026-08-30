@@ -5,6 +5,8 @@ import cz.hspinovace.psmf.data.league.LeagueRepository
 import cz.hspinovace.psmf.data.league.SeedLeagueRepository
 import cz.hspinovace.psmf.data.match.MatchRepository
 import cz.hspinovace.psmf.data.match.SqlDelightMatchRepository
+import cz.hspinovace.psmf.data.player.AddedPlayerRepository
+import cz.hspinovace.psmf.data.player.SqlDelightAddedPlayerRepository
 import cz.hspinovace.psmf.data.seed.ComposeResourceSeedFileReader
 import cz.hspinovace.psmf.data.seed.SeedFileReader
 import cz.hspinovace.psmf.data.seed.SeedLeagueCatalog
@@ -12,9 +14,14 @@ import cz.hspinovace.psmf.db.PsmfDatabase
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.ui.fixtures.FixturesViewModel
 import cz.hspinovace.psmf.ui.header.MatchHeaderViewModel
+import cz.hspinovace.psmf.ui.lineup.LineupViewModel
 import cz.hspinovace.psmf.ui.navigation.AppNavigator
+import cz.hspinovace.psmf.usecase.AddPlayerAtThePitch
+import cz.hspinovace.psmf.usecase.AddPlayerToLineup
+import cz.hspinovace.psmf.usecase.BuildLineupEntry
 import cz.hspinovace.psmf.usecase.ListFixtures
 import cz.hspinovace.psmf.usecase.NewId
+import cz.hspinovace.psmf.usecase.SaveLineup
 import cz.hspinovace.psmf.usecase.SaveMatchHeader
 import cz.hspinovace.psmf.usecase.StartOrResumeMatch
 import org.koin.core.KoinApplication
@@ -38,6 +45,7 @@ val appModule: Module =
         // for the database.
         single { PsmfDatabase(get<DatabaseDriverFactory>().create()) }
         single<MatchRepository> { SqlDelightMatchRepository(get()) }
+        single<AddedPlayerRepository> { SqlDelightAddedPlayerRepository(get()) }
 
         // Seed data. The reader lives in this module because Compose
         // resources are generated here and `shared` cannot see them.
@@ -60,6 +68,7 @@ val appModule: Module =
 
         viewModel { FixturesViewModel(get(), get()) }
         viewModel { (matchId: MatchId) -> MatchHeaderViewModel(matchId, get(), get(), get()) }
+        viewModel { (matchId: MatchId) -> LineupViewModel(matchId, get(), get(), get(), get()) }
     }
 
 /**
@@ -70,6 +79,10 @@ private fun Module.factoryOfUseCases() {
     factory { ListFixtures(get(), get()) }
     factory { StartOrResumeMatch(get(), get(), get()) }
     factory { SaveMatchHeader(get()) }
+    factory { BuildLineupEntry(get(), get(), get()) }
+    factory { SaveLineup(get()) }
+    factory { AddPlayerAtThePitch(get(), get()) }
+    factory { AddPlayerToLineup(get(), get(), get()) }
 }
 
 /**

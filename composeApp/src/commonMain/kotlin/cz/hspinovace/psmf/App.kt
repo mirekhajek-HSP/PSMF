@@ -19,10 +19,13 @@ import cz.hspinovace.psmf.resources.Res
 import cz.hspinovace.psmf.resources.action_back
 import cz.hspinovace.psmf.resources.fixtures_title
 import cz.hspinovace.psmf.resources.header_title
+import cz.hspinovace.psmf.resources.lineup_title
 import cz.hspinovace.psmf.ui.fixtures.FixturesScreen
 import cz.hspinovace.psmf.ui.fixtures.FixturesViewModel
 import cz.hspinovace.psmf.ui.header.MatchHeaderScreen
 import cz.hspinovace.psmf.ui.header.MatchHeaderViewModel
+import cz.hspinovace.psmf.ui.lineup.LineupScreen
+import cz.hspinovace.psmf.ui.lineup.LineupViewModel
 import cz.hspinovace.psmf.ui.navigation.AppNavigator
 import cz.hspinovace.psmf.ui.navigation.Destination
 import cz.hspinovace.psmf.ui.theme.PsmfTheme
@@ -76,7 +79,15 @@ fun App() {
                 }
 
                 is Destination.MatchHeader -> {
-                    MatchHeaderRoute(matchId = current.matchId, modifier = modifier)
+                    MatchHeaderRoute(
+                        matchId = current.matchId,
+                        onContinue = { navigator.goTo(Destination.Lineup(it)) },
+                        modifier = modifier,
+                    )
+                }
+
+                is Destination.Lineup -> {
+                    LineupRoute(matchId = current.matchId, modifier = modifier)
                 }
             }
         }
@@ -88,6 +99,7 @@ private fun Destination.title(): String =
     when (this) {
         Destination.Fixtures -> stringResource(Res.string.fixtures_title)
         is Destination.MatchHeader -> stringResource(Res.string.header_title)
+        is Destination.Lineup -> stringResource(Res.string.lineup_title)
     }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -147,6 +159,7 @@ private fun FixturesRoute(
 @Composable
 private fun MatchHeaderRoute(
     matchId: MatchId,
+    onContinue: (MatchId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // Keyed by the match, so opening a different report does not inherit
@@ -155,9 +168,29 @@ private fun MatchHeaderRoute(
         koinViewModel(key = matchId.value) { parametersOf(matchId) }
     val state by viewModel.state.collectAsStateWithLifecycle()
 
+    LaunchedEffect(state.complete) {
+        if (state.complete) {
+            onContinue(matchId)
+            // Cleared, or coming back with Back would immediately go
+            // forwards again.
+            viewModel.continued()
+        }
+    }
+
     MatchHeaderScreen(
         state = state,
         onEvent = viewModel::onEvent,
         modifier = modifier,
     )
+}
+
+@Composable
+private fun LineupRoute(
+    matchId: MatchId,
+    modifier: Modifier = Modifier,
+) {
+    val viewModel: LineupViewModel = koinViewModel(key = matchId.value) { parametersOf(matchId) }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LineupScreen(state = state, onEvent = viewModel::onEvent, modifier = modifier)
 }

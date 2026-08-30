@@ -44,8 +44,43 @@
     <string name="header_delegating_other">Jiný tým</string>
     <string name="header_delegating_other_label">Název týmu</string>
     <string name="header_continue">Pokračovat na sestavy</string>
-    <string name="header_saved">Hlavička je uložená. Sestavy přijdou v další fázi.</string>
     <string name="header_error_referee_missing">Zadejte jméno rozhodčího.</string>
     <string name="header_error_name_not_latin">Jména se zapisují latinkou, stejně jako v evidenci PSMF.</string>
     <string name="header_error_delegating_missing">Vyberte delegující tým.</string>
+
+    <string name="action_cancel">Zrušit</string>
+
+    <!-- Screen 3: lineups, page 1 of the ZoU -->
+    <string name="lineup_title">Sestavy</string>
+    <string name="lineup_loading">Načítání sestav…</string>
+    <string name="lineup_kit">Barva dresů</string>
+    <string name="lineup_present_count">Přítomno %1$d z %2$d</string>
+    <string name="lineup_mark_absent_hint">Klepnutím na jméno označte, kdo nepřišel.</string>
+    <string name="lineup_absent">Nepřítomen</string>
+    <string name="lineup_added_at_pitch">Dopsán na hřišti</string>
+    <string name="lineup_jersey">Dres</string>
+    <string name="lineup_rp_column">Číslo RP</string>
+    <string name="lineup_no_card">Bez průkazu</string>
+    <string name="lineup_suspension_warning">%1$d ŽK k %2$s — může mít stop</string>
+    <string name="lineup_suspension_note">Počty karet jsou pouze orientační a mohou být neaktuální. Ověřte je u PSMF. Aplikace nepotvrzuje, že hráč smí nastoupit — chybějící upozornění neznamená, že je vše v pořádku.</string>
+    <string name="lineup_add_player">Přidat hráče mimo soupisku</string>
+    <string name="lineup_add_player_title">Hráč mimo soupisku</string>
+    <string name="lineup_add_player_note">Číslo RP se nezadává — přiděluje ho PSMF. Hráč bude označen, aby ho PSMF mohl doplnit.</string>
+    <string name="lineup_surname">Příjmení</string>
+    <string name="lineup_first_name">Jméno</string>
+    <string name="lineup_date_of_birth">Datum narození</string>
+    <string name="lineup_date_of_birth_hint">např. 18.5.1992 nebo 18051992</string>
+    <string name="lineup_add_confirm">Přidat</string>
+    <string name="lineup_error_new_player">Zkontrolujte příjmení, jméno a datum narození.</string>
+    <string name="lineup_captain_section">Potvrzení kapitána</string>
+    <string name="lineup_captain_confirm">Kapitán potvrzuje sestavu</string>
+    <string name="lineup_captain_confirmed">Sestavu potvrdil kapitán</string>
+    <string name="lineup_captain_attestation">Kapitáni potvrzují, že všichni hráči startují oprávněně.</string>
+    <string name="lineup_captain_pick">Kdo sestavu potvrzuje?</string>
+    <string name="lineup_captain_deputy">Zástupce kapitána</string>
+    <string name="lineup_continue">Pokračovat na zápis</string>
+    <string name="lineup_saved">Sestavy jsou uložené. Zápis přijde v další fázi.</string>
+    <string name="lineup_error_nobody">Není označen nikdo přítomný.</string>
+    <string name="lineup_error_duplicate_number">Dres č. %1$d nosí víc hráčů.</string>
+    <string name="lineup_error_no_identification">Chybí údaj do sloupce Číslo RP.</string>
 </resources>
