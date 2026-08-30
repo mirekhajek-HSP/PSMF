@@ -84,8 +84,25 @@ Full list and sources in `docs/TECH_STACK.md` §4. The ones that bite:
 - **A red card records straight vs. second yellow.** Suspension maths depends on it.
 - **Every card carries a mandatory free-text reason.**
 - **A goal may have no scorer.**
-- **Player identifier is one field plus a discriminator** (`RP` / `DATE_OF_BIRTH` /
-  `BIRTH_NUMBER`) — the form has one column, so the model has one field.
+- **An RP number and a fallback identification are two different things.** An
+  `RpNumber` is issued by PSMF, immutable, and **never user-editable** — there is
+  no UI path to typing one, and `Player.addedAtThePitch()` takes no RP parameter.
+  A date of birth or birth number is what a person enters instead. At least one
+  of the three must be present or the player cannot be built.
+- **What was written in the `Číslo RP` column is a per-match fact.** It lives on
+  the appearance as `reportedIdentification`, is non-null, and is **stored, never
+  derived at export time** — a player registered later must not retroactively
+  change an old report.
+- **A team owns two kit sets and the lineup records which was worn.** `label` is
+  verbatim from PSMF and authoritative for the report; `colours` is for the app
+  only. Neither is derivable from the other.
+- **The match clock never pauses.** 2 × 30 gross time, continuous. There is no
+  pause, stop, resume or adjust operation and there must not be one. The power
+  play is the only timer with a lifecycle: ten minutes, not shortened by a goal.
+- **The app must never claim a player is eligible.** It may warn that one might
+  not be. Absence of a warning is not clearance — fielding an ineligible player
+  is a technical forfeit, and an app that displayed "clear" would have caused it.
+  There is deliberately no `isEligible` and nothing that renders as a green tick.
 - **Jersey number lives on the appearance, not the player.**
 - **"No cards" is an explicit affirmation**, not an empty list.
 - **The report is versioned, never locked.** Amendments are allowed; the delta is
@@ -103,6 +120,8 @@ Listed because they will otherwise be copied from a familiar codebase:
 | Manual `org.json` | kotlinx.serialization |
 | JUnit 5 + MockK everywhere | `kotlin.test` + fakes in shared code |
 | Foreground service running the clock | Store the kickoff timestamp, derive elapsed time. **iOS cannot run a background timer at all** |
+| Clock pauses for injuries and breaks | **PSMF has no stoppage.** The clock runs continuously; the referee adds time instead |
+| One kit colour per team | A team owns **two** kit sets and picks one per match |
 | Assists, substitutions | Neither appears on the ZoU. Do not build them |
 | User-configurable match rules | The league sets them. A referee changing the half length is a defect |
 | Local team creation | Teams are league entities |
@@ -111,6 +130,9 @@ Listed because they will otherwise be copied from a familiar codebase:
 ## Working agreements
 
 - Czech-first localisation from the first screen. No hardcoded user-facing strings.
+- League data is **data, not code**. Adding a group is a file plus one index line;
+  see `composeApp/src/commonMain/composeResources/files/leagues/README.md`, which
+  also carries the rule that seed UUIDs are never regenerated.
 - `detekt` must stay green. The baseline is empty and should stay that way.
 - Version catalog for every dependency. No hardcoded coordinates in build files.
 - No secrets, keystores or `.env` in the repo. Release signing happens outside the

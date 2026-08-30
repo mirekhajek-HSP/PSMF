@@ -48,15 +48,27 @@ already known, so the task inverts from "write ten names" to "mark who is absent
 — three to five taps, done on the referee's own phone with the captain beside them,
 nothing changing hands.
 
-Per player: present/absent, jersey number, identifier.
+Per player: present/absent, jersey number, and what goes in the `Číslo RP`
+column. Per team: which kit was worn.
 
 - Jersey number defaults to last known and is corrected by exception. In the demo
   there is no history, so it defaults from seed data.
-- Identifier is **one field plus a discriminator** (`RP` / `DATE_OF_BIRTH` /
-  `BIRTH_NUMBER`) because the ZoU has one column. No RP numbers exist yet, so the
-  demo shows the field, editable, populated from seed data or blank.
+- **The RP number is never editable and never offered as an input.** It is issued
+  by PSMF. What the referee can change is the *fallback* — the date of birth
+  written in the RP column when a player has no card with them, which is the
+  form's own printed rule. The value written is recorded per match, not taken
+  from the player record at export time.
+- **A player who is present but not in the squad list can be added**, with first
+  name, surname and date of birth. **No RP field is offered.** They are flagged so
+  PSMF can reconcile them once the player is registered.
+- **Kit choice per team**, from the two sets the team owns, defaulting to the
+  primary. It is on this screen because it is on this block of the paper form:
+  the report records what was actually worn that day.
 - Player name, surname and card history are **read-only**. A referee inventing a
   player is a data-integrity failure.
+- Where a player's yellow total is even, an **advisory badge** carrying its `asOf`
+  date. Never a block, never a green tick, and never the word "eligible" — see
+  the note on discipline below.
 
 Captain confirms per team. A tap, not a signature — parity with a pen mark nobody
 verifies (§3.2, pending A7).
@@ -185,14 +197,25 @@ Kotlin changes, ever.
 
 ```
 composeApp/src/commonMain/composeResources/files/leagues/
+  README.md      the schema, and the rule that UUIDs are never regenerated
   index.json     lists available groups
+  venues.json    pitch codes, league-wide
   6k.json        teams, players and fixtures for 6. liga K
 ```
 
 `index.json` carries id, display name, season and filename per group. Each group
-file carries teams (with kit colour and match duration), players (name, surname,
-identifier + identifierType, default jersey number) and fixtures (round, date,
-time, venue, home, away).
+file carries teams (with two kit sets each), players (name, surname, RP number,
+date of birth, default jersey number, and an advisory yellow-card count with its
+`asOf` date) and fixtures (round, date, time, venue, home, away). Half length and
+period count are group-level data rather than constants.
+
+Every team, player and fixture carries an **opaque UUID `id`** and a readable
+`ref`. Persisted match reports reference the ids, so **a regenerated id orphans
+every saved report** — the rule and its consequences are in the seed README.
+Files point at each other by `ref`; the app resolves them at load time.
+
+Venue codes are league-wide rather than group-specific, so they sit in their own
+file and every fixture is validated against it.
 
 This shape follows the entity sketch in the analysis §6, and is the reason the
 domain model should be built before any screen.

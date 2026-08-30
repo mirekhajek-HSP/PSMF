@@ -182,10 +182,36 @@ default.
   suspension arithmetic depends on the distinction.
 - **Every card carries a mandatory free-text reason.**
 - **A goal may have no scorer.** The worked example contains one.
-- **Player identifier is one field plus a discriminator**, not several: the ZoU has
-  a single column holding either a `Číslo RP` or a date of birth. Model it as
-  `identifier` + `identifierType ∈ {RP, DATE_OF_BIRTH, BIRTH_NUMBER}`.
-  `BIRTH_NUMBER` exists only because A28 is unresolved.
+- **An RP number and a fallback identification are two different things**, and
+  collapsing them into one polymorphic field was a modelling error, corrected
+  2026-08-30. An `RpNumber` is *issued by PSMF*, immutable and **never
+  user-editable**; a date of birth or `BirthNumber` is *entered by a person* when
+  there is no RP number to use. `Player` carries all three, with an invariant that
+  at least one is present. `BirthNumber` exists only because A28 is unresolved.
+- **What was written in the `Číslo RP` column is a per-match fact**, not a player
+  attribute. Three situations produce a value (card present → RP; card not to
+  hand → date of birth, the form's own rule; not yet registered → the fallback),
+  so it lives on the appearance and is **stored, not derived at export time**.
+  Deriving it would let a later registration retroactively change an old report.
+- **A team owns two kit sets**; the lineup records which was worn, which is why
+  `Barva dresů` sits on the lineup block and is filled in at the match. The kit
+  `label` is verbatim from PSMF and authoritative; the colour list is for the app.
+- **Venue codes are league-wide**, not group-specific (§2.2), so they live in one
+  `venues.json` and every fixture is validated against it.
+- **The match clock runs continuously** (§2.6). No pause, stop, resume or adjust
+  operation exists. The power play — ten minutes after a dismissal, not shortened
+  by a goal, unaffected by further dismissals — is the only timer with a
+  lifecycle.
+- **Suspension information is advisory and one-sided.** Yellow totals accumulate
+  per group per season and warn on even totals; two yellows in one match
+  contribute zero; a yellow then a straight red counts as one; red cards are not
+  computed at all. Every count carries a mandatory `asOf`. **The app must never
+  claim a player is eligible** — fielding an ineligible player is a technical
+  forfeit, so absence of a warning must not read as clearance.
+- **Seed entity ids are opaque UUIDs and are never regenerated.** Persisted
+  matches reference them; a regenerated id orphans every report that mentioned
+  it. A readable `ref` sits beside each one for hand-editing, and is what the
+  seed files use to point at each other.
 - **Jersey number belongs to the appearance, not the player** — numbers change
   between matches.
 - **"No cards issued" is an explicit affirmation**, not an empty list. The paper
