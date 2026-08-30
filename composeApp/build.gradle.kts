@@ -44,6 +44,13 @@ kotlin {
         }
     }
 
+    // Where Compose UI tests run. Not a shipped desktop app: composeApp
+    // targets Android and iOS, so without this a UI test could only run on
+    // a device or a Mac -- neither of which the build container can reach,
+    // which would leave every screen untested until someone plugged a
+    // phone in. `runComposeUiTest` on this target runs in the sandbox.
+    jvm()
+
     // Declared so the iOS wrapper in iosApp/ has a framework to link
     // against. Cannot be built on Linux; that is a macOS session.
     // iosX64 is omitted -- see the note in shared/build.gradle.kts.
@@ -63,6 +70,13 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.ui)
             implementation(compose.components.resources)
+            // System back. A separate artifact from compose.ui, and there
+            // is no compose.* accessor for it.
+            implementation(libs.compose.ui.backhandler)
+
+            // The fixture list formats dates itself. `shared` depends on
+            // kotlinx-datetime with `implementation`, so it does not leak.
+            implementation(libs.kotlinx.datetime)
 
             implementation(libs.lifecycle.viewmodel)
             implementation(libs.lifecycle.viewmodel.compose)
@@ -80,6 +94,17 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(kotlin("test"))
+            implementation(libs.kotlinx.coroutines.test)
+
+            // The multiplatform Compose test API. Still experimental
+            // upstream; it is the only way to drive a composable without a
+            // platform test runner, so the opt-in is the price.
+            @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+            implementation(compose.uiTest)
+        }
+        jvmTest.dependencies {
+            // Skiko and the desktop windowing bits that back the test host.
+            implementation(compose.desktop.currentOs)
         }
     }
 }

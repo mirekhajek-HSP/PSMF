@@ -165,6 +165,12 @@ SELECT * FROM match_record WHERE id = ?;
 selectMatchesByStatus:
 SELECT * FROM match_record WHERE status = ? ORDER BY id;
 
+-- Enough to draw the fixture list, and no more. Hydrating whole reports to
+-- decide whether a row shows a badge would read every goal, card and
+-- appearance on the device.
+selectSummaries:
+SELECT id, fixture_id, status FROM match_record ORDER BY id;
+
 deleteMatch:
 DELETE FROM match_record WHERE id = ?;
 

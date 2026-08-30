@@ -2,6 +2,42 @@
 <resources>
     <string name="app_name">Match Report</string>
     <string name="language_self_name">English</string>
-    <string name="scaffold_title">Match Report</string>
-    <string name="scaffold_notice">Project scaffold. Screens arrive in the next phase.</string>
+
+    <!-- Shared -->
+    <string name="action_back">Back</string>
+
+    <!-- Screen 1: fixtures -->
+    <string name="fixtures_title">Fixtures</string>
+    <string name="fixtures_loading">Loading league data…</string>
+    <string name="fixtures_empty">No fixtures to report on.</string>
+    <string name="fixtures_error_title">League data could not be loaded</string>
+    <string name="fixtures_retry">Try again</string>
+    <string name="fixtures_round">Round %1$d</string>
+    <string name="fixtures_status_setup">Started</string>
+    <string name="fixtures_status_in_progress">In progress</string>
+    <string name="fixtures_status_finished">Played</string>
+    <string name="fixtures_status_confirmed">Confirmed</string>
+
+    <!-- Screen 2: match header, page 1 of the ZoU -->
+    <string name="header_title">Report header</string>
+    <string name="header_fixture_section">Match</string>
+    <string name="header_pitch">Pitch</string>
+    <string name="header_date">Date</string>
+    <string name="header_time">Time</string>
+    <string name="header_league">League</string>
+    <string name="header_officials_section">Referee and assistant</string>
+    <string name="header_referee">Referee</string>
+    <string name="header_assistant">Assistant (optional)</string>
+    <string name="header_licensed_hire_referee">Referee is a licensed hire (R)</string>
+    <string name="header_licensed_hire_assistant">Assistant is a licensed hire (R)</string>
+    <string name="header_licensed_hire_note">A licensed referee hired by the delegating team. An R goes next to their name on the report.</string>
+    <string name="header_delegating_section">Delegating team</string>
+    <string name="header_delegating_note">The team that delegated the referees — neither of the teams playing. The fine for an incomplete, incorrect or late report is charged to this team. The teams playing are therefore not offered; if substitutes from one of them are refereeing, enter it under “Another team”.</string>
+    <string name="header_delegating_other">Another team</string>
+    <string name="header_delegating_other_label">Team name</string>
+    <string name="header_continue">Continue to lineups</string>
+    <string name="header_saved">The header is saved. Lineups arrive in the next phase.</string>
+    <string name="header_error_referee_missing">Enter the name of the referee.</string>
+    <string name="header_error_name_not_latin">Names are written in the Latin alphabet, as in PSMF records.</string>
+    <string name="header_error_delegating_missing">Choose the delegating team.</string>
 </resources>

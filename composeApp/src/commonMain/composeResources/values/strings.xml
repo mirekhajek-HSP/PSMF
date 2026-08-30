@@ -10,6 +10,42 @@
 <resources>
     <string name="app_name">Zápis o utkání</string>
     <string name="language_self_name">Čeština</string>
-    <string name="scaffold_title">Zápis o utkání</string>
-    <string name="scaffold_notice">Základ projektu. Obrazovky přijdou v další fázi.</string>
+
+    <!-- Shared -->
+    <string name="action_back">Zpět</string>
+
+    <!-- Screen 1: fixtures -->
+    <string name="fixtures_title">Zápasy</string>
+    <string name="fixtures_loading">Načítání dat ligy…</string>
+    <string name="fixtures_empty">Žádné zápasy k zapsání.</string>
+    <string name="fixtures_error_title">Data ligy se nepodařilo načíst</string>
+    <string name="fixtures_retry">Zkusit znovu</string>
+    <string name="fixtures_round">%1$d. kolo</string>
+    <string name="fixtures_status_setup">Rozepsáno</string>
+    <string name="fixtures_status_in_progress">Probíhá</string>
+    <string name="fixtures_status_finished">Dohráno</string>
+    <string name="fixtures_status_confirmed">Potvrzeno</string>
+
+    <!-- Screen 2: match header, page 1 of the ZoU -->
+    <string name="header_title">Hlavička zápisu</string>
+    <string name="header_fixture_section">Utkání</string>
+    <string name="header_pitch">Hřiště</string>
+    <string name="header_date">Datum</string>
+    <string name="header_time">Čas</string>
+    <string name="header_league">Liga</string>
+    <string name="header_officials_section">Rozhodčí a asistent</string>
+    <string name="header_referee">Rozhodčí</string>
+    <string name="header_assistant">Asistent (nepovinné)</string>
+    <string name="header_licensed_hire_referee">Rozhodčí je placený (R)</string>
+    <string name="header_licensed_hire_assistant">Asistent je placený (R)</string>
+    <string name="header_licensed_hire_note">Licencovaný rozhodčí najatý delegujícím týmem. Do zápisu se k jeho jménu píše R.</string>
+    <string name="header_delegating_section">Delegující tým</string>
+    <string name="header_delegating_note">Tým, který delegoval rozhodčí — ani jeden z hrajících týmů. Pokuta za neúplný, chybně vyplněný nebo pozdě odevzdaný zápis se připisuje právě tomuto týmu. Hrající týmy proto v nabídce nejsou; pokud utkání pískají náhradníci z jednoho z nich, zadejte ho přes „Jiný tým“.</string>
+    <string name="header_delegating_other">Jiný tým</string>
+    <string name="header_delegating_other_label">Název týmu</string>
+    <string name="header_continue">Pokračovat na sestavy</string>
+    <string name="header_saved">Hlavička je uložená. Sestavy přijdou v další fázi.</string>
+    <string name="header_error_referee_missing">Zadejte jméno rozhodčího.</string>
+    <string name="header_error_name_not_latin">Jména se zapisují latinkou, stejně jako v evidenci PSMF.</string>
+    <string name="header_error_delegating_missing">Vyberte delegující tým.</string>
 </resources>

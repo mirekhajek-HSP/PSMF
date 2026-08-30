@@ -6,6 +6,42 @@
 <resources>
     <string name="app_name">Протокол матчу</string>
     <string name="language_self_name">Українська</string>
-    <string name="scaffold_title">Протокол матчу</string>
-    <string name="scaffold_notice">Основа проєкту. Екрани зʼявляться в наступній фазі.</string>
+
+    <!-- Shared -->
+    <string name="action_back">Назад</string>
+
+    <!-- Screen 1: fixtures -->
+    <string name="fixtures_title">Матчі</string>
+    <string name="fixtures_loading">Завантаження даних ліги…</string>
+    <string name="fixtures_empty">Немає матчів для протоколу.</string>
+    <string name="fixtures_error_title">Не вдалося завантажити дані ліги</string>
+    <string name="fixtures_retry">Спробувати ще раз</string>
+    <string name="fixtures_round">Тур %1$d</string>
+    <string name="fixtures_status_setup">Розпочато</string>
+    <string name="fixtures_status_in_progress">Триває</string>
+    <string name="fixtures_status_finished">Зіграно</string>
+    <string name="fixtures_status_confirmed">Підтверджено</string>
+
+    <!-- Screen 2: match header, page 1 of the ZoU -->
+    <string name="header_title">Заголовок протоколу</string>
+    <string name="header_fixture_section">Матч</string>
+    <string name="header_pitch">Поле</string>
+    <string name="header_date">Дата</string>
+    <string name="header_time">Час</string>
+    <string name="header_league">Ліга</string>
+    <string name="header_officials_section">Суддя та асистент</string>
+    <string name="header_referee">Суддя</string>
+    <string name="header_assistant">Асистент (необовʼязково)</string>
+    <string name="header_licensed_hire_referee">Суддя — найманий (R)</string>
+    <string name="header_licensed_hire_assistant">Асистент — найманий (R)</string>
+    <string name="header_licensed_hire_note">Ліцензований суддя, найнятий командою, що делегує. У протоколі біля його імені пишеться R.</string>
+    <string name="header_delegating_section">Команда, що делегує</string>
+    <string name="header_delegating_note">Команда, яка делегувала суддів — жодна з команд, що грають. Штраф за неповний, помилково заповнений або поданий із запізненням протокол нараховується саме цій команді. Тому команд, що грають, у списку немає; якщо матч судять замінники з однієї з них, введіть її через «Інша команда».</string>
+    <string name="header_delegating_other">Інша команда</string>
+    <string name="header_delegating_other_label">Назва команди</string>
+    <string name="header_continue">Далі до складів</string>
+    <string name="header_saved">Заголовок збережено. Склади зʼявляться в наступній фазі.</string>
+    <string name="header_error_referee_missing">Введіть імʼя судді.</string>
+    <string name="header_error_name_not_latin">Імена записуються латиницею, як в обліку PSMF.</string>
+    <string name="header_error_delegating_missing">Оберіть команду, що делегує.</string>
 </resources>

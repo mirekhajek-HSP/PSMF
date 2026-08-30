@@ -83,6 +83,20 @@ class SqlDelightMatchRepository(
             queries.selectMatch(id.value).executeAsOneOrNull()?.let { queries.hydrate(it) }
         }
 
+    override suspend fun summaries(): List<MatchSummary> =
+        withContext(dispatcher) {
+            queries
+                .selectSummaries()
+                .executeAsList()
+                .map {
+                    MatchSummary(
+                        id = MatchId(it.id),
+                        fixtureId = FixtureId(it.fixture_id),
+                        status = MatchStatus.valueOf(it.status),
+                    )
+                }
+        }
+
     override suspend fun findByStatus(status: MatchStatus): List<Match> =
         withContext(dispatcher) {
             queries.selectMatchesByStatus(status.name).executeAsList().map { queries.hydrate(it) }

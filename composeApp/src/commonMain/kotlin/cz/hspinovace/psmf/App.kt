@@ -1,59 +1,163 @@
 package cz.hspinovace.psmf
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.backhandler.BackHandler
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.resources.Res
-import cz.hspinovace.psmf.resources.language_self_name
-import cz.hspinovace.psmf.resources.scaffold_notice
-import cz.hspinovace.psmf.resources.scaffold_title
+import cz.hspinovace.psmf.resources.action_back
+import cz.hspinovace.psmf.resources.fixtures_title
+import cz.hspinovace.psmf.resources.header_title
+import cz.hspinovace.psmf.ui.fixtures.FixturesScreen
+import cz.hspinovace.psmf.ui.fixtures.FixturesViewModel
+import cz.hspinovace.psmf.ui.header.MatchHeaderScreen
+import cz.hspinovace.psmf.ui.header.MatchHeaderViewModel
+import cz.hspinovace.psmf.ui.navigation.AppNavigator
+import cz.hspinovace.psmf.ui.navigation.Destination
+import cz.hspinovace.psmf.ui.theme.PsmfTheme
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 /**
- * Scaffold placeholder.
+ * The whole app: a wizard over one back stack.
  *
- * Deliberately none of the six demo screens: this exists so that Gate 1
- * can show the app launching and rendering localised text on a device.
- * It is replaced by the fixture list in a later session.
+ * Screens are wired here and nowhere else. Each `*Screen` composable takes
+ * immutable state and callbacks and knows nothing about Koin, so it can be
+ * driven from a test without a dependency graph; the `*Route` wrappers
+ * below are the only place the two meet.
  *
- * [language_self_name] carries each language written in its own script, so
- * a screenshot taken with the device set to Ukrainian is what proves the
- * font actually has Cyrillic glyphs.
+ * `BackHandler` is both experimental and deprecated upstream, which is an
+ * awkward pair. Its replacement, `NavigationEventHandler`, is not a
+ * drop-in: it takes a `NavigationEventState` that has to be built and
+ * remembered, and it lives in `androidx.navigationevent:navigationevent-
+ * compose`, a dependency this project does not otherwise have. For a
+ * back stack of two sealed values that is a lot of machinery and a new
+ * version to pin for no behaviour change, so the one build warning stands
+ * until predictive back is actually wanted. The alternative — an
+ * expect/actual over `androidx.activity.compose` on Android — is more code
+ * for the same behaviour again.
  */
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun App() {
-    MaterialTheme {
-        Surface(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                Text(
-                    text = stringResource(Res.string.scaffold_title),
-                    style = MaterialTheme.typography.headlineMedium,
-                    textAlign = TextAlign.Center,
-                )
-                Text(
-                    text = stringResource(Res.string.scaffold_notice),
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                )
-                Text(
-                    text = stringResource(Res.string.language_self_name),
-                    style = MaterialTheme.typography.titleLarge,
-                    textAlign = TextAlign.Center,
-                )
+    PsmfTheme {
+        val navigator: AppNavigator = koinInject()
+        val backStack by navigator.backStack.collectAsStateWithLifecycle()
+        val current = backStack.last()
+
+        // At the root, let the platform have the gesture -- on Android that
+        // means back leaves the app rather than doing nothing.
+        BackHandler(enabled = backStack.size > 1) { navigator.back() }
+
+        AppScaffold(
+            title = current.title(),
+            canGoBack = backStack.size > 1,
+            onBack = { navigator.back() },
+        ) { modifier ->
+            when (current) {
+                Destination.Fixtures -> {
+                    FixturesRoute(
+                        modifier = modifier,
+                        onOpenMatch = { navigator.goTo(Destination.MatchHeader(it)) },
+                    )
+                }
+
+                is Destination.MatchHeader -> {
+                    MatchHeaderRoute(matchId = current.matchId, modifier = modifier)
+                }
             }
         }
     }
+}
+
+@Composable
+private fun Destination.title(): String =
+    when (this) {
+        Destination.Fixtures -> stringResource(Res.string.fixtures_title)
+        is Destination.MatchHeader -> stringResource(Res.string.header_title)
+    }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppScaffold(
+    title: String,
+    canGoBack: Boolean,
+    onBack: () -> Unit,
+    content: @Composable (Modifier) -> Unit,
+) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(title) },
+                navigationIcon = {
+                    if (canGoBack) {
+                        // A word rather than a chevron. It reads at arm's
+                        // length in poor light, translates, and costs no
+                        // icon dependency.
+                        TextButton(onClick = onBack) {
+                            Text(stringResource(Res.string.action_back))
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(),
+            )
+        },
+    ) { padding ->
+        content(Modifier.padding(padding))
+    }
+}
+
+@Composable
+private fun FixturesRoute(
+    onOpenMatch: (MatchId) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val viewModel: FixturesViewModel = koinViewModel()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val openMatch by viewModel.openMatch.collectAsStateWithLifecycle()
+
+    LaunchedEffect(openMatch) {
+        openMatch?.let {
+            onOpenMatch(it)
+            viewModel.matchOpened()
+        }
+    }
+
+    FixturesScreen(
+        state = state,
+        onFixtureSelected = viewModel::onFixtureSelected,
+        onRetry = viewModel::load,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun MatchHeaderRoute(
+    matchId: MatchId,
+    modifier: Modifier = Modifier,
+) {
+    // Keyed by the match, so opening a different report does not inherit
+    // the previous one's half-typed names.
+    val viewModel: MatchHeaderViewModel =
+        koinViewModel(key = matchId.value) { parametersOf(matchId) }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    MatchHeaderScreen(
+        state = state,
+        onEvent = viewModel::onEvent,
+        modifier = modifier,
+    )
 }

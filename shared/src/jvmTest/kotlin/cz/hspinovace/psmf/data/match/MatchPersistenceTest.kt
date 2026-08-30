@@ -192,8 +192,9 @@ class MatchPersistenceTest {
             // Barva dresů is stored the same way and for the same reason.
             // Both halves come back: the label for the report, the reference
             // for the screen.
-            assertEquals("modrá", restored.homeLineup!!.kitLabel)
-            assertEquals(Fixtures.homePrimaryKit.id, restored.homeLineup!!.kitId)
+            val lineup = assertNotNull(restored.homeLineup)
+            assertEquals("modrá", lineup.kitLabel)
+            assertEquals(Fixtures.homePrimaryKit.id, lineup.kitId)
         }
 
     @Test
@@ -220,11 +221,11 @@ class MatchPersistenceTest {
             // database; the reference data simply now says something else.
             val renamed = Fixtures.homeAlternateKit.copy(label = "světle modrá")
 
-            val restored = session { it.load(original.id) }!!
-            assertEquals("bílo-modrá", restored.homeLineup!!.kitLabel)
-            assertNotEquals(renamed.label, restored.homeLineup!!.kitLabel)
+            val restored = assertNotNull(session { it.load(original.id) }?.homeLineup)
+            assertEquals("bílo-modrá", restored.kitLabel)
+            assertNotEquals(renamed.label, restored.kitLabel)
             // The reference is still there, and still points at that kit.
-            assertEquals(renamed.id, restored.homeLineup!!.kitId)
+            assertEquals(renamed.id, restored.kitId)
         }
 
     @Test
