@@ -3,1838 +3,3111 @@
   "name": "6. liga K",
   "reportCode": "6K",
   "halfLengthMinutes": 30,
+  "periods": 2,
   "teams": [
     {
-      "id": "t-kominici",
+      "id": "d58671d2-21b0-4d25-8728-8b280323f020",
+      "ref": "kominici",
       "name": "Kominíci",
-      "kitColour": "modrá",
+      "kits": [
+        {
+          "id": "7695dde9-3a32-4fe1-bb85-a1a50e2203e3",
+          "label": "modrá",
+          "colours": [
+            "modrá"
+          ]
+        },
+        {
+          "id": "f5884f75-ae9c-42e2-ab14-b9831abcf4f2",
+          "label": "bílo-modrá",
+          "colours": [
+            "bílá",
+            "modrá"
+          ]
+        }
+      ],
       "players": [
         {
-          "id": "p-kominici-01",
+          "id": "d5f9e2e1-8a67-444f-8863-b3d1e8912e70",
+          "ref": "ruzicka-radek",
           "surname": "Růžička",
-          "givenName": "Radek",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 27
+          "firstName": "Radek",
+          "rpNumber": null,
+          "dateOfBirth": "1992-05-18",
+          "birthNumber": null,
+          "defaultJerseyNumber": 27,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-kominici-02",
+          "id": "07772d87-e5b3-4c56-95f7-2eecca035b59",
+          "ref": "kriz-ondrej",
           "surname": "Kříž",
-          "givenName": "Ondřej",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 18
+          "firstName": "Ondřej",
+          "rpNumber": null,
+          "dateOfBirth": "2004-08-20",
+          "birthNumber": null,
+          "defaultJerseyNumber": 18,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-kominici-03",
+          "id": "c85276b7-52c6-4862-85a9-d776a973ebae",
+          "ref": "ruzicka-marek",
           "surname": "Růžička",
-          "givenName": "Marek",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 14
+          "firstName": "Marek",
+          "rpNumber": null,
+          "dateOfBirth": "1994-09-22",
+          "birthNumber": null,
+          "defaultJerseyNumber": 14,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 3,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-kominici-04",
+          "id": "4f4dd547-8a8a-4592-98d9-df122cac167a",
+          "ref": "zeman-david",
           "surname": "Zeman",
-          "givenName": "David",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 29
+          "firstName": "David",
+          "rpNumber": null,
+          "dateOfBirth": "2006-11-25",
+          "birthNumber": null,
+          "defaultJerseyNumber": 29,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-kominici-05",
+          "id": "ee85adef-cf04-4bc0-aad4-f45526fb05f1",
+          "ref": "jelinek-vaclav",
           "surname": "Jelínek",
-          "givenName": "Václav",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 25
+          "firstName": "Václav",
+          "rpNumber": null,
+          "dateOfBirth": "1990-05-08",
+          "birthNumber": null,
+          "defaultJerseyNumber": 25,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 4,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-kominici-06",
+          "id": "3a79e979-d897-442c-a252-4b7352bdfe1d",
+          "ref": "vlcek-marek",
           "surname": "Vlček",
-          "givenName": "Marek",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 4
+          "firstName": "Marek",
+          "rpNumber": null,
+          "dateOfBirth": "2001-06-03",
+          "birthNumber": null,
+          "defaultJerseyNumber": 4,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-kominici-07",
+          "id": "3c54f360-de5b-4cc6-ae53-4caa90a518a4",
+          "ref": "musil-michal",
           "surname": "Musil",
-          "givenName": "Michal",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 17
+          "firstName": "Michal",
+          "rpNumber": null,
+          "dateOfBirth": "1987-07-06",
+          "birthNumber": null,
+          "defaultJerseyNumber": 17,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 4,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-kominici-08",
+          "id": "701aafc2-21a7-4d70-be44-64d740ae9f56",
+          "ref": "benes-marek",
           "surname": "Beneš",
-          "givenName": "Marek",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 1
+          "firstName": "Marek",
+          "rpNumber": null,
+          "dateOfBirth": "1998-06-19",
+          "birthNumber": null,
+          "defaultJerseyNumber": 1,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-kominici-09",
+          "id": "82afc212-06de-4a9a-8c35-d615cb3f3c84",
+          "ref": "kriz-petr",
           "surname": "Kříž",
-          "givenName": "Petr",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 7
+          "firstName": "Petr",
+          "rpNumber": null,
+          "dateOfBirth": "1996-03-18",
+          "birthNumber": null,
+          "defaultJerseyNumber": 7,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-kominici-10",
+          "id": "32fcbbd1-bc2c-4715-8089-0aed214460ae",
+          "ref": "cermak-daniel",
           "surname": "Čermák",
-          "givenName": "Daniel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 16
+          "firstName": "Daniel",
+          "rpNumber": null,
+          "dateOfBirth": "2002-05-10",
+          "birthNumber": null,
+          "defaultJerseyNumber": 16,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-kominici-11",
+          "id": "1bf2322e-5f10-45b4-9364-37709af676ed",
+          "ref": "vlcek-josef",
           "surname": "Vlček",
-          "givenName": "Josef",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 21
+          "firstName": "Josef",
+          "rpNumber": null,
+          "dateOfBirth": "1983-10-07",
+          "birthNumber": null,
+          "defaultJerseyNumber": 21,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-kominici-12",
+          "id": "dc0fc24d-7966-49b0-8845-58243e26f115",
+          "ref": "kriz-marek",
           "surname": "Kříž",
-          "givenName": "Marek",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 10
+          "firstName": "Marek",
+          "rpNumber": null,
+          "dateOfBirth": "2006-12-28",
+          "birthNumber": null,
+          "defaultJerseyNumber": 10,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         }
       ]
     },
     {
-      "id": "t-sp-sumys",
+      "id": "b67a6ce2-f02a-4f5d-862c-6a96f609a85c",
+      "ref": "sp-sumys",
       "name": "Sp. Sumýš",
-      "kitColour": "černo-bílá",
+      "kits": [
+        {
+          "id": "075a3454-dc0d-4934-82ce-0dbd920f487c",
+          "label": "černo-bílá",
+          "colours": [
+            "černá",
+            "bílá"
+          ]
+        },
+        {
+          "id": "aa3f1650-bfaf-40d5-8c1f-57669f0f36ef",
+          "label": "žlutá",
+          "colours": [
+            "žlutá"
+          ]
+        }
+      ],
       "players": [
         {
-          "id": "p-sp-sumys-01",
+          "id": "671e3230-2592-4e91-8dc4-d0c9d2e059d7",
+          "ref": "pospisil-lukas",
           "surname": "Pospíšil",
-          "givenName": "Lukáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 16
+          "firstName": "Lukáš",
+          "rpNumber": null,
+          "dateOfBirth": "1986-02-23",
+          "birthNumber": null,
+          "defaultJerseyNumber": 16,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sp-sumys-02",
+          "id": "e13b9e4b-6051-4684-acf6-b49f918a418a",
+          "ref": "nemec-filip",
           "surname": "Němec",
-          "givenName": "Filip",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 10
+          "firstName": "Filip",
+          "rpNumber": null,
+          "dateOfBirth": "2008-12-10",
+          "birthNumber": null,
+          "defaultJerseyNumber": 10,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sp-sumys-03",
+          "id": "37578784-9e5d-4c21-ac79-07e79db0b583",
+          "ref": "dolezal-lukas",
           "surname": "Doležal",
-          "givenName": "Lukáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 3
+          "firstName": "Lukáš",
+          "rpNumber": null,
+          "dateOfBirth": "1986-10-08",
+          "birthNumber": null,
+          "defaultJerseyNumber": 3,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sp-sumys-04",
+          "id": "90dbac0e-3f71-4b46-ae6a-ccb3056110db",
+          "ref": "kolar-jan",
           "surname": "Kolář",
-          "givenName": "Jan",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 5
+          "firstName": "Jan",
+          "rpNumber": null,
+          "dateOfBirth": "2002-01-13",
+          "birthNumber": null,
+          "defaultJerseyNumber": 5,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sp-sumys-05",
+          "id": "31236618-dfae-4aee-a633-527b33f31e88",
+          "ref": "lovec-daniel",
           "surname": "Lovec",
-          "givenName": "Daniel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 4
+          "firstName": "Daniel",
+          "rpNumber": null,
+          "dateOfBirth": "1985-10-14",
+          "birthNumber": null,
+          "defaultJerseyNumber": 4,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sp-sumys-06",
+          "id": "48dde679-041b-480e-9d79-25af149d5998",
+          "ref": "kucera-filip",
           "surname": "Kučera",
-          "givenName": "Filip",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 18
+          "firstName": "Filip",
+          "rpNumber": null,
+          "dateOfBirth": "1997-01-21",
+          "birthNumber": null,
+          "defaultJerseyNumber": 18,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sp-sumys-07",
+          "id": "8e05bb63-2791-4fd8-9765-b2dfbb04aef1",
+          "ref": "sedlacek-matej",
           "surname": "Sedláček",
-          "givenName": "Matěj",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 20
+          "firstName": "Matěj",
+          "rpNumber": null,
+          "dateOfBirth": "2009-08-19",
+          "birthNumber": null,
+          "defaultJerseyNumber": 20,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sp-sumys-08",
+          "id": "bf9c2bd8-1916-419d-aca6-977016464e4a",
+          "ref": "bartos-tomas",
           "surname": "Bartoš",
-          "givenName": "Tomáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 12
+          "firstName": "Tomáš",
+          "rpNumber": null,
+          "dateOfBirth": "1987-01-19",
+          "birthNumber": null,
+          "defaultJerseyNumber": 12,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sp-sumys-09",
+          "id": "ec6d1ca1-e834-451b-bc81-ba2e8daa81c9",
+          "ref": "lovec-petr",
           "surname": "Lovec",
-          "givenName": "Petr",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 11
+          "firstName": "Petr",
+          "rpNumber": null,
+          "dateOfBirth": "2004-07-19",
+          "birthNumber": null,
+          "defaultJerseyNumber": 11,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sp-sumys-10",
+          "id": "892b1bde-82fb-4e55-b780-cd01db662da8",
+          "ref": "dvorak-jan",
           "surname": "Dvořák",
-          "givenName": "Jan",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 22
+          "firstName": "Jan",
+          "rpNumber": null,
+          "dateOfBirth": "2005-07-15",
+          "birthNumber": null,
+          "defaultJerseyNumber": 22,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sp-sumys-11",
+          "id": "e85eee9d-4e39-40d1-b67f-0c7cedfe7d41",
+          "ref": "cermak-tomas",
           "surname": "Čermák",
-          "givenName": "Tomáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 23
+          "firstName": "Tomáš",
+          "rpNumber": null,
+          "dateOfBirth": "2001-01-28",
+          "birthNumber": null,
+          "defaultJerseyNumber": 23,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sp-sumys-12",
+          "id": "67632af7-9f42-4d97-9b90-0d837d1a6405",
+          "ref": "maly-ondrej",
           "surname": "Malý",
-          "givenName": "Ondřej",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 15
+          "firstName": "Ondřej",
+          "rpNumber": null,
+          "dateOfBirth": "2009-10-16",
+          "birthNumber": null,
+          "defaultJerseyNumber": 15,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         }
       ]
     },
     {
-      "id": "t-celtic-thk",
+      "id": "cae0b090-730f-4ff0-88d4-91d4268c5374",
+      "ref": "celtic-thk",
       "name": "Celtic THK",
-      "kitColour": "zeleno-bílá",
+      "kits": [
+        {
+          "id": "5d059745-07cb-490b-ab5f-a1fd7752d8db",
+          "label": "zeleno-bílá",
+          "colours": [
+            "zelená",
+            "bílá"
+          ]
+        },
+        {
+          "id": "97f6b994-4ce0-44dd-ac37-c3b1a24dbc91",
+          "label": "černá",
+          "colours": [
+            "černá"
+          ]
+        }
+      ],
       "players": [
         {
-          "id": "p-celtic-thk-01",
+          "id": "553e312a-33a0-409f-8c6a-731dde766524",
+          "ref": "vanek-ondrej",
           "surname": "Vaněk",
-          "givenName": "Ondřej",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 20
+          "firstName": "Ondřej",
+          "rpNumber": null,
+          "dateOfBirth": "1995-05-15",
+          "birthNumber": null,
+          "defaultJerseyNumber": 20,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-celtic-thk-02",
+          "id": "dbdf176b-5506-4b09-b43d-591fc98f7c9e",
+          "ref": "konecny-adam",
           "surname": "Konečný",
-          "givenName": "Adam",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 18
+          "firstName": "Adam",
+          "rpNumber": null,
+          "dateOfBirth": "1982-01-21",
+          "birthNumber": null,
+          "defaultJerseyNumber": 18,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-celtic-thk-03",
+          "id": "46d94d14-341d-496e-8649-0592bee98309",
+          "ref": "musil-filip",
           "surname": "Musil",
-          "givenName": "Filip",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 7
+          "firstName": "Filip",
+          "rpNumber": null,
+          "dateOfBirth": "2000-04-22",
+          "birthNumber": null,
+          "defaultJerseyNumber": 7,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-celtic-thk-04",
+          "id": "b214837b-c2cb-48d5-85bf-dd09322e3649",
+          "ref": "benes-tomas",
           "surname": "Beneš",
-          "givenName": "Tomáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 23
+          "firstName": "Tomáš",
+          "rpNumber": null,
+          "dateOfBirth": "1985-10-09",
+          "birthNumber": null,
+          "defaultJerseyNumber": 23,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 3,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-celtic-thk-05",
+          "id": "2ac3cca8-5d64-4b13-8148-3e47667693ad",
+          "ref": "baca-michal",
           "surname": "Bača",
-          "givenName": "Michal",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 3
+          "firstName": "Michal",
+          "rpNumber": null,
+          "dateOfBirth": "2005-06-04",
+          "birthNumber": null,
+          "defaultJerseyNumber": 3,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-celtic-thk-06",
+          "id": "860604fd-37e5-414c-8f65-7e1acd14b401",
+          "ref": "poupe-filip",
           "surname": "Poupě",
-          "givenName": "Filip",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 10
+          "firstName": "Filip",
+          "rpNumber": null,
+          "dateOfBirth": "1996-05-19",
+          "birthNumber": null,
+          "defaultJerseyNumber": 10,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-celtic-thk-07",
+          "id": "0eb863cd-0fbd-4a72-93be-7f6385e392d7",
+          "ref": "kulik-filip",
           "surname": "Kulík",
-          "givenName": "Filip",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 29
+          "firstName": "Filip",
+          "rpNumber": null,
+          "dateOfBirth": "1997-04-02",
+          "birthNumber": null,
+          "defaultJerseyNumber": 29,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-celtic-thk-08",
+          "id": "e2dd2c90-2d2a-4d3a-bafa-dc7b5174a228",
+          "ref": "dvorak-pavel",
           "surname": "Dvořák",
-          "givenName": "Pavel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 14
+          "firstName": "Pavel",
+          "rpNumber": null,
+          "dateOfBirth": "1995-08-26",
+          "birthNumber": null,
+          "defaultJerseyNumber": 14,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-celtic-thk-09",
+          "id": "2ca5b0c3-b6a9-405b-a530-646743e22127",
+          "ref": "sedlacek-petr",
           "surname": "Sedláček",
-          "givenName": "Petr",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 9
+          "firstName": "Petr",
+          "rpNumber": null,
+          "dateOfBirth": "1998-08-18",
+          "birthNumber": null,
+          "defaultJerseyNumber": 9,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-celtic-thk-10",
+          "id": "c8a21655-a242-4ea0-b88f-85a7188d70a7",
+          "ref": "musil-ondrej",
           "surname": "Musil",
-          "givenName": "Ondřej",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 26
+          "firstName": "Ondřej",
+          "rpNumber": null,
+          "dateOfBirth": "1982-12-22",
+          "birthNumber": null,
+          "defaultJerseyNumber": 26,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-celtic-thk-11",
+          "id": "309056b6-ddd1-464e-826f-0767ebb5acb3",
+          "ref": "blazek-daniel",
           "surname": "Blažek",
-          "givenName": "Daniel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 25
+          "firstName": "Daniel",
+          "rpNumber": null,
+          "dateOfBirth": "1981-06-07",
+          "birthNumber": null,
+          "defaultJerseyNumber": 25,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-celtic-thk-12",
+          "id": "9c2c66fc-b5d9-4304-8c99-8c64541cbd34",
+          "ref": "nemec-vaclav",
           "surname": "Němec",
-          "givenName": "Václav",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 13
+          "firstName": "Václav",
+          "rpNumber": null,
+          "dateOfBirth": "2010-12-11",
+          "birthNumber": null,
+          "defaultJerseyNumber": 13,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         }
       ]
     },
     {
-      "id": "t-dynamo-kotelna",
+      "id": "57ec02ee-1fce-433d-a63c-2f6fe5fac97c",
+      "ref": "dynamo-kotelna",
       "name": "Dynamo Kotelna",
-      "kitColour": "červená",
+      "kits": [
+        {
+          "id": "3899535c-b37f-423c-9a3c-547938016cb4",
+          "label": "červená",
+          "colours": [
+            "červená"
+          ]
+        },
+        {
+          "id": "92b304ff-dad5-490d-9dfa-6dc8091e6b4f",
+          "label": "bílá",
+          "colours": [
+            "bílá"
+          ]
+        }
+      ],
       "players": [
         {
-          "id": "p-dynamo-kotelna-01",
+          "id": "9759a104-5283-42a2-8abc-93dd3b740eca",
+          "ref": "vlcek-vaclav",
           "surname": "Vlček",
-          "givenName": "Václav",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 29
+          "firstName": "Václav",
+          "rpNumber": null,
+          "dateOfBirth": "1982-03-09",
+          "birthNumber": null,
+          "defaultJerseyNumber": 29,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-dynamo-kotelna-02",
+          "id": "1a4c1363-63d0-4e4f-b447-dd49f0cce98f",
+          "ref": "dolezal-david",
           "surname": "Doležal",
-          "givenName": "David",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 8
+          "firstName": "David",
+          "rpNumber": null,
+          "dateOfBirth": "2002-03-05",
+          "birthNumber": null,
+          "defaultJerseyNumber": 8,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-dynamo-kotelna-03",
+          "id": "beec7deb-7315-4b80-ba6d-726996cb68a5",
+          "ref": "kolar-tomas",
           "surname": "Kolář",
-          "givenName": "Tomáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 10
+          "firstName": "Tomáš",
+          "rpNumber": null,
+          "dateOfBirth": "1987-12-25",
+          "birthNumber": null,
+          "defaultJerseyNumber": 10,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-dynamo-kotelna-04",
+          "id": "3b305f97-696b-4509-b095-787764695a50",
+          "ref": "kolar-josef",
           "surname": "Kolář",
-          "givenName": "Josef",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 16
+          "firstName": "Josef",
+          "rpNumber": null,
+          "dateOfBirth": "1990-12-11",
+          "birthNumber": null,
+          "defaultJerseyNumber": 16,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-dynamo-kotelna-05",
+          "id": "04f0a610-d668-4c96-baaf-a2fc473b96ff",
+          "ref": "hlok-adam",
           "surname": "Hlok",
-          "givenName": "Adam",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 24
+          "firstName": "Adam",
+          "rpNumber": null,
+          "dateOfBirth": "2009-01-23",
+          "birthNumber": null,
+          "defaultJerseyNumber": 24,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-dynamo-kotelna-06",
+          "id": "c35be6d2-dd5e-4cad-b3d2-348579774c26",
+          "ref": "porizek-adam",
           "surname": "Pořízek",
-          "givenName": "Adam",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 25
+          "firstName": "Adam",
+          "rpNumber": null,
+          "dateOfBirth": "2004-04-19",
+          "birthNumber": null,
+          "defaultJerseyNumber": 25,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-dynamo-kotelna-07",
+          "id": "efadf808-555a-4ebe-9a6f-b462307f17fb",
+          "ref": "vanek-filip",
           "surname": "Vaněk",
-          "givenName": "Filip",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 13
+          "firstName": "Filip",
+          "rpNumber": null,
+          "dateOfBirth": "2010-05-17",
+          "birthNumber": null,
+          "defaultJerseyNumber": 13,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-dynamo-kotelna-08",
+          "id": "7cb1d3a3-8f02-40e9-8220-24cd35a8936f",
+          "ref": "jelinek-tomas",
           "surname": "Jelínek",
-          "givenName": "Tomáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 4
+          "firstName": "Tomáš",
+          "rpNumber": null,
+          "dateOfBirth": "2002-04-17",
+          "birthNumber": null,
+          "defaultJerseyNumber": 4,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-dynamo-kotelna-09",
+          "id": "56f2b2b6-d80b-45bc-a151-046d4d9cb9be",
+          "ref": "vanek-vojtech",
           "surname": "Vaněk",
-          "givenName": "Vojtěch",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 11
+          "firstName": "Vojtěch",
+          "rpNumber": null,
+          "dateOfBirth": "1985-07-16",
+          "birthNumber": null,
+          "defaultJerseyNumber": 11,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-dynamo-kotelna-10",
+          "id": "62c7407d-dbe8-4e79-82ae-b9a60f2f4277",
+          "ref": "houzev-vaclav",
           "surname": "Houžev",
-          "givenName": "Václav",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 26
+          "firstName": "Václav",
+          "rpNumber": null,
+          "dateOfBirth": "1991-02-22",
+          "birthNumber": null,
+          "defaultJerseyNumber": 26,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-dynamo-kotelna-11",
+          "id": "76a66303-9067-441b-aba7-9453911cddf5",
+          "ref": "hlok-matej",
           "surname": "Hlok",
-          "givenName": "Matěj",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 17
+          "firstName": "Matěj",
+          "rpNumber": null,
+          "dateOfBirth": "1983-03-23",
+          "birthNumber": null,
+          "defaultJerseyNumber": 17,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-dynamo-kotelna-12",
+          "id": "f693aa7d-63f3-4c9d-8bce-967890be3383",
+          "ref": "horak-lukas",
           "surname": "Horák",
-          "givenName": "Lukáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 6
+          "firstName": "Lukáš",
+          "rpNumber": null,
+          "dateOfBirth": "2001-02-10",
+          "birthNumber": null,
+          "defaultJerseyNumber": 6,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         }
       ]
     },
     {
-      "id": "t-fc-podoli",
+      "id": "485b76dc-a27d-46de-9aa6-6be1bd1fd2ba",
+      "ref": "fc-podoli",
       "name": "FC Podolí",
-      "kitColour": "žlutá",
+      "kits": [
+        {
+          "id": "04444732-1295-4604-82d7-045e11f5c64f",
+          "label": "žlutá",
+          "colours": [
+            "žlutá"
+          ]
+        },
+        {
+          "id": "166026a1-ba3a-4f82-89fd-fb40e542b5f7",
+          "label": "modrá",
+          "colours": [
+            "modrá"
+          ]
+        }
+      ],
       "players": [
         {
-          "id": "p-fc-podoli-01",
+          "id": "c23a754b-d9ec-44ab-8971-a1b0c3cd1e2e",
+          "ref": "vlcek-stepan",
           "surname": "Vlček",
-          "givenName": "Štěpán",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 11
+          "firstName": "Štěpán",
+          "rpNumber": null,
+          "dateOfBirth": "1992-07-27",
+          "birthNumber": null,
+          "defaultJerseyNumber": 11,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 4,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fc-podoli-02",
+          "id": "09550f04-60c2-425f-8ab5-c15844d00dea",
+          "ref": "poupe-daniel",
           "surname": "Poupě",
-          "givenName": "Daniel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 26
+          "firstName": "Daniel",
+          "rpNumber": null,
+          "dateOfBirth": "1990-01-12",
+          "birthNumber": null,
+          "defaultJerseyNumber": 26,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 3,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fc-podoli-03",
+          "id": "c33a2cdb-fad8-4c7c-a3f4-90209be11f50",
+          "ref": "maly-matej",
           "surname": "Malý",
-          "givenName": "Matěj",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 2
+          "firstName": "Matěj",
+          "rpNumber": null,
+          "dateOfBirth": "1997-12-15",
+          "birthNumber": null,
+          "defaultJerseyNumber": 2,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fc-podoli-04",
+          "id": "134d78b7-7d1a-45f0-8cbe-d55d57a074d9",
+          "ref": "porizek-michal",
           "surname": "Pořízek",
-          "givenName": "Michal",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 6
+          "firstName": "Michal",
+          "rpNumber": null,
+          "dateOfBirth": "1991-07-20",
+          "birthNumber": null,
+          "defaultJerseyNumber": 6,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fc-podoli-05",
+          "id": "7ccf8de9-0e73-45b5-ac93-b6e9648b3def",
+          "ref": "lovec-jan",
           "surname": "Lovec",
-          "givenName": "Jan",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 18
+          "firstName": "Jan",
+          "rpNumber": null,
+          "dateOfBirth": "1983-08-04",
+          "birthNumber": null,
+          "defaultJerseyNumber": 18,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 3,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fc-podoli-06",
+          "id": "2889830a-f7f6-471e-968c-c54ea2bf2268",
+          "ref": "nemec-petr",
           "surname": "Němec",
-          "givenName": "Petr",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 23
+          "firstName": "Petr",
+          "rpNumber": null,
+          "dateOfBirth": "1999-12-15",
+          "birthNumber": null,
+          "defaultJerseyNumber": 23,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fc-podoli-07",
+          "id": "d5c74ae0-e343-402e-85a7-58a0a09818a8",
+          "ref": "marek-jan",
           "surname": "Marek",
-          "givenName": "Jan",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 21
+          "firstName": "Jan",
+          "rpNumber": null,
+          "dateOfBirth": "1990-01-07",
+          "birthNumber": null,
+          "defaultJerseyNumber": 21,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fc-podoli-08",
+          "id": "531e4acc-7877-4aaf-803d-d05b16e604b5",
+          "ref": "kriz-pavel",
           "surname": "Kříž",
-          "givenName": "Pavel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 15
+          "firstName": "Pavel",
+          "rpNumber": null,
+          "dateOfBirth": "1985-03-07",
+          "birthNumber": null,
+          "defaultJerseyNumber": 15,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fc-podoli-09",
+          "id": "022db329-68b7-4e0a-a485-ccbcd916618f",
+          "ref": "dvorak-ondrej",
           "surname": "Dvořák",
-          "givenName": "Ondřej",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 16
+          "firstName": "Ondřej",
+          "rpNumber": null,
+          "dateOfBirth": "2009-03-24",
+          "birthNumber": null,
+          "defaultJerseyNumber": 16,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fc-podoli-10",
+          "id": "6f07088d-3880-42d3-bafd-063993b49ab5",
+          "ref": "zeman-michal",
           "surname": "Zeman",
-          "givenName": "Michal",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 4
+          "firstName": "Michal",
+          "rpNumber": null,
+          "dateOfBirth": "1993-01-26",
+          "birthNumber": null,
+          "defaultJerseyNumber": 4,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fc-podoli-11",
+          "id": "e5abc51e-561a-4eb8-9198-8bd5661781d3",
+          "ref": "dvorak-daniel",
           "surname": "Dvořák",
-          "givenName": "Daniel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 7
+          "firstName": "Daniel",
+          "rpNumber": null,
+          "dateOfBirth": "1991-07-13",
+          "birthNumber": null,
+          "defaultJerseyNumber": 7,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fc-podoli-12",
+          "id": "b16f3ab7-8e79-4fb2-bda9-8a53c6a73260",
+          "ref": "stepanek-filip",
           "surname": "Štěpánek",
-          "givenName": "Filip",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 24
+          "firstName": "Filip",
+          "rpNumber": null,
+          "dateOfBirth": "2008-08-16",
+          "birthNumber": null,
+          "defaultJerseyNumber": 24,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         }
       ]
     },
     {
-      "id": "t-slavie-hanspaulka",
+      "id": "1bc151ef-4830-4d97-8d3c-eadd6f1a62a3",
+      "ref": "slavie-hanspaulka",
       "name": "Slávie Hanspaulka",
-      "kitColour": "bílo-červená",
+      "kits": [
+        {
+          "id": "bd1a7d92-e29e-490a-b53f-d925bd09de56",
+          "label": "bílo-červená",
+          "colours": [
+            "bílá",
+            "červená"
+          ]
+        },
+        {
+          "id": "085d9fba-5c58-4a84-9fa5-765079551ce5",
+          "label": "modrá",
+          "colours": [
+            "modrá"
+          ]
+        }
+      ],
       "players": [
         {
-          "id": "p-slavie-hanspaulka-01",
+          "id": "106ee278-3852-4659-bfbd-391393dc2193",
+          "ref": "novak-josef",
           "surname": "Novák",
-          "givenName": "Josef",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 3
+          "firstName": "Josef",
+          "rpNumber": null,
+          "dateOfBirth": "1999-09-19",
+          "birthNumber": null,
+          "defaultJerseyNumber": 3,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 3,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-slavie-hanspaulka-02",
+          "id": "8e551780-2a6b-4823-b94f-10f40d760e35",
+          "ref": "houzev-vojtech",
           "surname": "Houžev",
-          "givenName": "Vojtěch",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 19
+          "firstName": "Vojtěch",
+          "rpNumber": null,
+          "dateOfBirth": "2004-07-24",
+          "birthNumber": null,
+          "defaultJerseyNumber": 19,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-slavie-hanspaulka-03",
+          "id": "ecbd7c39-8ead-4d0f-ab48-463b31f22136",
+          "ref": "blazek-matej",
           "surname": "Blažek",
-          "givenName": "Matěj",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 4
+          "firstName": "Matěj",
+          "rpNumber": null,
+          "dateOfBirth": "1983-05-23",
+          "birthNumber": null,
+          "defaultJerseyNumber": 4,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-slavie-hanspaulka-04",
+          "id": "28f69e90-80bf-45db-9baf-92e30be0b913",
+          "ref": "kovar-pavel",
           "surname": "Kovář",
-          "givenName": "Pavel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 2
+          "firstName": "Pavel",
+          "rpNumber": null,
+          "dateOfBirth": "1987-09-08",
+          "birthNumber": null,
+          "defaultJerseyNumber": 2,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-slavie-hanspaulka-05",
+          "id": "f73ed132-2af2-44cd-a91a-2b46911fa784",
+          "ref": "bartos-vojtech",
           "surname": "Bartoš",
-          "givenName": "Vojtěch",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 5
+          "firstName": "Vojtěch",
+          "rpNumber": null,
+          "dateOfBirth": "1998-01-16",
+          "birthNumber": null,
+          "defaultJerseyNumber": 5,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-slavie-hanspaulka-06",
+          "id": "9938c29c-97e0-43ce-9da1-28038192364c",
+          "ref": "lepis-martin",
           "surname": "Lepiš",
-          "givenName": "Martin",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 17
+          "firstName": "Martin",
+          "rpNumber": null,
+          "dateOfBirth": "1987-07-25",
+          "birthNumber": null,
+          "defaultJerseyNumber": 17,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-slavie-hanspaulka-07",
+          "id": "a1c66487-6fdd-4576-9908-0473089e8120",
+          "ref": "vlcek-martin",
           "surname": "Vlček",
-          "givenName": "Martin",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 12
+          "firstName": "Martin",
+          "rpNumber": null,
+          "dateOfBirth": "1993-12-15",
+          "birthNumber": null,
+          "defaultJerseyNumber": 12,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-slavie-hanspaulka-08",
+          "id": "456449a6-495d-4685-9209-f8d35559c986",
+          "ref": "poupe-ondrej",
           "surname": "Poupě",
-          "givenName": "Ondřej",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 8
+          "firstName": "Ondřej",
+          "rpNumber": null,
+          "dateOfBirth": "1981-08-08",
+          "birthNumber": null,
+          "defaultJerseyNumber": 8,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-slavie-hanspaulka-09",
+          "id": "73a9d121-ea4d-476c-a1e0-d507996dc126",
+          "ref": "bartos-adam",
           "surname": "Bartoš",
-          "givenName": "Adam",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 15
+          "firstName": "Adam",
+          "rpNumber": null,
+          "dateOfBirth": "1991-12-26",
+          "birthNumber": null,
+          "defaultJerseyNumber": 15,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-slavie-hanspaulka-10",
+          "id": "f2564b17-065d-422b-9832-7365576bec66",
+          "ref": "konecny-vojtech",
           "surname": "Konečný",
-          "givenName": "Vojtěch",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 26
+          "firstName": "Vojtěch",
+          "rpNumber": null,
+          "dateOfBirth": "1989-11-13",
+          "birthNumber": null,
+          "defaultJerseyNumber": 26,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-slavie-hanspaulka-11",
+          "id": "4315d51a-ed11-4369-b14d-8f8fd2310a26",
+          "ref": "bures-radek",
           "surname": "Bureš",
-          "givenName": "Radek",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 6
+          "firstName": "Radek",
+          "rpNumber": null,
+          "dateOfBirth": "1999-01-23",
+          "birthNumber": null,
+          "defaultJerseyNumber": 6,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-slavie-hanspaulka-12",
+          "id": "2c784cf6-1e7c-40ae-b9b5-c9d1276787e7",
+          "ref": "blazek-lukas",
           "surname": "Blažek",
-          "givenName": "Lukáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 13
+          "firstName": "Lukáš",
+          "rpNumber": null,
+          "dateOfBirth": "2001-06-14",
+          "birthNumber": null,
+          "defaultJerseyNumber": 13,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         }
       ]
     },
     {
-      "id": "t-bohemians-dejvice",
+      "id": "23a17428-3c68-47a6-a0f8-fb39171f5917",
+      "ref": "bohemians-dejvice",
       "name": "Bohemians Dejvice",
-      "kitColour": "zelená",
+      "kits": [
+        {
+          "id": "2a990036-c627-4859-abab-785adecf7bb5",
+          "label": "zelená",
+          "colours": [
+            "zelená"
+          ]
+        },
+        {
+          "id": "48bc2ec2-c29e-4fad-9ac1-7557ae49bf4d",
+          "label": "bílá",
+          "colours": [
+            "bílá"
+          ]
+        }
+      ],
       "players": [
         {
-          "id": "p-bohemians-dejvice-01",
+          "id": "20e6b7c6-b454-4732-a53e-e25d9d24c938",
+          "ref": "kral-ondrej",
           "surname": "Král",
-          "givenName": "Ondřej",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 14
+          "firstName": "Ondřej",
+          "rpNumber": null,
+          "dateOfBirth": "1981-06-13",
+          "birthNumber": null,
+          "defaultJerseyNumber": 14,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-bohemians-dejvice-02",
+          "id": "2fe25439-a92e-4375-95ae-94456a97f6c0",
+          "ref": "konecny-filip",
           "surname": "Konečný",
-          "givenName": "Filip",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 19
+          "firstName": "Filip",
+          "rpNumber": null,
+          "dateOfBirth": "1993-11-14",
+          "birthNumber": null,
+          "defaultJerseyNumber": 19,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-bohemians-dejvice-03",
+          "id": "f9ac5fdf-f023-44ba-ab0d-8ae7214ad6cc",
+          "ref": "kucera-michal",
           "surname": "Kučera",
-          "givenName": "Michal",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 6
+          "firstName": "Michal",
+          "rpNumber": null,
+          "dateOfBirth": "1996-09-13",
+          "birthNumber": null,
+          "defaultJerseyNumber": 6,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-bohemians-dejvice-04",
+          "id": "8be06afe-1465-4424-b262-30c964bedde2",
+          "ref": "kolar-ondrej",
           "surname": "Kolář",
-          "givenName": "Ondřej",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 21
+          "firstName": "Ondřej",
+          "rpNumber": null,
+          "dateOfBirth": "2000-09-15",
+          "birthNumber": null,
+          "defaultJerseyNumber": 21,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 4,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-bohemians-dejvice-05",
+          "id": "1434e386-49fa-42b8-86e2-9ede1a72fb80",
+          "ref": "dolezal-vojtech",
           "surname": "Doležal",
-          "givenName": "Vojtěch",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 1
+          "firstName": "Vojtěch",
+          "rpNumber": null,
+          "dateOfBirth": "1997-10-14",
+          "birthNumber": null,
+          "defaultJerseyNumber": 1,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 4,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-bohemians-dejvice-06",
+          "id": "6a4836af-6e5c-4ddf-b7b5-ca2e7dcbfc97",
+          "ref": "marek-josef",
           "surname": "Marek",
-          "givenName": "Josef",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 22
+          "firstName": "Josef",
+          "rpNumber": null,
+          "dateOfBirth": "1985-06-27",
+          "birthNumber": null,
+          "defaultJerseyNumber": 22,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-bohemians-dejvice-07",
+          "id": "92865f3c-dd3d-4c49-bf08-7cff892e286e",
+          "ref": "hajek-filip",
           "surname": "Hájek",
-          "givenName": "Filip",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 26
+          "firstName": "Filip",
+          "rpNumber": null,
+          "dateOfBirth": "2010-12-04",
+          "birthNumber": null,
+          "defaultJerseyNumber": 26,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-bohemians-dejvice-08",
+          "id": "ee02f732-bbbe-429c-bafa-76a69b9bd766",
+          "ref": "zeman-ondrej",
           "surname": "Zeman",
-          "givenName": "Ondřej",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 5
+          "firstName": "Ondřej",
+          "rpNumber": null,
+          "dateOfBirth": "1983-03-22",
+          "birthNumber": null,
+          "defaultJerseyNumber": 5,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-bohemians-dejvice-09",
+          "id": "ecbe0b8d-bc1f-4d6a-8efa-14f526848098",
+          "ref": "poupe-adam",
           "surname": "Poupě",
-          "givenName": "Adam",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 28
+          "firstName": "Adam",
+          "rpNumber": null,
+          "dateOfBirth": "1988-03-02",
+          "birthNumber": null,
+          "defaultJerseyNumber": 28,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-bohemians-dejvice-10",
+          "id": "3172e391-7c68-48ca-8e25-d3f623035ea6",
+          "ref": "cerny-josef",
           "surname": "Černý",
-          "givenName": "Josef",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 29
+          "firstName": "Josef",
+          "rpNumber": null,
+          "dateOfBirth": "2008-11-18",
+          "birthNumber": null,
+          "defaultJerseyNumber": 29,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-bohemians-dejvice-11",
+          "id": "e5ef0067-2008-4015-89d0-ba83f10c078c",
+          "ref": "stepanek-vojtech",
           "surname": "Štěpánek",
-          "givenName": "Vojtěch",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 24
+          "firstName": "Vojtěch",
+          "rpNumber": null,
+          "dateOfBirth": "2006-07-09",
+          "birthNumber": null,
+          "defaultJerseyNumber": 24,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-bohemians-dejvice-12",
+          "id": "d241d8fb-6a65-43e9-8322-6925111d5715",
+          "ref": "polak-jan",
           "surname": "Polák",
-          "givenName": "Jan",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 12
+          "firstName": "Jan",
+          "rpNumber": null,
+          "dateOfBirth": "1981-05-27",
+          "birthNumber": null,
+          "defaultJerseyNumber": 12,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         }
       ]
     },
     {
-      "id": "t-ac-stromovka",
+      "id": "22051adc-6ddc-423c-84eb-e535e0794ac8",
+      "ref": "ac-stromovka",
       "name": "AC Stromovka",
-      "kitColour": "oranžová",
+      "kits": [
+        {
+          "id": "9ce979e9-25e4-4c7b-a520-95f65d1fdba7",
+          "label": "oranžová",
+          "colours": [
+            "oranžová"
+          ]
+        },
+        {
+          "id": "cdb25821-75eb-4eea-a18e-20ac00cee0b4",
+          "label": "černá",
+          "colours": [
+            "černá"
+          ]
+        }
+      ],
       "players": [
         {
-          "id": "p-ac-stromovka-01",
+          "id": "daf7900e-1598-4999-abb7-282410c29a87",
+          "ref": "kral-michal",
           "surname": "Král",
-          "givenName": "Michal",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 18
+          "firstName": "Michal",
+          "rpNumber": null,
+          "dateOfBirth": "2006-03-25",
+          "birthNumber": null,
+          "defaultJerseyNumber": 18,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 3,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-ac-stromovka-02",
+          "id": "81ee20b8-1607-4617-9be5-62012506aeaf",
+          "ref": "baca-adam",
           "surname": "Bača",
-          "givenName": "Adam",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 22
+          "firstName": "Adam",
+          "rpNumber": null,
+          "dateOfBirth": "1989-11-23",
+          "birthNumber": null,
+          "defaultJerseyNumber": 22,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 4,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-ac-stromovka-03",
+          "id": "d776a601-9493-4eee-a494-2d1040a8f00a",
+          "ref": "cermak-pavel",
           "surname": "Čermák",
-          "givenName": "Pavel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 7
+          "firstName": "Pavel",
+          "rpNumber": null,
+          "dateOfBirth": "2008-01-04",
+          "birthNumber": null,
+          "defaultJerseyNumber": 7,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-ac-stromovka-04",
+          "id": "1d7b525f-e661-46bd-88d0-944c18ff3ef4",
+          "ref": "kucera-pavel",
           "surname": "Kučera",
-          "givenName": "Pavel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 28
+          "firstName": "Pavel",
+          "rpNumber": null,
+          "dateOfBirth": "2008-11-18",
+          "birthNumber": null,
+          "defaultJerseyNumber": 28,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-ac-stromovka-05",
+          "id": "f48f9c11-8abb-4d5e-89c8-b024ae6749d7",
+          "ref": "simek-jakub",
           "surname": "Šimek",
-          "givenName": "Jakub",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 14
+          "firstName": "Jakub",
+          "rpNumber": null,
+          "dateOfBirth": "1996-11-24",
+          "birthNumber": null,
+          "defaultJerseyNumber": 14,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-ac-stromovka-06",
+          "id": "e290b909-05e1-4ef9-b156-87326c2a9b64",
+          "ref": "marek-tomas",
           "surname": "Marek",
-          "givenName": "Tomáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 20
+          "firstName": "Tomáš",
+          "rpNumber": null,
+          "dateOfBirth": "1995-11-23",
+          "birthNumber": null,
+          "defaultJerseyNumber": 20,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-ac-stromovka-07",
+          "id": "b3f7ac7c-46f9-44c4-a97d-948777daf2fb",
+          "ref": "polak-tomas",
           "surname": "Polák",
-          "givenName": "Tomáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 11
+          "firstName": "Tomáš",
+          "rpNumber": null,
+          "dateOfBirth": "1984-03-10",
+          "birthNumber": null,
+          "defaultJerseyNumber": 11,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 3,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-ac-stromovka-08",
+          "id": "69d12d8e-18e1-4a63-bac1-d93e61e921ce",
+          "ref": "marek-martin",
           "surname": "Marek",
-          "givenName": "Martin",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 19
+          "firstName": "Martin",
+          "rpNumber": null,
+          "dateOfBirth": "1986-10-27",
+          "birthNumber": null,
+          "defaultJerseyNumber": 19,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-ac-stromovka-09",
+          "id": "65d01b43-cba6-4429-8368-2eeebce33c1c",
+          "ref": "musil-tomas",
           "surname": "Musil",
-          "givenName": "Tomáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 16
+          "firstName": "Tomáš",
+          "rpNumber": null,
+          "dateOfBirth": "1999-02-23",
+          "birthNumber": null,
+          "defaultJerseyNumber": 16,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-ac-stromovka-10",
+          "id": "70419f42-6be4-4d88-a44a-4fa8a25af9b9",
+          "ref": "sedlacek-pavel",
           "surname": "Sedláček",
-          "givenName": "Pavel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 21
+          "firstName": "Pavel",
+          "rpNumber": null,
+          "dateOfBirth": "1991-08-03",
+          "birthNumber": null,
+          "defaultJerseyNumber": 21,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-ac-stromovka-11",
+          "id": "2be58aca-56ba-4ac9-8721-c5101c144a95",
+          "ref": "jelinek-ondrej",
           "surname": "Jelínek",
-          "givenName": "Ondřej",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 17
+          "firstName": "Ondřej",
+          "rpNumber": null,
+          "dateOfBirth": "2002-01-28",
+          "birthNumber": null,
+          "defaultJerseyNumber": 17,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-ac-stromovka-12",
+          "id": "ed6439a7-f646-4291-b919-4aa9fc2ce64d",
+          "ref": "cerny-adam",
           "surname": "Černý",
-          "givenName": "Adam",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 9
+          "firstName": "Adam",
+          "rpNumber": null,
+          "dateOfBirth": "2001-03-03",
+          "birthNumber": null,
+          "defaultJerseyNumber": 9,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         }
       ]
     },
     {
-      "id": "t-sk-vinohrady",
+      "id": "1a6c562f-290a-4027-92fc-71537ed61541",
+      "ref": "sk-vinohrady",
       "name": "SK Vinohrady",
-      "kitColour": "fialová",
+      "kits": [
+        {
+          "id": "d5a19d63-639b-47fa-bcb2-5cd6e3d34bf7",
+          "label": "fialová",
+          "colours": [
+            "fialová"
+          ]
+        },
+        {
+          "id": "d0137294-5d96-42e8-bac4-83c89e1fc603",
+          "label": "bílá",
+          "colours": [
+            "bílá"
+          ]
+        }
+      ],
       "players": [
         {
-          "id": "p-sk-vinohrady-01",
+          "id": "a1b80e6b-5d07-4e72-954b-dfa2c8fcdf3c",
+          "ref": "hlok-lukas",
           "surname": "Hlok",
-          "givenName": "Lukáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 24
+          "firstName": "Lukáš",
+          "rpNumber": null,
+          "dateOfBirth": "2008-02-04",
+          "birthNumber": null,
+          "defaultJerseyNumber": 24,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sk-vinohrady-02",
+          "id": "1fd1184c-9b0f-486e-a1c8-dc5dd457f72b",
+          "ref": "polak-daniel",
           "surname": "Polák",
-          "givenName": "Daniel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 27
+          "firstName": "Daniel",
+          "rpNumber": null,
+          "dateOfBirth": "1981-06-18",
+          "birthNumber": null,
+          "defaultJerseyNumber": 27,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sk-vinohrady-03",
+          "id": "665b0a16-addc-48b9-bec1-115a21fe9712",
+          "ref": "polak-petr",
           "surname": "Polák",
-          "givenName": "Petr",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 17
+          "firstName": "Petr",
+          "rpNumber": null,
+          "dateOfBirth": "1998-10-09",
+          "birthNumber": null,
+          "defaultJerseyNumber": 17,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sk-vinohrady-04",
+          "id": "9f827d8e-94e6-45e9-a9f6-549a9a27c34c",
+          "ref": "svoboda-matej",
           "surname": "Svoboda",
-          "givenName": "Matěj",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 20
+          "firstName": "Matěj",
+          "rpNumber": null,
+          "dateOfBirth": "1982-12-15",
+          "birthNumber": null,
+          "defaultJerseyNumber": 20,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sk-vinohrady-05",
+          "id": "0b245511-1efb-4367-be27-0932dc8eceed",
+          "ref": "navratil-vojtech",
           "surname": "Navrátil",
-          "givenName": "Vojtěch",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 25
+          "firstName": "Vojtěch",
+          "rpNumber": null,
+          "dateOfBirth": "1991-03-07",
+          "birthNumber": null,
+          "defaultJerseyNumber": 25,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sk-vinohrady-06",
+          "id": "65716e0f-b24d-4927-85e5-642417f85285",
+          "ref": "hajek-vaclav",
           "surname": "Hájek",
-          "givenName": "Václav",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 10
+          "firstName": "Václav",
+          "rpNumber": null,
+          "dateOfBirth": "1995-10-17",
+          "birthNumber": null,
+          "defaultJerseyNumber": 10,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sk-vinohrady-07",
+          "id": "229163f8-6e6a-446c-b7a0-bca4947584a7",
+          "ref": "vanek-michal",
           "surname": "Vaněk",
-          "givenName": "Michal",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 11
+          "firstName": "Michal",
+          "rpNumber": null,
+          "dateOfBirth": "1992-04-12",
+          "birthNumber": null,
+          "defaultJerseyNumber": 11,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sk-vinohrady-08",
+          "id": "955f71cf-bbcc-4da3-a1f6-018651caba4f",
+          "ref": "dvorak-tomas",
           "surname": "Dvořák",
-          "givenName": "Tomáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 3
+          "firstName": "Tomáš",
+          "rpNumber": null,
+          "dateOfBirth": "1982-03-16",
+          "birthNumber": null,
+          "defaultJerseyNumber": 3,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 3,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sk-vinohrady-09",
+          "id": "382d0c4a-2cb8-4657-bca2-5559303d806f",
+          "ref": "cermak-david",
           "surname": "Čermák",
-          "givenName": "David",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 1
+          "firstName": "David",
+          "rpNumber": null,
+          "dateOfBirth": "1986-07-11",
+          "birthNumber": null,
+          "defaultJerseyNumber": 1,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sk-vinohrady-10",
+          "id": "f0933ca3-886b-4a8d-8f6c-61405fcded59",
+          "ref": "baca-lukas",
           "surname": "Bača",
-          "givenName": "Lukáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 8
+          "firstName": "Lukáš",
+          "rpNumber": null,
+          "dateOfBirth": "2000-11-26",
+          "birthNumber": null,
+          "defaultJerseyNumber": 8,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sk-vinohrady-11",
+          "id": "5ca0afcd-683e-4a8d-bae7-0272889afec0",
+          "ref": "kulik-adam",
           "surname": "Kulík",
-          "givenName": "Adam",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 14
+          "firstName": "Adam",
+          "rpNumber": null,
+          "dateOfBirth": "1985-04-03",
+          "birthNumber": null,
+          "defaultJerseyNumber": 14,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 4,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-sk-vinohrady-12",
+          "id": "c9c3eea2-9110-4a87-8a49-ccfa8fc203d0",
+          "ref": "musil-david",
           "surname": "Musil",
-          "givenName": "David",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 18
+          "firstName": "David",
+          "rpNumber": null,
+          "dateOfBirth": "2001-06-19",
+          "birthNumber": null,
+          "defaultJerseyNumber": 18,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         }
       ]
     },
     {
-      "id": "t-banik-brevnov",
+      "id": "1a231aa4-7159-4e88-90cc-b834dc1a2eac",
+      "ref": "banik-brevnov",
       "name": "Baník Břevnov",
-      "kitColour": "modro-bílá",
-      "players": [
+      "kits": [
         {
-          "id": "p-banik-brevnov-01",
-          "surname": "Svoboda",
-          "givenName": "Marek",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 9
+          "id": "ccf01018-8cb6-4682-9b7f-dfef53e7afcc",
+          "label": "modro-bílá",
+          "colours": [
+            "modrá",
+            "bílá"
+          ]
         },
         {
-          "id": "p-banik-brevnov-02",
+          "id": "3d1afbf5-ecb7-4fea-91be-3e7974861e61",
+          "label": "červená",
+          "colours": [
+            "červená"
+          ]
+        }
+      ],
+      "players": [
+        {
+          "id": "77faf7a4-8b9d-4d3b-95fe-5ed9c1c2db81",
+          "ref": "svoboda-marek",
+          "surname": "Svoboda",
+          "firstName": "Marek",
+          "rpNumber": null,
+          "dateOfBirth": "1982-05-17",
+          "birthNumber": null,
+          "defaultJerseyNumber": 9,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
+        },
+        {
+          "id": "ad82801b-af7a-4e29-a7d8-baeeaeab6221",
+          "ref": "dolezal-radek",
           "surname": "Doležal",
-          "givenName": "Radek",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 7
+          "firstName": "Radek",
+          "rpNumber": null,
+          "dateOfBirth": "1992-07-20",
+          "birthNumber": null,
+          "defaultJerseyNumber": 7,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-banik-brevnov-03",
+          "id": "4de9da2e-8b4a-46ee-a61b-aff7357047ec",
+          "ref": "porizek-pavel",
           "surname": "Pořízek",
-          "givenName": "Pavel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 13
+          "firstName": "Pavel",
+          "rpNumber": null,
+          "dateOfBirth": "2007-03-22",
+          "birthNumber": null,
+          "defaultJerseyNumber": 13,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 3,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-banik-brevnov-04",
+          "id": "3f89e835-ecd3-4e7b-a134-c188f7017b6a",
+          "ref": "svoboda-vaclav",
           "surname": "Svoboda",
-          "givenName": "Václav",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 12
+          "firstName": "Václav",
+          "rpNumber": null,
+          "dateOfBirth": "1986-03-02",
+          "birthNumber": null,
+          "defaultJerseyNumber": 12,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-banik-brevnov-05",
+          "id": "c369223a-0d6a-4177-a65f-6b594fb09e1b",
+          "ref": "houzev-marek",
           "surname": "Houžev",
-          "givenName": "Marek",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 10
+          "firstName": "Marek",
+          "rpNumber": null,
+          "dateOfBirth": "2009-06-07",
+          "birthNumber": null,
+          "defaultJerseyNumber": 10,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-banik-brevnov-06",
+          "id": "12669ed2-60cd-4fc3-8681-de92fd6f3f1f",
+          "ref": "nemec-stepan",
           "surname": "Němec",
-          "givenName": "Štěpán",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 28
+          "firstName": "Štěpán",
+          "rpNumber": null,
+          "dateOfBirth": "1995-11-13",
+          "birthNumber": null,
+          "defaultJerseyNumber": 28,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-banik-brevnov-07",
+          "id": "32e1b81a-e6b8-4524-a0d0-f4b5787abc1e",
+          "ref": "houzev-lukas",
           "surname": "Houžev",
-          "givenName": "Lukáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 21
+          "firstName": "Lukáš",
+          "rpNumber": null,
+          "dateOfBirth": "1989-04-25",
+          "birthNumber": null,
+          "defaultJerseyNumber": 21,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 4,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-banik-brevnov-08",
+          "id": "60f4b421-f460-494f-8c83-32eb31fb628c",
+          "ref": "blazek-pavel",
           "surname": "Blažek",
-          "givenName": "Pavel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 2
+          "firstName": "Pavel",
+          "rpNumber": null,
+          "dateOfBirth": "1982-10-28",
+          "birthNumber": null,
+          "defaultJerseyNumber": 2,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-banik-brevnov-09",
+          "id": "06d04604-101b-4da5-8d92-7f8068076e5b",
+          "ref": "svoboda-petr",
           "surname": "Svoboda",
-          "givenName": "Petr",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 8
+          "firstName": "Petr",
+          "rpNumber": null,
+          "dateOfBirth": "1993-05-19",
+          "birthNumber": null,
+          "defaultJerseyNumber": 8,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-banik-brevnov-10",
+          "id": "b72c57de-65d6-4aa8-8875-b1d7a02a7f83",
+          "ref": "novotny-matej",
           "surname": "Novotný",
-          "givenName": "Matěj",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 17
+          "firstName": "Matěj",
+          "rpNumber": null,
+          "dateOfBirth": "1990-07-28",
+          "birthNumber": null,
+          "defaultJerseyNumber": 17,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-banik-brevnov-11",
+          "id": "7c625715-9bfd-455f-b96f-b10032e245a4",
+          "ref": "konecny-jan",
           "surname": "Konečný",
-          "givenName": "Jan",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 18
+          "firstName": "Jan",
+          "rpNumber": null,
+          "dateOfBirth": "1994-02-27",
+          "birthNumber": null,
+          "defaultJerseyNumber": 18,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 4,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-banik-brevnov-12",
+          "id": "48ab28f4-5b10-436f-8ce6-38643e66223d",
+          "ref": "vanek-daniel",
           "surname": "Vaněk",
-          "givenName": "Daniel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 29
+          "firstName": "Daniel",
+          "rpNumber": null,
+          "dateOfBirth": "1996-09-01",
+          "birthNumber": null,
+          "defaultJerseyNumber": 29,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         }
       ]
     },
     {
-      "id": "t-fk-letna",
+      "id": "89bda6d2-e2ad-4f9c-903e-3dad9d640656",
+      "ref": "fk-letna",
       "name": "FK Letná",
-      "kitColour": "šedá",
+      "kits": [
+        {
+          "id": "5e3e4f7a-5861-424e-b3f1-f7882614cb6e",
+          "label": "šedá",
+          "colours": [
+            "šedá"
+          ]
+        },
+        {
+          "id": "6434e9b5-1ce9-450b-9856-7f627ee814a7",
+          "label": "červeno-černá",
+          "colours": [
+            "červená",
+            "černá"
+          ]
+        }
+      ],
       "players": [
         {
-          "id": "p-fk-letna-01",
+          "id": "cb206a31-d13b-4467-97db-3ba48efaeec1",
+          "ref": "sedlacek-david",
           "surname": "Sedláček",
-          "givenName": "David",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 27
+          "firstName": "David",
+          "rpNumber": null,
+          "dateOfBirth": "2005-07-20",
+          "birthNumber": null,
+          "defaultJerseyNumber": 27,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fk-letna-02",
+          "id": "abc45ce2-9d4a-4314-a573-0a91f55828c6",
+          "ref": "kolar-matej",
           "surname": "Kolář",
-          "givenName": "Matěj",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 20
+          "firstName": "Matěj",
+          "rpNumber": null,
+          "dateOfBirth": "2010-07-24",
+          "birthNumber": null,
+          "defaultJerseyNumber": 20,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fk-letna-03",
+          "id": "d2c42956-6a75-45ff-9f7f-9cca4bb0d1a1",
+          "ref": "urban-michal",
           "surname": "Urban",
-          "givenName": "Michal",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 21
+          "firstName": "Michal",
+          "rpNumber": null,
+          "dateOfBirth": "1984-10-10",
+          "birthNumber": null,
+          "defaultJerseyNumber": 21,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fk-letna-04",
+          "id": "29fdddaa-d536-49c2-881d-dadd508c9ae6",
+          "ref": "kriz-david",
           "surname": "Kříž",
-          "givenName": "David",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 28
+          "firstName": "David",
+          "rpNumber": null,
+          "dateOfBirth": "2005-01-15",
+          "birthNumber": null,
+          "defaultJerseyNumber": 28,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fk-letna-05",
+          "id": "877d32c7-e29b-46fe-a53c-8de543b6e8cc",
+          "ref": "houzev-daniel",
           "surname": "Houžev",
-          "givenName": "Daniel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 22
+          "firstName": "Daniel",
+          "rpNumber": null,
+          "dateOfBirth": "2010-12-02",
+          "birthNumber": null,
+          "defaultJerseyNumber": 22,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fk-letna-06",
+          "id": "e8f68683-7198-4be2-98cd-0e20754a424f",
+          "ref": "novak-lukas",
           "surname": "Novák",
-          "givenName": "Lukáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 8
+          "firstName": "Lukáš",
+          "rpNumber": null,
+          "dateOfBirth": "2006-08-13",
+          "birthNumber": null,
+          "defaultJerseyNumber": 8,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 3,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fk-letna-07",
+          "id": "3a8c33b7-090c-485f-8b73-3de70c2d57b3",
+          "ref": "benes-adam",
           "surname": "Beneš",
-          "givenName": "Adam",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 12
+          "firstName": "Adam",
+          "rpNumber": null,
+          "dateOfBirth": "2008-02-05",
+          "birthNumber": null,
+          "defaultJerseyNumber": 12,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fk-letna-08",
+          "id": "69562e4d-7575-486a-881d-5fb9b65f6f56",
+          "ref": "kucera-martin",
           "surname": "Kučera",
-          "givenName": "Martin",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 11
+          "firstName": "Martin",
+          "rpNumber": null,
+          "dateOfBirth": "1989-12-19",
+          "birthNumber": null,
+          "defaultJerseyNumber": 11,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fk-letna-09",
+          "id": "3950545b-3a3d-4e72-820c-54407405740b",
+          "ref": "konecny-david",
           "surname": "Konečný",
-          "givenName": "David",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 1
+          "firstName": "David",
+          "rpNumber": null,
+          "dateOfBirth": "1986-05-14",
+          "birthNumber": null,
+          "defaultJerseyNumber": 1,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fk-letna-10",
+          "id": "07f9aa9b-bd8c-4e2a-aa6b-3d5939bf6498",
+          "ref": "cerny-tomas",
           "surname": "Černý",
-          "givenName": "Tomáš",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 16
+          "firstName": "Tomáš",
+          "rpNumber": null,
+          "dateOfBirth": "2007-03-08",
+          "birthNumber": null,
+          "defaultJerseyNumber": 16,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 4,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fk-letna-11",
+          "id": "bffa6c4a-957a-43eb-9abf-283b06a45e08",
+          "ref": "svoboda-josef",
           "surname": "Svoboda",
-          "givenName": "Josef",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 4
+          "firstName": "Josef",
+          "rpNumber": null,
+          "dateOfBirth": "1997-10-06",
+          "birthNumber": null,
+          "defaultJerseyNumber": 4,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-fk-letna-12",
+          "id": "05ecb5ee-2629-4fa6-8d38-06f8acbb5368",
+          "ref": "blazek-petr",
           "surname": "Blažek",
-          "givenName": "Petr",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 29
+          "firstName": "Petr",
+          "rpNumber": null,
+          "dateOfBirth": "1982-01-23",
+          "birthNumber": null,
+          "defaultJerseyNumber": 29,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         }
       ]
     },
     {
-      "id": "t-united-smichov",
+      "id": "76c44c49-8782-4511-a35f-81a49f4eb459",
+      "ref": "united-smichov",
       "name": "United Smíchov",
-      "kitColour": "černá",
+      "kits": [
+        {
+          "id": "db8556ed-ca38-42da-8961-8f6db5431198",
+          "label": "černá",
+          "colours": [
+            "černá"
+          ]
+        },
+        {
+          "id": "5a89c97d-cb07-4883-be6f-17bb303e266c",
+          "label": "bílá",
+          "colours": [
+            "bílá"
+          ]
+        }
+      ],
       "players": [
         {
-          "id": "p-united-smichov-01",
+          "id": "fd2b3edd-afbf-4914-82fe-2b695c5e2a3b",
+          "ref": "pospisil-adam",
           "surname": "Pospíšil",
-          "givenName": "Adam",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 2
+          "firstName": "Adam",
+          "rpNumber": null,
+          "dateOfBirth": "1999-05-17",
+          "birthNumber": null,
+          "defaultJerseyNumber": 2,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-united-smichov-02",
+          "id": "09128d30-2553-4f91-9ffe-5600391c105d",
+          "ref": "polak-stepan",
           "surname": "Polák",
-          "givenName": "Štěpán",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 19
+          "firstName": "Štěpán",
+          "rpNumber": null,
+          "dateOfBirth": "1990-10-27",
+          "birthNumber": null,
+          "defaultJerseyNumber": 19,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-united-smichov-03",
+          "id": "f4d3eb2b-534b-4d16-8e7e-1e6eb5fbc7a8",
+          "ref": "hlok-michal",
           "surname": "Hlok",
-          "givenName": "Michal",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 13
+          "firstName": "Michal",
+          "rpNumber": null,
+          "dateOfBirth": "1997-10-20",
+          "birthNumber": null,
+          "defaultJerseyNumber": 13,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-united-smichov-04",
+          "id": "ea5b0198-099d-4ed0-a2ec-56a006198b32",
+          "ref": "maly-vojtech",
           "surname": "Malý",
-          "givenName": "Vojtěch",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 25
+          "firstName": "Vojtěch",
+          "rpNumber": null,
+          "dateOfBirth": "1983-02-03",
+          "birthNumber": null,
+          "defaultJerseyNumber": 25,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 0,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-united-smichov-05",
+          "id": "0c93380e-6e93-4e69-86ac-cbd530ef529b",
+          "ref": "holub-pavel",
           "surname": "Holub",
-          "givenName": "Pavel",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 8
+          "firstName": "Pavel",
+          "rpNumber": null,
+          "dateOfBirth": "2009-05-24",
+          "birthNumber": null,
+          "defaultJerseyNumber": 8,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-united-smichov-06",
+          "id": "770aa71c-6add-4118-9278-8f142d2db0a6",
+          "ref": "holub-filip",
           "surname": "Holub",
-          "givenName": "Filip",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 23
+          "firstName": "Filip",
+          "rpNumber": null,
+          "dateOfBirth": "1984-07-25",
+          "birthNumber": null,
+          "defaultJerseyNumber": 23,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-united-smichov-07",
+          "id": "8432c773-f823-4e94-812f-098e874e5473",
+          "ref": "hajek-michal",
           "surname": "Hájek",
-          "givenName": "Michal",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 11
+          "firstName": "Michal",
+          "rpNumber": null,
+          "dateOfBirth": "2002-02-20",
+          "birthNumber": null,
+          "defaultJerseyNumber": 11,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 2,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-united-smichov-08",
+          "id": "2383b904-b9d9-4a8b-a46b-4d55fff7a892",
+          "ref": "kriz-filip",
           "surname": "Kříž",
-          "givenName": "Filip",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 3
+          "firstName": "Filip",
+          "rpNumber": null,
+          "dateOfBirth": "1991-11-20",
+          "birthNumber": null,
+          "defaultJerseyNumber": 3,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-united-smichov-09",
+          "id": "02c9667f-da27-4002-af82-9df724b08bb5",
+          "ref": "svoboda-ondrej",
           "surname": "Svoboda",
-          "givenName": "Ondřej",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 29
+          "firstName": "Ondřej",
+          "rpNumber": null,
+          "dateOfBirth": "1990-07-24",
+          "birthNumber": null,
+          "defaultJerseyNumber": 29,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-united-smichov-10",
+          "id": "08597a25-c804-406c-8f9c-f9c516d1d8a9",
+          "ref": "kriz-jakub",
           "surname": "Kříž",
-          "givenName": "Jakub",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 24
+          "firstName": "Jakub",
+          "rpNumber": null,
+          "dateOfBirth": "1991-12-05",
+          "birthNumber": null,
+          "defaultJerseyNumber": 24,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 4,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-united-smichov-11",
+          "id": "43e3829b-0cd9-411a-8856-93200f710ec0",
+          "ref": "nemec-ondrej",
           "surname": "Němec",
-          "givenName": "Ondřej",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 4
+          "firstName": "Ondřej",
+          "rpNumber": null,
+          "dateOfBirth": "1995-11-07",
+          "birthNumber": null,
+          "defaultJerseyNumber": 4,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 1,
+            "asOf": "2026-10-05"
+          }
         },
         {
-          "id": "p-united-smichov-12",
+          "id": "c15288c2-ca3e-46c2-9013-3fc0b0b1a644",
+          "ref": "dvorak-stepan",
           "surname": "Dvořák",
-          "givenName": "Štěpán",
-          "identifier": null,
-          "identifierType": null,
-          "defaultJerseyNumber": 17
+          "firstName": "Štěpán",
+          "rpNumber": null,
+          "dateOfBirth": "2009-10-09",
+          "birthNumber": null,
+          "defaultJerseyNumber": 17,
+          "origin": "LEAGUE_RECORD",
+          "discipline": {
+            "yellowsThisSeason": 4,
+            "asOf": "2026-10-05"
+          }
         }
       ]
     }
   ],
   "fixtures": [
     {
-      "id": "f-6k-r01-1",
+      "id": "59f0fdc4-d6c3-43e4-aa7e-ee2c929ca86a",
+      "ref": "6k-r01-1",
       "round": 1,
       "date": "2026-08-31",
       "time": "19:00",
       "venue": "ZAKOS",
-      "home": "t-kominici",
-      "away": "t-united-smichov"
+      "home": "kominici",
+      "away": "united-smichov"
     },
     {
-      "id": "f-6k-r01-2",
+      "id": "28f1e4b0-208d-460f-b4f2-2e3ca8a95bf7",
+      "ref": "6k-r01-2",
       "round": 1,
       "date": "2026-09-01",
       "time": "19:15",
       "venue": "METE1",
-      "home": "t-sp-sumys",
-      "away": "t-fk-letna"
+      "home": "sp-sumys",
+      "away": "fk-letna"
     },
     {
-      "id": "f-6k-r01-3",
+      "id": "348e33f3-e550-4e89-a122-da2c82a6576f",
+      "ref": "6k-r01-3",
       "round": 1,
       "date": "2026-09-03",
       "time": "19:30",
       "venue": "MOTO1",
-      "home": "t-celtic-thk",
-      "away": "t-banik-brevnov"
+      "home": "celtic-thk",
+      "away": "banik-brevnov"
     },
     {
-      "id": "f-6k-r01-4",
+      "id": "4d62a80e-8e91-4a81-8015-f13f5387081b",
+      "ref": "6k-r01-4",
       "round": 1,
       "date": "2026-09-04",
       "time": "19:45",
       "venue": "MIK",
-      "home": "t-dynamo-kotelna",
-      "away": "t-sk-vinohrady"
+      "home": "dynamo-kotelna",
+      "away": "sk-vinohrady"
     },
     {
-      "id": "f-6k-r01-5",
+      "id": "bf76548d-92b8-4535-8436-a28a44c93247",
+      "ref": "6k-r01-5",
       "round": 1,
       "date": "2026-08-31",
       "time": "20:00",
       "venue": "PRA",
-      "home": "t-fc-podoli",
-      "away": "t-ac-stromovka"
+      "home": "fc-podoli",
+      "away": "ac-stromovka"
     },
     {
-      "id": "f-6k-r01-6",
+      "id": "8b3f74e4-b21d-41fd-992d-3c319e9bd265",
+      "ref": "6k-r01-6",
       "round": 1,
       "date": "2026-09-01",
       "time": "20:15",
       "venue": "ZAK",
-      "home": "t-slavie-hanspaulka",
-      "away": "t-bohemians-dejvice"
+      "home": "slavie-hanspaulka",
+      "away": "bohemians-dejvice"
     },
     {
-      "id": "f-6k-r02-1",
+      "id": "ff31fca6-e65b-4cd8-876c-e9b2d6541887",
+      "ref": "6k-r02-1",
       "round": 2,
       "date": "2026-09-07",
       "time": "19:15",
       "venue": "P1",
-      "home": "t-fk-letna",
-      "away": "t-kominici"
+      "home": "fk-letna",
+      "away": "kominici"
     },
     {
-      "id": "f-6k-r02-2",
+      "id": "64ba4612-9162-4cc1-a130-3d9b88a66b86",
+      "ref": "6k-r02-2",
       "round": 2,
       "date": "2026-09-08",
       "time": "19:30",
       "venue": "ZAKOS",
-      "home": "t-banik-brevnov",
-      "away": "t-united-smichov"
+      "home": "banik-brevnov",
+      "away": "united-smichov"
     },
     {
-      "id": "f-6k-r02-3",
+      "id": "b8567f73-1de4-48be-af33-2e38fdc094b9",
+      "ref": "6k-r02-3",
       "round": 2,
       "date": "2026-09-10",
       "time": "19:45",
       "venue": "METE1",
-      "home": "t-sk-vinohrady",
-      "away": "t-sp-sumys"
+      "home": "sk-vinohrady",
+      "away": "sp-sumys"
     },
     {
-      "id": "f-6k-r02-4",
+      "id": "5f3ea9ae-cbef-4065-9896-0f4adea3aacc",
+      "ref": "6k-r02-4",
       "round": 2,
       "date": "2026-09-11",
       "time": "20:00",
       "venue": "MOTO1",
-      "home": "t-ac-stromovka",
-      "away": "t-celtic-thk"
+      "home": "ac-stromovka",
+      "away": "celtic-thk"
     },
     {
-      "id": "f-6k-r02-5",
+      "id": "4df4ece9-ce96-4cee-ade0-3c7161d243f9",
+      "ref": "6k-r02-5",
       "round": 2,
       "date": "2026-09-07",
       "time": "20:15",
       "venue": "MIK",
-      "home": "t-bohemians-dejvice",
-      "away": "t-dynamo-kotelna"
+      "home": "bohemians-dejvice",
+      "away": "dynamo-kotelna"
     },
     {
-      "id": "f-6k-r02-6",
+      "id": "9fd7650a-4569-4055-8c1d-d6592f3e5562",
+      "ref": "6k-r02-6",
       "round": 2,
       "date": "2026-09-08",
       "time": "20:30",
       "venue": "PRA",
-      "home": "t-slavie-hanspaulka",
-      "away": "t-fc-podoli"
+      "home": "slavie-hanspaulka",
+      "away": "fc-podoli"
     },
     {
-      "id": "f-6k-r03-1",
+      "id": "f062b677-13f7-4898-a037-47f21fa848cc",
+      "ref": "6k-r03-1",
       "round": 3,
       "date": "2026-09-14",
       "time": "19:30",
       "venue": "ZAK",
-      "home": "t-kominici",
-      "away": "t-banik-brevnov"
+      "home": "kominici",
+      "away": "banik-brevnov"
     },
     {
-      "id": "f-6k-r03-2",
+      "id": "c4f594a8-6421-492d-956a-bc02f26a7a08",
+      "ref": "6k-r03-2",
       "round": 3,
       "date": "2026-09-15",
       "time": "19:45",
       "venue": "P1",
-      "home": "t-fk-letna",
-      "away": "t-sk-vinohrady"
+      "home": "fk-letna",
+      "away": "sk-vinohrady"
     },
     {
-      "id": "f-6k-r03-3",
+      "id": "dc6abf1b-4bcb-4a1d-80d2-0af022f7671a",
+      "ref": "6k-r03-3",
       "round": 3,
       "date": "2026-09-17",
       "time": "20:00",
       "venue": "ZAKOS",
-      "home": "t-united-smichov",
-      "away": "t-ac-stromovka"
+      "home": "united-smichov",
+      "away": "ac-stromovka"
     },
     {
-      "id": "f-6k-r03-4",
+      "id": "9dc7fc17-9f15-43df-a8d2-78dad1e991b8",
+      "ref": "6k-r03-4",
       "round": 3,
       "date": "2026-09-18",
       "time": "20:15",
       "venue": "METE1",
-      "home": "t-sp-sumys",
-      "away": "t-bohemians-dejvice"
+      "home": "sp-sumys",
+      "away": "bohemians-dejvice"
     },
     {
-      "id": "f-6k-r03-5",
+      "id": "66805f0a-be7a-4c21-897d-5f6e6f84f2e2",
+      "ref": "6k-r03-5",
       "round": 3,
       "date": "2026-09-14",
       "time": "20:30",
       "venue": "MOTO1",
-      "home": "t-celtic-thk",
-      "away": "t-slavie-hanspaulka"
+      "home": "celtic-thk",
+      "away": "slavie-hanspaulka"
     },
     {
-      "id": "f-6k-r03-6",
+      "id": "046acabd-1e58-40c6-93af-fc318ceeb9c9",
+      "ref": "6k-r03-6",
       "round": 3,
       "date": "2026-09-15",
       "time": "20:45",
       "venue": "MIK",
-      "home": "t-dynamo-kotelna",
-      "away": "t-fc-podoli"
+      "home": "dynamo-kotelna",
+      "away": "fc-podoli"
     },
     {
-      "id": "f-6k-r04-1",
+      "id": "cbd89350-1269-4407-8a8e-6a4315303795",
+      "ref": "6k-r04-1",
       "round": 4,
       "date": "2026-09-21",
       "time": "19:45",
       "venue": "PRA",
-      "home": "t-sk-vinohrady",
-      "away": "t-kominici"
+      "home": "sk-vinohrady",
+      "away": "kominici"
     },
     {
-      "id": "f-6k-r04-2",
+      "id": "2247095a-b9bd-4b8c-a82a-245f8075b56a",
+      "ref": "6k-r04-2",
       "round": 4,
       "date": "2026-09-22",
       "time": "20:00",
       "venue": "ZAK",
-      "home": "t-ac-stromovka",
-      "away": "t-banik-brevnov"
+      "home": "ac-stromovka",
+      "away": "banik-brevnov"
     },
     {
-      "id": "f-6k-r04-3",
+      "id": "cc11b3f4-8530-45d0-9850-9838ac0e5873",
+      "ref": "6k-r04-3",
       "round": 4,
       "date": "2026-09-24",
       "time": "20:15",
       "venue": "P1",
-      "home": "t-bohemians-dejvice",
-      "away": "t-fk-letna"
+      "home": "bohemians-dejvice",
+      "away": "fk-letna"
     },
     {
-      "id": "f-6k-r04-4",
+      "id": "5d1e41ba-3bd5-4334-9188-1cd3e975a673",
+      "ref": "6k-r04-4",
       "round": 4,
       "date": "2026-09-25",
       "time": "20:30",
       "venue": "ZAKOS",
-      "home": "t-slavie-hanspaulka",
-      "away": "t-united-smichov"
+      "home": "slavie-hanspaulka",
+      "away": "united-smichov"
     },
     {
-      "id": "f-6k-r04-5",
+      "id": "21a2a965-22bf-4f9f-8d9f-df79dffd3ec8",
+      "ref": "6k-r04-5",
       "round": 4,
       "date": "2026-09-21",
       "time": "20:45",
       "venue": "METE1",
-      "home": "t-fc-podoli",
-      "away": "t-sp-sumys"
+      "home": "fc-podoli",
+      "away": "sp-sumys"
     },
     {
-      "id": "f-6k-r04-6",
+      "id": "23a122fa-0e9a-41a7-8cb7-d81d4ad73351",
+      "ref": "6k-r04-6",
       "round": 4,
       "date": "2026-09-22",
       "time": "19:00",
       "venue": "MOTO1",
-      "home": "t-dynamo-kotelna",
-      "away": "t-celtic-thk"
+      "home": "dynamo-kotelna",
+      "away": "celtic-thk"
     },
     {
-      "id": "f-6k-r05-1",
+      "id": "e7fbea55-336d-43e4-a017-1590b5bdac3e",
+      "ref": "6k-r05-1",
       "round": 5,
       "date": "2026-09-28",
       "time": "20:00",
       "venue": "MIK",
-      "home": "t-kominici",
-      "away": "t-ac-stromovka"
+      "home": "kominici",
+      "away": "ac-stromovka"
     },
     {
-      "id": "f-6k-r05-2",
+      "id": "81a09f4e-c285-4026-a5ac-aa6db5fde2a0",
+      "ref": "6k-r05-2",
       "round": 5,
       "date": "2026-09-29",
       "time": "20:15",
       "venue": "PRA",
-      "home": "t-sk-vinohrady",
-      "away": "t-bohemians-dejvice"
+      "home": "sk-vinohrady",
+      "away": "bohemians-dejvice"
     },
     {
-      "id": "f-6k-r05-3",
+      "id": "18a67ed7-66db-4c2f-b5a5-a379728b39db",
+      "ref": "6k-r05-3",
       "round": 5,
       "date": "2026-10-01",
       "time": "20:30",
       "venue": "ZAK",
-      "home": "t-banik-brevnov",
-      "away": "t-slavie-hanspaulka"
+      "home": "banik-brevnov",
+      "away": "slavie-hanspaulka"
     },
     {
-      "id": "f-6k-r05-4",
+      "id": "82609e79-c395-448a-bb99-43487746e1f5",
+      "ref": "6k-r05-4",
       "round": 5,
       "date": "2026-10-02",
       "time": "20:45",
       "venue": "P1",
-      "home": "t-fk-letna",
-      "away": "t-fc-podoli"
+      "home": "fk-letna",
+      "away": "fc-podoli"
     },
     {
-      "id": "f-6k-r05-5",
+      "id": "e08d456f-526f-44bc-a8ce-37ac48a32b5f",
+      "ref": "6k-r05-5",
       "round": 5,
       "date": "2026-09-28",
       "time": "19:00",
       "venue": "ZAKOS",
-      "home": "t-united-smichov",
-      "away": "t-dynamo-kotelna"
+      "home": "united-smichov",
+      "away": "dynamo-kotelna"
     },
     {
-      "id": "f-6k-r05-6",
+      "id": "a98d3c7e-ae2b-43ad-bb0b-e6429132596d",
+      "ref": "6k-r05-6",
       "round": 5,
       "date": "2026-09-29",
       "time": "19:15",
       "venue": "METE1",
-      "home": "t-sp-sumys",
-      "away": "t-celtic-thk"
+      "home": "sp-sumys",
+      "away": "celtic-thk"
     },
     {
-      "id": "f-6k-r06-1",
+      "id": "30b45cc5-fe6c-4a2c-b0d5-33bf858884cd",
+      "ref": "6k-r06-1",
       "round": 6,
       "date": "2026-10-05",
       "time": "20:15",
       "venue": "MOTO1",
-      "home": "t-bohemians-dejvice",
-      "away": "t-kominici"
+      "home": "bohemians-dejvice",
+      "away": "kominici"
     },
     {
-      "id": "f-6k-r06-2",
+      "id": "5f8cc6e4-bd50-42b4-b3d2-3fc3b268b94d",
+      "ref": "6k-r06-2",
       "round": 6,
       "date": "2026-10-06",
       "time": "20:30",
       "venue": "MIK",
-      "home": "t-slavie-hanspaulka",
-      "away": "t-ac-stromovka"
+      "home": "slavie-hanspaulka",
+      "away": "ac-stromovka"
     },
     {
-      "id": "f-6k-r06-3",
+      "id": "38177a7e-673a-4827-8c33-7c6123d95175",
+      "ref": "6k-r06-3",
       "round": 6,
       "date": "2026-10-08",
       "time": "20:45",
       "venue": "PRA",
-      "home": "t-fc-podoli",
-      "away": "t-sk-vinohrady"
+      "home": "fc-podoli",
+      "away": "sk-vinohrady"
     },
     {
-      "id": "f-6k-r06-4",
+      "id": "8c211d7d-bf75-402e-84f4-e59523411bd2",
+      "ref": "6k-r06-4",
       "round": 6,
       "date": "2026-10-09",
       "time": "19:00",
       "venue": "ZAK",
-      "home": "t-dynamo-kotelna",
-      "away": "t-banik-brevnov"
+      "home": "dynamo-kotelna",
+      "away": "banik-brevnov"
     },
     {
-      "id": "f-6k-r06-5",
+      "id": "f00b050c-667d-4697-8729-f97339f64a06",
+      "ref": "6k-r06-5",
       "round": 6,
       "date": "2026-10-05",
       "time": "19:15",
       "venue": "P1",
-      "home": "t-celtic-thk",
-      "away": "t-fk-letna"
+      "home": "celtic-thk",
+      "away": "fk-letna"
     },
     {
-      "id": "f-6k-r06-6",
+      "id": "4c02a4e5-f194-4fc4-8213-a1dc7346506e",
+      "ref": "6k-r06-6",
       "round": 6,
       "date": "2026-10-06",
       "time": "19:30",
       "venue": "ZAKOS",
-      "home": "t-sp-sumys",
-      "away": "t-united-smichov"
+      "home": "sp-sumys",
+      "away": "united-smichov"
     },
     {
-      "id": "f-6k-r07-1",
+      "id": "312cc2b5-f58a-4b06-b29a-2ad635365d57",
+      "ref": "6k-r07-1",
       "round": 7,
       "date": "2026-10-12",
       "time": "20:30",
       "venue": "METE1",
-      "home": "t-kominici",
-      "away": "t-slavie-hanspaulka"
+      "home": "kominici",
+      "away": "slavie-hanspaulka"
     },
     {
-      "id": "f-6k-r07-2",
+      "id": "528a6b03-4c39-4206-b149-91eb37cdc367",
+      "ref": "6k-r07-2",
       "round": 7,
       "date": "2026-10-13",
       "time": "20:45",
       "venue": "MOTO1",
-      "home": "t-bohemians-dejvice",
-      "away": "t-fc-podoli"
+      "home": "bohemians-dejvice",
+      "away": "fc-podoli"
     },
     {
-      "id": "f-6k-r07-3",
+      "id": "9009307f-6cf5-48ca-8ecc-a267da3492f3",
+      "ref": "6k-r07-3",
       "round": 7,
       "date": "2026-10-15",
       "time": "19:00",
       "venue": "MIK",
-      "home": "t-ac-stromovka",
-      "away": "t-dynamo-kotelna"
+      "home": "ac-stromovka",
+      "away": "dynamo-kotelna"
     },
     {
-      "id": "f-6k-r07-4",
+      "id": "615af712-8d77-4fbb-95c5-e396f896b3d1",
+      "ref": "6k-r07-4",
       "round": 7,
       "date": "2026-10-16",
       "time": "19:15",
       "venue": "PRA",
-      "home": "t-sk-vinohrady",
-      "away": "t-celtic-thk"
+      "home": "sk-vinohrady",
+      "away": "celtic-thk"
     },
     {
-      "id": "f-6k-r07-5",
+      "id": "4829150a-0fdc-4af1-aac9-f3ddb414b055",
+      "ref": "6k-r07-5",
       "round": 7,
       "date": "2026-10-12",
       "time": "19:30",
       "venue": "ZAK",
-      "home": "t-banik-brevnov",
-      "away": "t-sp-sumys"
+      "home": "banik-brevnov",
+      "away": "sp-sumys"
     },
     {
-      "id": "f-6k-r07-6",
+      "id": "6fd51268-f987-4e27-8ae6-16479cc19bf7",
+      "ref": "6k-r07-6",
       "round": 7,
       "date": "2026-10-13",
       "time": "19:45",
       "venue": "P1",
-      "home": "t-fk-letna",
-      "away": "t-united-smichov"
+      "home": "fk-letna",
+      "away": "united-smichov"
     },
     {
-      "id": "f-6k-r08-1",
+      "id": "edf0e85f-3bf2-4ed2-ab92-cf4bf3ceef04",
+      "ref": "6k-r08-1",
       "round": 8,
       "date": "2026-10-19",
       "time": "20:45",
       "venue": "ZAKOS",
-      "home": "t-fc-podoli",
-      "away": "t-kominici"
+      "home": "fc-podoli",
+      "away": "kominici"
     },
     {
-      "id": "f-6k-r08-2",
+      "id": "97578774-12ba-4867-80c5-b5980bb78e2e",
+      "ref": "6k-r08-2",
       "round": 8,
       "date": "2026-10-20",
       "time": "19:00",
       "venue": "METE1",
-      "home": "t-dynamo-kotelna",
-      "away": "t-slavie-hanspaulka"
+      "home": "dynamo-kotelna",
+      "away": "slavie-hanspaulka"
     },
     {
-      "id": "f-6k-r08-3",
+      "id": "48e1f5d5-a74c-4156-b049-630e0df6e05d",
+      "ref": "6k-r08-3",
       "round": 8,
       "date": "2026-10-22",
       "time": "19:15",
       "venue": "MOTO1",
-      "home": "t-celtic-thk",
-      "away": "t-bohemians-dejvice"
+      "home": "celtic-thk",
+      "away": "bohemians-dejvice"
     },
     {
-      "id": "f-6k-r08-4",
+      "id": "dd6a2f51-f454-4136-b054-819913d1beba",
+      "ref": "6k-r08-4",
       "round": 8,
       "date": "2026-10-23",
       "time": "19:30",
       "venue": "MIK",
-      "home": "t-sp-sumys",
-      "away": "t-ac-stromovka"
+      "home": "sp-sumys",
+      "away": "ac-stromovka"
     },
     {
-      "id": "f-6k-r08-5",
+      "id": "2f348433-4b85-4e19-9a0c-558a2bf4cbf3",
+      "ref": "6k-r08-5",
       "round": 8,
       "date": "2026-10-19",
       "time": "19:45",
       "venue": "PRA",
-      "home": "t-united-smichov",
-      "away": "t-sk-vinohrady"
+      "home": "united-smichov",
+      "away": "sk-vinohrady"
     },
     {
-      "id": "f-6k-r08-6",
+      "id": "30255cb6-d1e8-4812-a049-95fcca752317",
+      "ref": "6k-r08-6",
       "round": 8,
       "date": "2026-10-20",
       "time": "20:00",
       "venue": "ZAK",
-      "home": "t-fk-letna",
-      "away": "t-banik-brevnov"
+      "home": "fk-letna",
+      "away": "banik-brevnov"
     },
     {
-      "id": "f-6k-r09-1",
+      "id": "9518bde2-5e95-41ea-a8ea-f734847e1de6",
+      "ref": "6k-r09-1",
       "round": 9,
       "date": "2026-10-26",
       "time": "19:00",
       "venue": "P1",
-      "home": "t-kominici",
-      "away": "t-dynamo-kotelna"
+      "home": "kominici",
+      "away": "dynamo-kotelna"
     },
     {
-      "id": "f-6k-r09-2",
+      "id": "0bd45a95-e85a-45ff-82f3-fd3f6d2cb614",
+      "ref": "6k-r09-2",
       "round": 9,
       "date": "2026-10-27",
       "time": "19:15",
       "venue": "ZAKOS",
-      "home": "t-fc-podoli",
-      "away": "t-celtic-thk"
+      "home": "fc-podoli",
+      "away": "celtic-thk"
     },
     {
-      "id": "f-6k-r09-3",
+      "id": "0e8449a7-a614-4b00-a5f4-6854b7039de8",
+      "ref": "6k-r09-3",
       "round": 9,
       "date": "2026-10-29",
       "time": "19:30",
       "venue": "METE1",
-      "home": "t-slavie-hanspaulka",
-      "away": "t-sp-sumys"
+      "home": "slavie-hanspaulka",
+      "away": "sp-sumys"
     },
     {
-      "id": "f-6k-r09-4",
+      "id": "e7964cb4-3820-4582-ae30-36e42d3fd613",
+      "ref": "6k-r09-4",
       "round": 9,
       "date": "2026-10-30",
       "time": "19:45",
       "venue": "MOTO1",
-      "home": "t-bohemians-dejvice",
-      "away": "t-united-smichov"
+      "home": "bohemians-dejvice",
+      "away": "united-smichov"
     },
     {
-      "id": "f-6k-r09-5",
+      "id": "ee7ed2f8-6f36-4547-9344-edb6a034c5f3",
+      "ref": "6k-r09-5",
       "round": 9,
       "date": "2026-10-26",
       "time": "20:00",
       "venue": "MIK",
-      "home": "t-ac-stromovka",
-      "away": "t-fk-letna"
+      "home": "ac-stromovka",
+      "away": "fk-letna"
     },
     {
-      "id": "f-6k-r09-6",
+      "id": "bc740a62-dd8e-47ba-853b-7b649c0a8f1c",
+      "ref": "6k-r09-6",
       "round": 9,
       "date": "2026-10-27",
       "time": "20:15",
       "venue": "PRA",
-      "home": "t-sk-vinohrady",
-      "away": "t-banik-brevnov"
+      "home": "sk-vinohrady",
+      "away": "banik-brevnov"
     },
     {
-      "id": "f-6k-r10-1",
+      "id": "b7501d7f-dd51-418e-9e4b-5b3e0f0e483a",
+      "ref": "6k-r10-1",
       "round": 10,
       "date": "2026-11-02",
       "time": "19:15",
       "venue": "ZAK",
-      "home": "t-celtic-thk",
-      "away": "t-kominici"
+      "home": "celtic-thk",
+      "away": "kominici"
     },
     {
-      "id": "f-6k-r10-2",
+      "id": "f5e5a58a-2a75-4cf6-b1e1-d5691c69f8ff",
+      "ref": "6k-r10-2",
       "round": 10,
       "date": "2026-11-03",
       "time": "19:30",
       "venue": "P1",
-      "home": "t-sp-sumys",
-      "away": "t-dynamo-kotelna"
+      "home": "sp-sumys",
+      "away": "dynamo-kotelna"
     },
     {
-      "id": "f-6k-r10-3",
+      "id": "fb4367f2-df55-4204-b3e8-22f72a80b2ab",
+      "ref": "6k-r10-3",
       "round": 10,
       "date": "2026-11-05",
       "time": "19:45",
       "venue": "ZAKOS",
-      "home": "t-united-smichov",
-      "away": "t-fc-podoli"
+      "home": "united-smichov",
+      "away": "fc-podoli"
     },
     {
-      "id": "f-6k-r10-4",
+      "id": "e69248e5-31cb-4711-b196-c06f05962bba",
+      "ref": "6k-r10-4",
       "round": 10,
       "date": "2026-11-06",
       "time": "20:00",
       "venue": "METE1",
-      "home": "t-fk-letna",
-      "away": "t-slavie-hanspaulka"
+      "home": "fk-letna",
+      "away": "slavie-hanspaulka"
     },
     {
-      "id": "f-6k-r10-5",
+      "id": "794dc976-4059-4f19-a77f-de78b3a7c72d",
+      "ref": "6k-r10-5",
       "round": 10,
       "date": "2026-11-02",
       "time": "20:15",
       "venue": "MOTO1",
-      "home": "t-banik-brevnov",
-      "away": "t-bohemians-dejvice"
+      "home": "banik-brevnov",
+      "away": "bohemians-dejvice"
     },
     {
-      "id": "f-6k-r10-6",
+      "id": "ab25aa39-3174-4ffc-b363-2ec9192f5a58",
+      "ref": "6k-r10-6",
       "round": 10,
       "date": "2026-11-03",
       "time": "20:30",
       "venue": "MIK",
-      "home": "t-sk-vinohrady",
-      "away": "t-ac-stromovka"
+      "home": "sk-vinohrady",
+      "away": "ac-stromovka"
     },
     {
-      "id": "f-6k-r11-1",
+      "id": "4105a34f-0202-465e-bc08-c8820f93852d",
+      "ref": "6k-r11-1",
       "round": 11,
       "date": "2026-11-09",
       "time": "19:30",
       "venue": "PRA",
-      "home": "t-kominici",
-      "away": "t-sp-sumys"
+      "home": "kominici",
+      "away": "sp-sumys"
     },
     {
-      "id": "f-6k-r11-2",
+      "id": "7364e648-54cc-4b16-83b6-1cabfb4e5ed3",
+      "ref": "6k-r11-2",
       "round": 11,
       "date": "2026-11-10",
       "time": "19:45",
       "venue": "ZAK",
-      "home": "t-celtic-thk",
-      "away": "t-united-smichov"
+      "home": "celtic-thk",
+      "away": "united-smichov"
     },
     {
-      "id": "f-6k-r11-3",
+      "id": "f929d1b0-a821-4b17-95e3-d55b2b91cef7",
+      "ref": "6k-r11-3",
       "round": 11,
       "date": "2026-11-12",
       "time": "20:00",
       "venue": "P1",
-      "home": "t-dynamo-kotelna",
-      "away": "t-fk-letna"
+      "home": "dynamo-kotelna",
+      "away": "fk-letna"
     },
     {
-      "id": "f-6k-r11-4",
+      "id": "367ce959-2a49-48ad-80a3-185200d4d7fc",
+      "ref": "6k-r11-4",
       "round": 11,
       "date": "2026-11-13",
       "time": "20:15",
       "venue": "ZAKOS",
-      "home": "t-fc-podoli",
-      "away": "t-banik-brevnov"
+      "home": "fc-podoli",
+      "away": "banik-brevnov"
     },
     {
-      "id": "f-6k-r11-5",
+      "id": "0297e89a-2df9-4971-b497-2c9f0977f6aa",
+      "ref": "6k-r11-5",
       "round": 11,
       "date": "2026-11-09",
       "time": "20:30",
       "venue": "METE1",
-      "home": "t-slavie-hanspaulka",
-      "away": "t-sk-vinohrady"
+      "home": "slavie-hanspaulka",
+      "away": "sk-vinohrady"
     },
     {
-      "id": "f-6k-r11-6",
+      "id": "d5aa0096-d18d-4096-81ff-8ae2722d050d",
+      "ref": "6k-r11-6",
       "round": 11,
       "date": "2026-11-10",
       "time": "20:45",
       "venue": "MOTO1",
-      "home": "t-bohemians-dejvice",
-      "away": "t-ac-stromovka"
+      "home": "bohemians-dejvice",
+      "away": "ac-stromovka"
     }
   ]
 }

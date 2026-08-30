@@ -42,6 +42,12 @@ value class AppearanceId(
     val value: String,
 )
 
+/** One of the two kit sets a team owns. */
+@Serializable @JvmInline
+value class KitId(
+    val value: String,
+)
+
 /** Short pitch code, e.g. `ZAKOS`, `METE1` (analysis section 2.2). */
 @Serializable @JvmInline
 value class VenueCode(

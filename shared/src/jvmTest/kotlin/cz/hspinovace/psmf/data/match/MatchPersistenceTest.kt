@@ -14,6 +14,7 @@ import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
 import cz.hspinovace.psmf.domain.PersonName
+import cz.hspinovace.psmf.domain.PowerPlay
 import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamAssessment
@@ -27,6 +28,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
 /**
@@ -98,6 +100,17 @@ class MatchPersistenceTest {
                             ),
                         ),
                     ),
+                // The dismissal at 40' leaves the away side a player short for
+                // ten minutes. Power plays have their own table, so they have
+                // to survive the process dying too.
+                powerPlays =
+                    listOf(
+                        PowerPlay(
+                            shortHandedSide = TeamSide.AWAY,
+                            startedAt = Instant.parse("2026-08-31T19:40:00Z"),
+                            dismissedAtMinute = Minute.Played(40),
+                        ),
+                    ),
                 assessment =
                     Assessment(
                         home =
@@ -155,8 +168,24 @@ class MatchPersistenceTest {
             // The deputy flag on a confirmation survives.
             assertTrue(restored.confirmations.single().asDeputy)
 
-            // Kickoff is a stored instant, so the derived clock resumes correctly.
+            // Kickoff is a stored instant, so the derived clock resumes
+            // correctly. It is also the whole clock: the match clock never
+            // pauses, so there is nothing else to restore.
             assertEquals(Instant.parse("2026-08-31T19:00:00Z"), restored.kickoffAt)
+
+            // The power play resumes with the right amount left on it, which
+            // is why it stores an instant rather than a countdown.
+            val powerPlay = restored.powerPlays.single()
+            assertEquals(TeamSide.AWAY, powerPlay.shortHandedSide)
+            assertEquals(Minute.Played(40), powerPlay.dismissedAtMinute)
+            assertEquals(4.minutes, powerPlay.remainingAt(Instant.parse("2026-08-31T19:46:00Z")))
+
+            // What was written in the Číslo RP column is stored, not derived:
+            // a player registered later must not change an old report.
+            assertEquals(
+                original.homeLineup!!.appearances.map { it.reportedIdentification },
+                restored.homeLineup!!.appearances.map { it.reportedIdentification },
+            )
         }
 
     @Test

@@ -59,13 +59,17 @@ value class PersonName private constructor(
 }
 
 /**
- * A player's name as the form writes it: `Příjmení a jméno`, surname first.
+ * A player's name.
+ *
+ * The fields are named the way people are named. The ZoU displays
+ * `Příjmení a jméno` — surname first — but that is a **display order**, not
+ * a naming scheme, and [asWrittenOnReport] is where it belongs.
  */
 @Serializable
 data class PlayerName(
     val surname: PersonName,
-    val givenName: PersonName,
+    val firstName: PersonName,
 ) {
     /** Surname first, the order used on the ZoU. */
-    val asWrittenOnReport: String get() = "$surname $givenName"
+    val asWrittenOnReport: String get() = "$surname $firstName"
 }

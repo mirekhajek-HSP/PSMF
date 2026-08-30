@@ -5,6 +5,7 @@ import cz.hspinovace.psmf.db.Card_record
 import cz.hspinovace.psmf.db.Goal_record
 import cz.hspinovace.psmf.db.MatchRecordQueries
 import cz.hspinovace.psmf.db.Match_record
+import cz.hspinovace.psmf.db.Power_play_record
 import cz.hspinovace.psmf.db.PsmfDatabase
 import cz.hspinovace.psmf.domain.Appearance
 import cz.hspinovace.psmf.domain.AppearanceId
@@ -19,7 +20,9 @@ import cz.hspinovace.psmf.domain.Dismissal
 import cz.hspinovace.psmf.domain.FixtureId
 import cz.hspinovace.psmf.domain.GoalEvent
 import cz.hspinovace.psmf.domain.GroupId
+import cz.hspinovace.psmf.domain.IdentificationSource
 import cz.hspinovace.psmf.domain.JerseyNumber
+import cz.hspinovace.psmf.domain.KitId
 import cz.hspinovace.psmf.domain.Lineup
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
@@ -29,10 +32,10 @@ import cz.hspinovace.psmf.domain.Minute
 import cz.hspinovace.psmf.domain.Official
 import cz.hspinovace.psmf.domain.PersonName
 import cz.hspinovace.psmf.domain.PlayerId
-import cz.hspinovace.psmf.domain.PlayerIdentifier
-import cz.hspinovace.psmf.domain.PlayerIdentifierType
+import cz.hspinovace.psmf.domain.PowerPlay
 import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.RefereeAssignment
+import cz.hspinovace.psmf.domain.ReportedIdentification
 import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamAssessment
 import cz.hspinovace.psmf.domain.TeamId
@@ -70,6 +73,7 @@ class SqlDelightMatchRepository(
                 queries.writeLineups(match)
                 queries.writeGoals(match)
                 queries.writeCards(match)
+                queries.writePowerPlays(match)
                 queries.writeConfirmations(match)
             }
         }
@@ -172,6 +176,7 @@ private fun MatchRecordQueries.writeHeader(match: Match) {
 
 private fun MatchRecordQueries.clearChildren(matchId: String) {
     deleteConfirmations(matchId)
+    deletePowerPlays(matchId)
     deleteCards(matchId)
     deleteGoals(matchId)
     deleteAppearances(matchId)
@@ -180,7 +185,7 @@ private fun MatchRecordQueries.clearChildren(matchId: String) {
 
 private fun MatchRecordQueries.writeLineups(match: Match) {
     listOfNotNull(match.homeLineup, match.awayLineup).forEach { lineup ->
-        insertLineup(match.id.value, lineup.side.name, lineup.teamId.value, lineup.kitColour)
+        insertLineup(match.id.value, lineup.side.name, lineup.teamId.value, lineup.kitId.value)
         lineup.appearances.forEachIndexed { index, appearance ->
             insertAppearance(
                 id = appearance.id.value,
@@ -190,8 +195,10 @@ private fun MatchRecordQueries.writeLineups(match: Match) {
                 player_id = appearance.playerId.value,
                 // The number belongs to the appearance, not the player.
                 jersey_number = appearance.jerseyNumber?.value?.toLong(),
-                identifier_value = appearance.identifier?.value,
-                identifier_type = appearance.identifier?.type?.name,
+                // What was written on the day, not what the player record
+                // says today.
+                identification_value = appearance.reportedIdentification.value,
+                identification_source = appearance.reportedIdentification.source.name,
             )
         }
     }
@@ -232,6 +239,19 @@ private fun MatchRecordQueries.writeCards(match: Match) {
     }
 }
 
+private fun MatchRecordQueries.writePowerPlays(match: Match) {
+    match.powerPlays.forEachIndexed { index, powerPlay ->
+        insertPowerPlay(
+            match_id = match.id.value,
+            position = index.toLong(),
+            short_handed_side = powerPlay.shortHandedSide.name,
+            started_at = powerPlay.startedAt.toString(),
+            minute_kind = powerPlay.dismissedAtMinute.kindName(),
+            minute_value = powerPlay.dismissedAtMinute.numericValue(),
+        )
+    }
+}
+
 private fun MatchRecordQueries.writeConfirmations(match: Match) {
     match.confirmations.forEach { confirmation ->
         insertConfirmation(
@@ -260,7 +280,7 @@ private fun MatchRecordQueries.hydrate(row: Match_record): Match {
                     side = side,
                     teamId = TeamId(lineupRow.team_id),
                     appearances = appearances.filter { it.side == lineupRow.side }.map { it.toDomain() },
-                    kitColour = lineupRow.kit_colour,
+                    kitId = KitId(lineupRow.kit_id),
                 )
         }
 
@@ -275,6 +295,7 @@ private fun MatchRecordQueries.hydrate(row: Match_record): Match {
         kickoffAt = row.kickoff_at?.let { Instant.parse(it) },
         goals = selectGoals(id).executeAsList().map { it.toDomain() },
         cards = cardsSection(row.cards_state, selectCards(id).executeAsList().map { it.toDomain() }),
+        powerPlays = selectPowerPlays(id).executeAsList().map { it.toDomain() },
         assessment = row.toAssessment(),
         result = row.toResult(),
         confirmations =
@@ -337,10 +358,18 @@ private fun Appearance_record.toDomain() =
         id = AppearanceId(id),
         playerId = PlayerId(player_id),
         jerseyNumber = jersey_number?.let { JerseyNumber(it.toInt()) },
-        identifier =
-            identifier_value?.let { value ->
-                PlayerIdentifier(value, PlayerIdentifierType.valueOf(requireNotNull(identifier_type)))
-            },
+        reportedIdentification =
+            ReportedIdentification(
+                identification_value,
+                IdentificationSource.valueOf(identification_source),
+            ),
+    )
+
+private fun Power_play_record.toDomain() =
+    PowerPlay(
+        shortHandedSide = TeamSide.valueOf(short_handed_side),
+        startedAt = Instant.parse(started_at),
+        dismissedAtMinute = minuteOf(minute_kind, minute_value),
     )
 
 private fun Goal_record.toDomain() =

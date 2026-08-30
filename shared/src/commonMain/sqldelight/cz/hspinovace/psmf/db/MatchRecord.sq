@@ -50,20 +50,47 @@ CREATE TABLE lineup_record (
     match_id    TEXT NOT NULL,
     side        TEXT NOT NULL,
     team_id     TEXT NOT NULL,
-    kit_colour  TEXT NOT NULL,
+    -- Which of the team's two kit sets was worn. A reference, not a colour
+    -- string: a team owns its kits and the label written on the report is
+    -- theirs, so the report resolves this against the team record.
+    kit_id      TEXT NOT NULL,
     PRIMARY KEY (match_id, side)
 );
 
 CREATE TABLE appearance_record (
-    id                TEXT    NOT NULL PRIMARY KEY,
-    match_id          TEXT    NOT NULL,
-    side              TEXT    NOT NULL,
-    position          INTEGER NOT NULL,
-    player_id         TEXT    NOT NULL,
+    id                    TEXT    NOT NULL PRIMARY KEY,
+    match_id              TEXT    NOT NULL,
+    side                  TEXT    NOT NULL,
+    position              INTEGER NOT NULL,
+    player_id             TEXT    NOT NULL,
     -- The number belongs here, not to the player: it changes per match.
-    jersey_number     INTEGER,
-    identifier_value  TEXT,
-    identifier_type   TEXT
+    jersey_number         INTEGER,
+    -- What was actually written in the Číslo RP column ON THE DAY.
+    --
+    -- NOT NULL, and stored rather than derived at export time. If a player
+    -- later gains an RP number, an old report must not retroactively change
+    -- what it says -- the same principle as report versioning (section 5.3).
+    -- RP / DATE_OF_BIRTH / BIRTH_NUMBER.
+    identification_value  TEXT    NOT NULL,
+    identification_source TEXT    NOT NULL
+);
+
+-- A dismissed player's team plays a player short for ten minutes.
+--
+-- Its own table because a match may have more than one running at once: a
+-- second dismissal starts a second, independent period rather than
+-- extending the first. The ten minutes are fixed -- NOT shortened by a
+-- goal -- so nothing but the start instant needs storing.
+CREATE TABLE power_play_record (
+    match_id          TEXT    NOT NULL,
+    position          INTEGER NOT NULL,
+    short_handed_side TEXT    NOT NULL,
+    -- ISO-8601 instant, on the same continuous clock as kickoff_at.
+    started_at        TEXT    NOT NULL,
+    -- The minute as the referee wrote it against the card. Display only.
+    minute_kind       TEXT    NOT NULL,
+    minute_value      INTEGER,
+    PRIMARY KEY (match_id, position)
 );
 
 CREATE TABLE goal_record (
@@ -137,7 +164,7 @@ deleteMatch:
 DELETE FROM match_record WHERE id = ?;
 
 insertLineup:
-INSERT OR REPLACE INTO lineup_record (match_id, side, team_id, kit_colour) VALUES (?, ?, ?, ?);
+INSERT OR REPLACE INTO lineup_record (match_id, side, team_id, kit_id) VALUES (?, ?, ?, ?);
 
 selectLineups:
 SELECT * FROM lineup_record WHERE match_id = ?;
@@ -147,7 +174,8 @@ DELETE FROM lineup_record WHERE match_id = ?;
 
 insertAppearance:
 INSERT OR REPLACE INTO appearance_record (
-    id, match_id, side, position, player_id, jersey_number, identifier_value, identifier_type
+    id, match_id, side, position, player_id, jersey_number,
+    identification_value, identification_source
 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 selectAppearances:
@@ -178,6 +206,17 @@ SELECT * FROM card_record WHERE match_id = ? ORDER BY position;
 
 deleteCards:
 DELETE FROM card_record WHERE match_id = ?;
+
+insertPowerPlay:
+INSERT OR REPLACE INTO power_play_record (
+    match_id, position, short_handed_side, started_at, minute_kind, minute_value
+) VALUES (?, ?, ?, ?, ?, ?);
+
+selectPowerPlays:
+SELECT * FROM power_play_record WHERE match_id = ? ORDER BY position;
+
+deletePowerPlays:
+DELETE FROM power_play_record WHERE match_id = ?;
 
 insertConfirmation:
 INSERT OR REPLACE INTO confirmation_record (match_id, party, confirmed_at, confirmed_by, as_deputy)

@@ -1,0 +1,32 @@
+{
+  "$comment": [
+    "Pitch codes are LEAGUE-WIDE, not group-specific: the analysis lists",
+    "roughly 35 across Prague and any group may be scheduled on any of them.",
+    "Only the codes the analysis actually names are here; the rest arrive",
+    "with real data. `name` is omitted rather than invented -- PSMF",
+    "publishes the codes, and the long names are not in the analysis."
+  ],
+  "venues": [
+    {
+      "code": "METE1"
+    },
+    {
+      "code": "MIK"
+    },
+    {
+      "code": "MOTO1"
+    },
+    {
+      "code": "P1"
+    },
+    {
+      "code": "PRA"
+    },
+    {
+      "code": "ZAK"
+    },
+    {
+      "code": "ZAKOS"
+    }
+  ]
+}

@@ -45,6 +45,10 @@ data class Match(
      * in the background. iOS cannot run a background timer at all, and a
      * derived clock additionally cannot drift, cannot be killed, and
      * survives a reboot (TECH_STACK section 3).
+     *
+     * This one instant is the *whole* clock, because **the match clock runs
+     * continuously and never pauses** (analysis section 2.6). There is
+     * deliberately no accumulated-time or paused-at field to go with it.
      */
     val kickoffAt: Instant? = null,
     val goals: List<GoalEvent> = emptyList(),
@@ -57,6 +61,14 @@ data class Match(
     val assessment: Assessment = Assessment(),
     val result: MatchResult? = null,
     val confirmations: List<Confirmation> = emptyList(),
+    /**
+     * Ten-minute periods a side spends a player short after a dismissal.
+     *
+     * **The only timer in the match with a start and a finish.** The match
+     * clock itself never pauses — see `MatchClock.kt`, which holds both and
+     * explains why one of them stops and the other cannot.
+     */
+    val powerPlays: List<PowerPlay> = emptyList(),
 ) {
     fun lineup(side: TeamSide): Lineup? =
         when (side) {

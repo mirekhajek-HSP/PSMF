@@ -16,7 +16,7 @@ import kotlin.test.assertTrue
 class JerseyNumberOwnershipTest {
     @Test
     fun onePlayerCanWearDifferentNumbersInDifferentMatches() {
-        val player = Fixtures.player("p-baca", "Bača", "Petr", number = 13)
+        val player = Fixtures.player("baca-petr", "Bača", "Petr", number = 13)
 
         val lastWeek = Fixtures.appearance("app-1", player.id.value, number = 13)
         val thisWeek = Fixtures.appearance("app-2", player.id.value, number = 7)
@@ -33,25 +33,31 @@ class JerseyNumberOwnershipTest {
     }
 
     @Test
-    fun theIdentifierWrittenOnTheDayAlsoBelongsToTheAppearance() {
+    fun whatWasWrittenInTheRpColumnAlsoBelongsToTheAppearance() {
         // A player may turn up without their card, so what goes in the
-        // `Číslo RP` column is decided at the pitch, per match.
+        // `Číslo RP` column is decided at the pitch, per match -- and it is
+        // stored rather than derived, so an old report does not change if
+        // the player is registered later.
         val withCard =
             Fixtures.appearance(
                 "app-1",
                 "p-1",
                 13,
-                identifier = PlayerIdentifier("59001", PlayerIdentifierType.RP),
+                reportedIdentification = ReportedIdentification("59001", IdentificationSource.RP),
             )
         val withoutCard =
             Fixtures.appearance(
                 "app-2",
                 "p-1",
                 13,
-                identifier = PlayerIdentifier("990121", PlayerIdentifierType.DATE_OF_BIRTH),
+                reportedIdentification =
+                    ReportedIdentification("990121", IdentificationSource.DATE_OF_BIRTH),
             )
 
-        assertNotEquals(withCard.identifier?.type, withoutCard.identifier?.type)
+        assertNotEquals(
+            withCard.reportedIdentification.source,
+            withoutCard.reportedIdentification.source,
+        )
     }
 
     @Test

@@ -5,7 +5,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-import kotlin.test.assertTrue
 
 /**
  * RULE: **a goal may have no scorer.**
@@ -64,51 +63,8 @@ class GoalTest {
     }
 }
 
-/**
- * RULE: **the player identifier is one field plus a discriminator.**
- *
- * The ZoU has a single `Číslo RP` column holding either a registration
- * number or, for a player without their card, a date of birth. The worked
- * example contains `33 | 990121 | Hlok Petr` — six digits among five-digit
- * RP numbers (analysis section 2.5).
- */
-class PlayerIdentifierTest {
-    @Test
-    fun oneValueCarriesItsOwnKind() {
-        val rp = PlayerIdentifier("59001", PlayerIdentifierType.RP)
-        val dateOfBirth = PlayerIdentifier("990121", PlayerIdentifierType.DATE_OF_BIRTH)
-
-        // Same column, same field, different meaning. Two nullable fields
-        // would allow both to be set at once, which the paper cannot express.
-        assertEquals("59001", rp.asWrittenOnReport)
-        assertEquals("990121", dateOfBirth.asWrittenOnReport)
-        assertTrue(rp.type != dateOfBirth.type)
-    }
-
-    @Test
-    fun theThreeKindsAreExactlyThoseTheFormAndRegulationsAllow() {
-        assertEquals(
-            listOf(
-                PlayerIdentifierType.RP,
-                PlayerIdentifierType.DATE_OF_BIRTH,
-                PlayerIdentifierType.BIRTH_NUMBER,
-            ),
-            PlayerIdentifierType.entries.toList(),
-        )
-    }
-
-    @Test
-    fun aBlankIdentifierIsRejectedBecauseNullMeansNotRecorded() {
-        assertFailsWith<IllegalArgumentException> { PlayerIdentifier("", PlayerIdentifierType.RP) }
-        assertFailsWith<IllegalArgumentException> { PlayerIdentifier("  ", PlayerIdentifierType.RP) }
-    }
-
-    @Test
-    fun anIdentifierIsOptionalBecauseNoRpNumbersExistYet() {
-        // The one roster dependency that cannot be met from public data.
-        assertNull(Fixtures.player("p1", "Novak", "Jan", 7).identifier)
-    }
-}
+// Player identification moved out of this file when it stopped being one
+// polymorphic field: see IdentificationTest.kt.
 
 /**
  * RULE: **player names are Latin only.**

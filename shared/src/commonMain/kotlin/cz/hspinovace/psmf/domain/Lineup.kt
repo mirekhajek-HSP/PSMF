@@ -6,9 +6,9 @@ import kotlinx.serialization.Serializable
  * One player in one lineup: a single row of a team's block on page 1.
  *
  * Carries the two values that belong to *this match* rather than to the
- * player: the jersey number (analysis section 3.6) and the identifier
- * actually written in the `Číslo RP` column that day, which may be a date
- * of birth if the player turned up without their card.
+ * player: the jersey number (analysis section 3.6) and
+ * [reportedIdentification], which is what actually went in the `Číslo RP`
+ * column that day.
  */
 @Serializable
 data class Appearance(
@@ -16,10 +16,18 @@ data class Appearance(
     val playerId: PlayerId,
     val jerseyNumber: JerseyNumber?,
     /**
-     * What went in the `Číslo RP` column. Defaults from the player record
-     * but is editable, because the exception is decided at the pitch.
+     * **Not nullable, and stored rather than derived.**
+     *
+     * A row on the ZoU always has something in the `Číslo RP` column, and
+     * what it is depends on the day: the RP number if the card was
+     * present, the date of birth if it was not. Deriving it at export time
+     * would mean a player who later gains an RP number retroactively
+     * changes an old report — the same versioning principle as analysis
+     * section 5.3.
+     *
+     * Default it with [Player.identificationFor].
      */
-    val identifier: PlayerIdentifier?,
+    val reportedIdentification: ReportedIdentification,
 )
 
 /**
@@ -37,11 +45,19 @@ data class Lineup(
     val teamId: TeamId,
     val appearances: List<Appearance>,
     /**
-     * `Barva dresů`. Defaulted from the team record but recorded per match,
-     * because the referee rates whether the team actually turned out in
-     * uniform kit (`B`) and a team may not match its registered colour.
+     * `Barva dresů` — **which of the team's two kit sets was worn**.
+     *
+     * A reference rather than a colour string, because the team owns the
+     * kits and the label written on the report is theirs. Selected on
+     * screen 3, defaulting to [Team.primaryKit]; recorded per match because
+     * the two sides must not clash and the referee separately rates whether
+     * the team turned out in uniform kit at all (`B`).
+     *
+     * Resolve it with [Team.kit]. This type cannot check the reference
+     * itself — a lineup does not know its team — so that check lives in the
+     * seed loader and in [Team.owns].
      */
-    val kitColour: String,
+    val kitId: KitId,
 ) {
     init {
         val duplicateNumbers =
@@ -63,6 +79,9 @@ data class Lineup(
     fun appearance(id: AppearanceId): Appearance? = appearances.firstOrNull { it.id == id }
 
     fun byJerseyNumber(number: JerseyNumber): Appearance? = appearances.firstOrNull { it.jerseyNumber == number }
+
+    /** True when [kitId] is one this team actually owns. */
+    fun kitBelongsTo(team: Team): Boolean = team.id == teamId && team.owns(kitId)
 
     /** Maximum on the field per side, including the goalkeeper: 5+1. */
     companion object {

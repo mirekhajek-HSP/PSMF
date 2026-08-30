@@ -10,6 +10,12 @@ import kotlinx.datetime.LocalTime
  *
  * Hand-written, not generated or mocked: shared tests use `kotlin.test`
  * and plain fakes, because MockK is JVM-only and cannot compile for iOS.
+ *
+ * Ids here are short readable strings rather than the UUIDs the seed files
+ * carry. That is fine and deliberate — the domain treats an id as opaque,
+ * and a test that says `TeamId("kominici")` is far easier to read than one
+ * that says `TeamId("d58671d2-...")`. The UUID rule is tested where it
+ * matters, against the shipped data and in `SeedIdentityTest`.
  */
 object Fixtures {
     val seasonId = SeasonId("2026-podzim")
@@ -18,6 +24,28 @@ object Fixtures {
     val awayTeamId = TeamId("sp-sumys")
     val fixtureId = FixtureId("6k-r1-01")
     val matchId = MatchId("match-1")
+
+    val homePrimaryKit = Kit(KitId("kit-kominici-1"), "modrá", listOf("modrá"))
+    val homeAlternateKit = Kit(KitId("kit-kominici-2"), "bílo-modrá", listOf("bílá", "modrá"))
+    val awayPrimaryKit = Kit(KitId("kit-sumys-1"), "černo-bílá", listOf("černá", "bílá"))
+
+    val homeTeam =
+        Team(
+            id = homeTeamId,
+            ref = "kominici",
+            groupId = groupId,
+            name = "Kominíci",
+            kits = listOf(homePrimaryKit, homeAlternateKit),
+        )
+
+    val awayTeam =
+        Team(
+            id = awayTeamId,
+            ref = "sp-sumys",
+            groupId = groupId,
+            name = "Sp. Sumýš",
+            kits = listOf(awayPrimaryKit),
+        )
 
     val group =
         Group(
@@ -30,6 +58,7 @@ object Fixtures {
     val fixture =
         Fixture(
             id = fixtureId,
+            ref = "6k-r1-01",
             groupId = groupId,
             round = 1,
             date = LocalDate(2026, 8, 31),
@@ -39,39 +68,56 @@ object Fixtures {
             awayTeamId = awayTeamId,
         )
 
+    /** The date of birth from the worked example: `990121` is 21 Jan 1999. */
+    val hlokDateOfBirth = LocalDate(1999, 1, 21)
+
     fun player(
-        id: String,
+        ref: String,
         surname: String,
-        given: String,
+        first: String,
         number: Int?,
+        dateOfBirth: LocalDate? = LocalDate(1990, 6, 15),
+        rpNumber: RpNumber? = null,
+        discipline: DisciplinaryRecord? = null,
     ) = Player(
-        id = PlayerId(id),
+        id = PlayerId(ref),
+        ref = ref,
         teamId = homeTeamId,
-        name = PlayerName(PersonName.of(surname), PersonName.of(given)),
-        identifier = null,
+        name = PlayerName(PersonName.of(surname), PersonName.of(first)),
+        rpNumber = rpNumber,
+        dateOfBirth = dateOfBirth,
+        birthNumber = null,
         defaultJerseyNumber = JerseyNumber.orNull(number),
+        discipline = discipline,
     )
+
+    /** Defaults to a date of birth, which is what the seed data actually has. */
+    fun identification(
+        value: String = "900615",
+        source: IdentificationSource = IdentificationSource.DATE_OF_BIRTH,
+    ) = ReportedIdentification(value, source)
 
     fun appearance(
         id: String,
         playerId: String,
         number: Int?,
-        identifier: PlayerIdentifier? = null,
+        reportedIdentification: ReportedIdentification = identification(),
     ) = Appearance(
         id = AppearanceId(id),
         playerId = PlayerId(playerId),
         jerseyNumber = JerseyNumber.orNull(number),
-        identifier = identifier,
+        reportedIdentification = reportedIdentification,
     )
 
     fun lineup(
         side: TeamSide,
         vararg appearances: Appearance,
+        kitId: KitId? = null,
     ) = Lineup(
         side = side,
         teamId = if (side == TeamSide.HOME) homeTeamId else awayTeamId,
         appearances = appearances.toList(),
-        kitColour = if (side == TeamSide.HOME) "modrá" else "černo-bílá",
+        kitId = kitId ?: if (side == TeamSide.HOME) homePrimaryKit.id else awayPrimaryKit.id,
     )
 
     val officials =
@@ -89,6 +135,7 @@ object Fixtures {
     val awayLineup = lineup(TeamSide.AWAY, bacaAppearance)
 
     val confirmedAt = kotlin.time.Instant.parse("2026-08-31T20:05:00Z")
+    val kickoffAt = kotlin.time.Instant.parse("2026-08-31T19:00:00Z")
 
     /** A match with header and lineups but nothing recorded yet. */
     fun matchInSetup() =
