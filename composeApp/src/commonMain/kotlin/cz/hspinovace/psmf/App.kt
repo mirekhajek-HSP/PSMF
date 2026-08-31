@@ -18,6 +18,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cz.hspinovace.psmf.data.settings.AppLanguage
 import cz.hspinovace.psmf.data.settings.ThemeChoice
 import cz.hspinovace.psmf.domain.MatchId
+import cz.hspinovace.psmf.domain.TeamId
 import cz.hspinovace.psmf.resources.Res
 import cz.hspinovace.psmf.resources.assessment_title
 import cz.hspinovace.psmf.resources.console_title
@@ -53,7 +54,10 @@ import cz.hspinovace.psmf.ui.settings.SettingsViewModel
 import cz.hspinovace.psmf.ui.shell.AppShell
 import cz.hspinovace.psmf.ui.shell.NoReportScreen
 import cz.hspinovace.psmf.ui.shell.ShellViewModel
+import cz.hspinovace.psmf.ui.teams.TeamRosterScreen
+import cz.hspinovace.psmf.ui.teams.TeamRosterViewModel
 import cz.hspinovace.psmf.ui.teams.TeamsScreen
+import cz.hspinovace.psmf.ui.teams.TeamsViewModel
 import cz.hspinovace.psmf.ui.theme.PsmfTheme
 import cz.hspinovace.psmf.usecase.ResumePoint
 import kotlinx.coroutines.delay
@@ -216,7 +220,14 @@ private fun Route(
         }
 
         Destination.Teams -> {
-            TeamsScreen(modifier = modifier)
+            TeamsRoute(
+                onOpenTeam = { navigator.goTo(Destination.TeamRoster(it)) },
+                modifier = modifier,
+            )
+        }
+
+        is Destination.TeamRoster -> {
+            TeamRosterRoute(teamId = current.teamId, modifier = modifier)
         }
 
         Destination.Settings -> {
@@ -243,6 +254,7 @@ private fun Destination.title(): String =
         is Destination.Recap -> stringResource(Res.string.recap_title)
         is Destination.Export -> stringResource(Res.string.export_title)
         Destination.Teams -> stringResource(Res.string.teams_title)
+        is Destination.TeamRoster -> stringResource(Res.string.teams_title)
         Destination.Settings -> stringResource(Res.string.settings_title)
     }
 
@@ -286,8 +298,50 @@ private fun FixturesRoute(
         state = state,
         onFixtureSelected = viewModel::onFixtureSelected,
         onRetry = viewModel::load,
+        onFilterChanged = viewModel::onFilterChanged,
         modifier = modifier,
     )
+}
+
+/**
+ * The Týmy tab.
+ *
+ * Reloaded on every entry rather than observed, because the only things
+ * that change it are edits made on this screen and on the roster below it,
+ * and both come back through here.
+ */
+@Composable
+private fun TeamsRoute(
+    onOpenTeam: (TeamId) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val viewModel: TeamsViewModel = koinViewModel()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    // Following a team on the roster screen has to show up here when the
+    // referee comes back, and the directory was loaded before they left.
+    LaunchedEffect(Unit) { viewModel.reload() }
+
+    TeamsScreen(
+        state = state,
+        onEvent = viewModel::onEvent,
+        onOpenTeam = onOpenTeam,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun TeamRosterRoute(
+    teamId: TeamId,
+    modifier: Modifier = Modifier,
+) {
+    // Keyed by the team, so opening a second roster does not inherit the
+    // first one's half-typed number.
+    val viewModel: TeamRosterViewModel =
+        koinViewModel(key = teamId.value) { parametersOf(teamId) }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    TeamRosterScreen(state = state, onEvent = viewModel::onEvent, modifier = modifier)
 }
 
 @Composable

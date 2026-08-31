@@ -203,5 +203,28 @@
 
     <!-- Screen 3a: teams -->
     <string name="teams_title">Команди</string>
-    <string name="teams_placeholder">Відстежувані команди, пошук і склади. Поки що порожньо.</string>
+    <string name="teams_search">Пошук команди</string>
+    <string name="teams_followed">Відстежувані команди</string>
+    <string name="teams_followed_empty">Поки немає. Відстежування піднімає команду сюди та на початок фільтра матчів.</string>
+    <string name="teams_no_matches">Нічого для «%1$s».</string>
+    <string name="teams_follow">Відстежувати</string>
+    <string name="teams_unfollow">Не відстежувати</string>
+    <string name="teams_squad_size">%1$d у складі</string>
+    <string name="teams_kits">Комплекти форми</string>
+    <string name="teams_kits_note">Команда має два комплекти, перший — основний. Що вдягли, записують на матчі.</string>
+    <string name="teams_roster">Склад</string>
+    <string name="teams_read_only_note">Змінити можна лише номер. Імена, номери RP і картки — це записи ліги.</string>
+    <string name="teams_absence_note">Відсутність зазначають у протоколі, не тут: вона стосується одного матчу, а не гравця.</string>
+    <string name="teams_rp_number">Номер RP: %1$s</string>
+    <string name="teams_rp_missing">PSMF ще не надала номери RP. Тоді у протокол пишуть дату народження.</string>
+    <string name="teams_cards_season">ЖК за сезон: %1$d</string>
+    <string name="teams_jersey_range">0–99</string>
+    <string name="teams_jersey_restore">Повернути номер ліги</string>
+    <string name="fixtures_filter_league">Ліга</string>
+    <string name="fixtures_filter_team">Команда</string>
+    <string name="fixtures_filter_any">Усі</string>
+    <string name="fixtures_filter_followed">Відстежувані</string>
+    <string name="fixtures_filter_others">Інші</string>
+    <string name="fixtures_filter_clear">Скинути фільтр</string>
+    <string name="fixtures_filtered_empty">Жоден матч не відповідає фільтру.</string>
 </resources>

@@ -31,6 +31,7 @@ import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.resources.Res
 import cz.hspinovace.psmf.resources.fixtures_empty
 import cz.hspinovace.psmf.resources.fixtures_error_title
+import cz.hspinovace.psmf.resources.fixtures_filtered_empty
 import cz.hspinovace.psmf.resources.fixtures_loading
 import cz.hspinovace.psmf.resources.fixtures_retry
 import cz.hspinovace.psmf.resources.fixtures_round
@@ -43,6 +44,7 @@ import cz.hspinovace.psmf.ui.common.PrimaryAction
 import cz.hspinovace.psmf.ui.format.asClockTime
 import cz.hspinovace.psmf.ui.format.asDayAndMonth
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
+import cz.hspinovace.psmf.usecase.FixtureFilter
 import cz.hspinovace.psmf.usecase.FixtureRow
 import org.jetbrains.compose.resources.stringResource
 
@@ -56,6 +58,7 @@ fun FixturesScreen(
     state: FixturesUiState,
     onFixtureSelected: (FixtureId) -> Unit,
     onRetry: () -> Unit,
+    onFilterChanged: (FixtureFilter) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -69,10 +72,25 @@ fun FixturesScreen(
             }
 
             is FixturesUiState.Ready -> {
-                if (state.listing.isEmpty) {
-                    CentredMessage(stringResource(Res.string.fixtures_empty))
-                } else {
-                    FixtureList(state, onFixtureSelected)
+                Column {
+                    // Outside the list, so it stays put: a filter that
+                    // scrolls away cannot be cleared without scrolling back
+                    // to find it, and it is drawn even when the result is
+                    // empty for exactly that reason.
+                    FixtureFilterRow(state.listing, onFilterChanged)
+                    when {
+                        state.listing.filteredToNothing -> {
+                            CentredMessage(stringResource(Res.string.fixtures_filtered_empty))
+                        }
+
+                        state.listing.isEmpty -> {
+                            CentredMessage(stringResource(Res.string.fixtures_empty))
+                        }
+
+                        else -> {
+                            FixtureList(state, onFixtureSelected)
+                        }
+                    }
                 }
             }
         }

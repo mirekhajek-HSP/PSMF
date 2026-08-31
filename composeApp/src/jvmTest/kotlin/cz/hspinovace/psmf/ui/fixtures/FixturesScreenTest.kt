@@ -32,6 +32,7 @@ class FixturesScreenTest {
                         state = FixturesUiState.Ready(UiTestData.listing()),
                         onFixtureSelected = {},
                         onRetry = {},
+                        onFilterChanged = {},
                     )
                 }
             }
@@ -53,6 +54,7 @@ class FixturesScreenTest {
                         state = FixturesUiState.Ready(UiTestData.listing()),
                         onFixtureSelected = { tapped = it },
                         onRetry = {},
+                        onFilterChanged = {},
                     )
                 }
             }
@@ -73,6 +75,7 @@ class FixturesScreenTest {
                             state = FixturesUiState.Ready(UiTestData.listing(UiTestData.row(MatchStatus.IN_PROGRESS))),
                             onFixtureSelected = {},
                             onRetry = {},
+                            onFilterChanged = {},
                         )
                     }
                 }
@@ -93,6 +96,7 @@ class FixturesScreenTest {
                             state = FixturesUiState.Failed("Seed data problem in 6k.json: unknown team 'x'"),
                             onFixtureSelected = {},
                             onRetry = { retried = true },
+                            onFilterChanged = {},
                         )
                     }
                 }
@@ -117,6 +121,7 @@ class FixturesScreenTest {
                             state = FixturesUiState.Ready(UiTestData.listing()),
                             onFixtureSelected = {},
                             onRetry = {},
+                            onFilterChanged = {},
                         )
                     }
                 }
@@ -139,6 +144,7 @@ class FixturesScreenTest {
                                 ),
                             onFixtureSelected = {},
                             onRetry = {},
+                            onFilterChanged = {},
                         )
                     }
                 }

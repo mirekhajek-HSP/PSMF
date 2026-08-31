@@ -1,6 +1,7 @@
 package cz.hspinovace.psmf.ui.navigation
 
 import cz.hspinovace.psmf.domain.MatchId
+import cz.hspinovace.psmf.domain.TeamId
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -93,6 +94,19 @@ sealed interface Destination {
     }
 
     data object Teams : Destination {
+        override val tab: Tab get() = Tab.TEAMS
+    }
+
+    /**
+     * One team's roster, pushed on top of the Týmy tab.
+     *
+     * The only destination in the app that is a genuine drill-down, which
+     * is why re-selecting its tab pops back to the directory: unlike the
+     * report, there is nothing in progress here to throw away.
+     */
+    data class TeamRoster(
+        val teamId: TeamId,
+    ) : Destination {
         override val tab: Tab get() = Tab.TEAMS
     }
 

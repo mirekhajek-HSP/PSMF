@@ -30,15 +30,20 @@ import kotlin.time.Instant
  * it, so on a phone that is being installed to repeatedly that instruction
  * is a standing offer to destroy a report the referee has not yet sent.
  *
- * These tests start from `databases/1.db` -- the *recorded bytes* of the
- * schema the demo shipped -- rather than from a fresh database with the old
- * CREATE statements replayed into it. A migration test that starts from an
- * empty database proves only that the SQL parses.
+ * These tests start from the *recorded bytes* of a released schema --
+ * `databases/1.db`, `databases/2.db` -- rather than from a fresh database
+ * with the old CREATE statements replayed into it. A migration test that
+ * starts from an empty database proves only that the SQL parses.
  *
  * `verifyCommonMainPsmfDatabaseMigration` covers the other half, and covers
  * it better than a test could: it compares the *shape* of every migrated
  * schema against the `.sq` files. What it cannot do is notice that the
  * shape survived and the rows did not.
+ *
+ * **Only one assertion in the module names the version number**, and it is
+ * in `DatabaseSmokeTest`. Everything here asks
+ * `PsmfDatabase.Schema.version`, so adding a migration does not break four
+ * tests that were not about the number.
  */
 class SchemaMigrationTest {
     private val temporaryFiles = mutableListOf<File>()
@@ -47,6 +52,8 @@ class SchemaMigrationTest {
     fun cleanUp() {
         temporaryFiles.forEach { it.delete() }
     }
+
+    private val current: Int = PsmfDatabase.Schema.version.toInt()
 
     private val schemaDirectory: File =
         File(
@@ -109,8 +116,11 @@ class SchemaMigrationTest {
     }
 
     @Test
-    fun aFinishedReportWrittenByVersionOneIsIntactAfterMigratingToVersionTwo() =
+    fun aFinishedReportWrittenByTheFirstReleaseIsIntactAfterEveryMigration() =
         runTest {
+            // Version 1 is the schema the demo shipped. A phone that has
+            // not been updated since is still on it, and has to arrive at
+            // the current version through every `.sqm` in order.
             val database = databaseAtVersion(1)
             val report = finishedReport()
 
@@ -122,10 +132,33 @@ class SchemaMigrationTest {
 
             val restored = afterTheUpdate(database) { it.load(report.id) }
 
-            assertEquals(2, userVersion(database), "the migration did not run")
+            assertEquals(current, userVersion(database), "the migration did not run")
             assertFalse("schema_meta" in tableNames(database), "1.sqm did not take effect")
             assertNotNull(restored, "the report did not survive the migration")
             assertEquals(report, restored)
+        }
+
+    @Test
+    fun aReportWrittenBeforeTheTeamsTabIsIntactAfterItsMigration() =
+        runTest {
+            // The step the Týmy tab added, on its own. The test above walks
+            // the whole chain and would pass with 2.sqm doing nothing to the
+            // rows *and* nothing at all; this one starts on the version
+            // immediately before it, so only 2.sqm can be responsible.
+            val database = databaseAtVersion(2)
+            val report = finishedReport()
+
+            beforeTheUpdate(database) { it.save(report) }
+
+            assertEquals(2, userVersion(database))
+            assertFalse("followed_team" in tableNames(database), "2.db already had the new tables")
+
+            val restored = afterTheUpdate(database) { it.load(report.id) }
+
+            assertEquals(current, userVersion(database), "2.sqm did not run")
+            assertContains(tableNames(database), "followed_team")
+            assertContains(tableNames(database), "jersey_override")
+            assertEquals(report, assertNotNull(restored, "the report did not survive 2.sqm"))
         }
 
     @Test
@@ -160,7 +193,7 @@ class SchemaMigrationTest {
             val secondLaunch = afterTheUpdate(database) { it.load(report.id) }
 
             assertEquals(firstLaunch, secondLaunch)
-            assertEquals(2, userVersion(database))
+            assertEquals(current, userVersion(database))
         }
 
     @Test
@@ -174,9 +207,12 @@ class SchemaMigrationTest {
 
             afterTheUpdate(database) { it.summaries() }
 
-            assertEquals(2, userVersion(database))
+            assertEquals(current, userVersion(database))
             assertFalse("schema_meta" in tableNames(database))
             assertContains(tableNames(database), "match_record")
+            // Present from the CREATE statements, not from a migration.
+            assertContains(tableNames(database), "followed_team")
+            assertContains(tableNames(database), "jersey_override")
         }
 
     /**

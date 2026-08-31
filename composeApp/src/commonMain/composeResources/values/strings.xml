@@ -207,5 +207,28 @@
 
     <!-- Screen 3a: teams -->
     <string name="teams_title">Týmy</string>
-    <string name="teams_placeholder">Sledované týmy, hledání a soupisky. Zatím prázdné.</string>
+    <string name="teams_search">Hledat tým</string>
+    <string name="teams_followed">Sledované týmy</string>
+    <string name="teams_followed_empty">Zatím žádné. Sledováním se tým dostane sem a na začátek filtru zápasů.</string>
+    <string name="teams_no_matches">Nic pro „%1$s“.</string>
+    <string name="teams_follow">Sledovat</string>
+    <string name="teams_unfollow">Nesledovat</string>
+    <string name="teams_squad_size">%1$d na soupisce</string>
+    <string name="teams_kits">Sady dresů</string>
+    <string name="teams_kits_note">Tým má dvě sady, první je základní. Co se hrálo, se zapisuje u zápasu.</string>
+    <string name="teams_roster">Soupiska</string>
+    <string name="teams_read_only_note">Upravit lze jen číslo dresu. Jména, čísla RP a karty jsou záznam ligy.</string>
+    <string name="teams_absence_note">Neúčast se zadává u zápisu, ne tady: platí pro jeden zápas, ne pro hráče.</string>
+    <string name="teams_rp_number">Číslo RP: %1$s</string>
+    <string name="teams_rp_missing">PSMF čísla RP zatím nedodala. Do zápisu se pak píše datum narození.</string>
+    <string name="teams_cards_season">ŽK v sezoně: %1$d</string>
+    <string name="teams_jersey_range">0–99</string>
+    <string name="teams_jersey_restore">Vrátit číslo z ligy</string>
+    <string name="fixtures_filter_league">Liga</string>
+    <string name="fixtures_filter_team">Tým</string>
+    <string name="fixtures_filter_any">Vše</string>
+    <string name="fixtures_filter_followed">Sledované</string>
+    <string name="fixtures_filter_others">Ostatní</string>
+    <string name="fixtures_filter_clear">Zrušit filtr</string>
+    <string name="fixtures_filtered_empty">Filtru neodpovídá žádný zápas.</string>
 </resources>

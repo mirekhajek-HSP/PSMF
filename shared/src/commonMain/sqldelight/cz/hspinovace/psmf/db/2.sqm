@@ -1,0 +1,20 @@
+-- Version 2 to version 3: the Týmy tab's two tables.
+--
+-- Both are new and empty, so there is nothing to move and no column to
+-- backfill. A referee updating into this version has followed nothing and
+-- overridden nothing, which is exactly the state an empty table means.
+--
+-- The point of this file is not the DDL, which is trivial. It is that the
+-- match database survives the update at all: before Phase 0 there was no
+-- migration mechanism, so adding these two tables would have meant an
+-- uninstall, and an uninstall takes every report on the phone with it.
+
+CREATE TABLE followed_team (
+    team_id     TEXT NOT NULL PRIMARY KEY,
+    followed_at TEXT NOT NULL
+);
+
+CREATE TABLE jersey_override (
+    player_id     TEXT    NOT NULL PRIMARY KEY,
+    jersey_number INTEGER NOT NULL
+);

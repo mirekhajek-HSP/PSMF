@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import cz.hspinovace.psmf.data.seed.SeedException
 import cz.hspinovace.psmf.domain.FixtureId
 import cz.hspinovace.psmf.domain.MatchId
+import cz.hspinovace.psmf.usecase.FixtureFilter
 import cz.hspinovace.psmf.usecase.FixtureListing
 import cz.hspinovace.psmf.usecase.ListFixtures
 import cz.hspinovace.psmf.usecase.ResumePoint
@@ -65,7 +66,23 @@ class FixturesViewModel(
     private val _openMatch = MutableStateFlow<OpenMatch?>(null)
     val openMatch: StateFlow<OpenMatch?> = _openMatch.asStateFlow()
 
+    /**
+     * What the list is narrowed to.
+     *
+     * Held here rather than in the screen, so that going into a report and
+     * coming back does not silently widen the list again — the referee who
+     * filtered to one team did so because they are officiating that team all
+     * evening.
+     */
+    private var filter = FixtureFilter()
+
     init {
+        load()
+    }
+
+    /** Narrow the list, and remember it. */
+    fun onFilterChanged(filter: FixtureFilter) {
+        this.filter = filter
         load()
     }
 
@@ -74,7 +91,7 @@ class FixturesViewModel(
         viewModelScope.launch {
             _state.value =
                 try {
-                    FixturesUiState.Ready(listFixtures())
+                    FixturesUiState.Ready(listFixtures(filter))
                 } catch (e: SeedException) {
                     // Only the loader's own failure is caught. Anything else
                     // is a defect and should not be dressed up as bad data.

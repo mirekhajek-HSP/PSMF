@@ -1,14 +1,24 @@
 package cz.hspinovace.psmf.usecase
 
+import cz.hspinovace.psmf.data.seed.LeagueGroup
+import cz.hspinovace.psmf.domain.Fixture
 import cz.hspinovace.psmf.domain.FixtureId
 import cz.hspinovace.psmf.domain.Fixtures
+import cz.hspinovace.psmf.domain.Group
+import cz.hspinovace.psmf.domain.GroupId
+import cz.hspinovace.psmf.domain.Kit
+import cz.hspinovace.psmf.domain.KitId
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.MatchStatus
+import cz.hspinovace.psmf.domain.Team
 import cz.hspinovace.psmf.domain.TeamId
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -16,7 +26,7 @@ import kotlin.test.assertTrue
 /** Screen 1's data: seed fixtures joined to whatever reports exist. */
 class ListFixturesTest {
     private fun listFixtures(matches: FakeMatchRepository = FakeMatchRepository()) =
-        ListFixtures(TestLeague.repository(), matches)
+        ListFixtures(TestLeague.repository(), matches, FakeFollowedTeamRepository())
 
     @Test
     fun groupsFixturesByRoundInOrder() =
@@ -106,8 +116,163 @@ class ListFixturesTest {
     @Test
     fun anEmptyCatalogueIsEmptyRatherThanBroken() =
         runTest {
-            val empty = ListFixtures(FakeLeagueRepository(emptyList()), FakeMatchRepository())
+            val empty =
+                ListFixtures(
+                    FakeLeagueRepository(emptyList()),
+                    FakeMatchRepository(),
+                    FakeFollowedTeamRepository(),
+                )
             assertTrue(empty().isEmpty)
+        }
+}
+
+/**
+ * Narrowing the list.
+ *
+ * The list is flat and shows every bundled fixture. One group of twelve
+ * teams fits on a screen; nine divisions is on the order of nine hundred
+ * teams and several thousand fixtures, and a referee officiates a handful.
+ */
+class FixtureFilterTest {
+    /** A second league, so filtering by one has something to exclude. */
+    private val otherGroupId = GroupId("7a")
+
+    private val otherTeam =
+        Team(
+            id = TeamId("fk-letna"),
+            ref = "fk-letna",
+            groupId = otherGroupId,
+            name = "FK Letná",
+            kits = listOf(Kit(KitId("kit-letna-1"), "žlutá", listOf("žlutá"))),
+        )
+
+    private val otherOpponent =
+        Team(
+            id = TeamId("ac-stromovka"),
+            ref = "ac-stromovka",
+            groupId = otherGroupId,
+            name = "AC Stromovka",
+            kits = listOf(Kit(KitId("kit-stromovka-1"), "červená", listOf("červená"))),
+        )
+
+    private val otherGroup =
+        LeagueGroup(
+            season = TestLeague.season,
+            group = Group(id = otherGroupId, seasonId = Fixtures.seasonId, name = "7. liga A", reportCode = "7A"),
+            teams = listOf(otherTeam, otherOpponent),
+            players = emptyList(),
+            fixtures =
+                listOf(
+                    Fixture(
+                        id = FixtureId("7a-r1-01"),
+                        ref = "7a-r1-01",
+                        groupId = otherGroupId,
+                        round = 1,
+                        date = LocalDate(2026, 9, 2),
+                        time = LocalTime(19, 0),
+                        venue = TestLeague.venue.code,
+                        homeTeamId = otherTeam.id,
+                        awayTeamId = otherOpponent.id,
+                    ),
+                ),
+            venues = listOf(TestLeague.venue),
+        )
+
+    private fun listFixtures(followed: FakeFollowedTeamRepository = FakeFollowedTeamRepository()) =
+        ListFixtures(
+            FakeLeagueRepository(listOf(TestLeague.group, otherGroup)),
+            FakeMatchRepository(),
+            followed,
+        )
+
+    private fun FixtureListing.teamNames(): List<String> =
+        groups
+            .flatMap { group -> group.rounds.flatMap { it.fixtures } }
+            .flatMap { listOf(it.homeTeam.name, it.awayTeam.name) }
+            .distinct()
+
+    @Test
+    fun withNoFilterEveryLeagueIsListed() =
+        runTest {
+            val listing = listFixtures()()
+
+            assertEquals(listOf("6. liga K", "7. liga A"), listing.groups.map { it.group.name })
+            assertTrue(listing.hasSeveralGroups)
+            assertTrue(listing.filter.isEmpty)
+        }
+
+    @Test
+    fun filteringByLeagueLeavesOnlyThatLeague() =
+        runTest {
+            val listing = listFixtures()(FixtureFilter(groupId = otherGroupId))
+
+            assertEquals(listOf("7. liga A"), listing.groups.map { it.group.name })
+            assertFalse(listing.hasSeveralGroups)
+        }
+
+    @Test
+    fun filteringByTeamLeavesOnlyThatTeamsFixtures() =
+        runTest {
+            val listing = listFixtures()(FixtureFilter(teamId = otherTeam.id))
+
+            val fixtures = listing.groups.flatMap { group -> group.rounds.flatMap { it.fixtures } }
+            assertEquals(1, fixtures.size)
+            assertTrue(listing.teamNames().contains("FK Letná"))
+            // The other league's rounds are still there as empty groups,
+            // which is why `isEmpty` asks about fixtures and not groups.
+            assertFalse(listing.isEmpty)
+        }
+
+    @Test
+    fun aFilterThatExcludesEverythingSaysSoRatherThanLookingLikeNoData() =
+        runTest {
+            // "No fixtures" and "no fixtures matching what you asked for"
+            // are different sentences, and only one of them is alarming.
+            val listing = listFixtures()(FixtureFilter(groupId = otherGroupId, teamId = Fixtures.homeTeamId))
+
+            assertTrue(listing.isEmpty)
+            assertTrue(listing.filteredToNothing)
+        }
+
+    @Test
+    fun theTeamMenuPutsFollowedTeamsFirst() =
+        runTest {
+            // Where the Týmy tab's follow button pays for itself: at league
+            // scale this picker is otherwise a nine-hundred-item scroll.
+            val followed = FakeFollowedTeamRepository(setOf(otherTeam.id, Fixtures.awayTeamId))
+            val options = listFixtures(followed)().options
+
+            assertEquals(listOf("FK Letná", "Sp. Sumýš"), options.followedTeams.map { it.name })
+            assertEquals(listOf("AC Stromovka", "Kominíci"), options.otherTeams.map { it.name })
+            // And followed ones come first in the combined list, which is
+            // the order the menu is drawn in.
+            assertEquals(
+                listOf("FK Letná", "Sp. Sumýš", "AC Stromovka", "Kominíci"),
+                options.teams.map { it.name },
+            )
+        }
+
+    @Test
+    fun theOptionsStayCompleteWhileAFilterIsInForce() =
+        runTest {
+            // Options built from the filtered data would vanish as soon as
+            // they were used, leaving no way back except knowing to clear
+            // the filter first.
+            val options = listFixtures()(FixtureFilter(groupId = otherGroupId)).options
+
+            assertEquals(2, options.leagues.size)
+            assertEquals(4, options.teams.size)
+        }
+
+    @Test
+    fun theFilterCanNameWhatItIsSetTo() =
+        runTest {
+            // The screen shows "Liga: 7. liga A", so it has to be able to
+            // turn an id back into a name.
+            val listing = listFixtures()(FixtureFilter(groupId = otherGroupId, teamId = otherTeam.id))
+
+            assertEquals("7. liga A", listing.options.league(otherGroupId)?.name)
+            assertEquals("FK Letná", listing.options.team(otherTeam.id)?.name)
         }
 }
 

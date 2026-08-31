@@ -199,5 +199,28 @@
 
     <!-- Screen 3a: teams -->
     <string name="teams_title">Teams</string>
-    <string name="teams_placeholder">Followed teams, search and rosters. Empty for now.</string>
+    <string name="teams_search">Search for a team</string>
+    <string name="teams_followed">Followed teams</string>
+    <string name="teams_followed_empty">None yet. Following a team brings it here and to the top of the fixture filter.</string>
+    <string name="teams_no_matches">Nothing for “%1$s”.</string>
+    <string name="teams_follow">Follow</string>
+    <string name="teams_unfollow">Unfollow</string>
+    <string name="teams_squad_size">%1$d on the squad list</string>
+    <string name="teams_kits">Kit sets</string>
+    <string name="teams_kits_note">A team owns two sets; the first is the primary. What was worn is recorded at the match.</string>
+    <string name="teams_roster">Squad list</string>
+    <string name="teams_read_only_note">Only the jersey number can be changed. Names, RP numbers and cards are the league’s record.</string>
+    <string name="teams_absence_note">Absence is set in the report, not here: it is about one match, not about a player.</string>
+    <string name="teams_rp_number">RP number: %1$s</string>
+    <string name="teams_rp_missing">PSMF have not supplied RP numbers yet. The report then takes the date of birth.</string>
+    <string name="teams_cards_season">Yellows this season: %1$d</string>
+    <string name="teams_jersey_range">0–99</string>
+    <string name="teams_jersey_restore">Restore the league’s number</string>
+    <string name="fixtures_filter_league">League</string>
+    <string name="fixtures_filter_team">Team</string>
+    <string name="fixtures_filter_any">All</string>
+    <string name="fixtures_filter_followed">Followed</string>
+    <string name="fixtures_filter_others">Others</string>
+    <string name="fixtures_filter_clear">Clear the filter</string>
+    <string name="fixtures_filtered_empty">No fixture matches the filter.</string>
 </resources>

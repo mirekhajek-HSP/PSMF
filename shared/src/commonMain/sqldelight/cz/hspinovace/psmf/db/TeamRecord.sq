@@ -1,0 +1,64 @@
+-- What the referee changed on top of league data.
+--
+-- Seed data is a bundled resource and is replaced wholesale on every app
+-- update, so nothing a person does may be written back into it. These two
+-- tables are the whole of the device-side layer over it: which teams the
+-- referee follows, and which default jersey numbers they have corrected.
+--
+-- Both are keyed by the opaque ids from the seed files rather than by refs
+-- or names, for the reason `Catalogue.kt` gives: a ref is allowed to go
+-- stale and a name is allowed to change, and either would silently detach
+-- a row here from the thing it is about.
+--
+-- Neither table is part of a report. A row here has no effect on anything
+-- already written -- the jersey number on a report belongs to the
+-- appearance, snapshotted on the day -- and `JerseyOverrideTest` is the
+-- test that keeps that true.
+
+-- Teams the referee has chosen to keep at the top of the list.
+--
+-- Follow, not download: everything is already on the device, and a
+-- progress bar over a local file is a lie. The verb still works if league
+-- data ever arrives over a network.
+CREATE TABLE followed_team (
+    team_id     TEXT NOT NULL PRIMARY KEY,
+    -- Not decoration. This is device state with no other provenance, and
+    -- when a team entered the list is the only way to answer "why is this
+    -- here" later. It also gives the raw query a defined order that does
+    -- not depend on display names.
+    followed_at TEXT NOT NULL
+);
+
+-- A corrected default jersey number.
+--
+-- The *default* only: what a player is expected to wear, offered as a
+-- pre-fill by the lineup screen. The number that ends up on a report is
+-- the one in `appearance_record`, entered at the match.
+--
+-- Absence of a row means the seed value stands, which is why clearing an
+-- override is a DELETE and not a write of null. A NULL override and no
+-- override would otherwise be two ways of saying the same thing.
+CREATE TABLE jersey_override (
+    player_id     TEXT    NOT NULL PRIMARY KEY,
+    jersey_number INTEGER NOT NULL
+);
+
+-- ---------------------------------------------------------------------------
+
+selectFollowedTeams:
+SELECT team_id FROM followed_team ORDER BY followed_at, team_id;
+
+followTeam:
+INSERT OR REPLACE INTO followed_team (team_id, followed_at) VALUES (?, ?);
+
+unfollowTeam:
+DELETE FROM followed_team WHERE team_id = ?;
+
+selectJerseyOverrides:
+SELECT player_id, jersey_number FROM jersey_override;
+
+setJerseyOverride:
+INSERT OR REPLACE INTO jersey_override (player_id, jersey_number) VALUES (?, ?);
+
+clearJerseyOverride:
+DELETE FROM jersey_override WHERE player_id = ?;

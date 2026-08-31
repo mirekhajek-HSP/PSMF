@@ -5,15 +5,20 @@ import cz.hspinovace.psmf.data.league.LoadedFixture
 import cz.hspinovace.psmf.data.match.MatchRepository
 import cz.hspinovace.psmf.data.match.MatchSummary
 import cz.hspinovace.psmf.data.seed.LeagueGroup
+import cz.hspinovace.psmf.data.team.FollowedTeamRepository
+import cz.hspinovace.psmf.data.team.JerseyOverrideRepository
 import cz.hspinovace.psmf.domain.DisciplinaryRecord
 import cz.hspinovace.psmf.domain.Fixture
 import cz.hspinovace.psmf.domain.FixtureId
 import cz.hspinovace.psmf.domain.Fixtures
 import cz.hspinovace.psmf.domain.GroupId
+import cz.hspinovace.psmf.domain.JerseyNumber
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.MatchStatus
+import cz.hspinovace.psmf.domain.PlayerId
 import cz.hspinovace.psmf.domain.Season
+import cz.hspinovace.psmf.domain.TeamId
 import cz.hspinovace.psmf.domain.Venue
 import cz.hspinovace.psmf.domain.VenueCode
 import kotlinx.coroutines.flow.Flow
@@ -62,6 +67,50 @@ class FakeMatchRepository(
     override suspend fun delete(id: MatchId) {
         stored.remove(id)
         writes.value = writes.value + 1
+    }
+}
+
+/**
+ * The followed-team list, in memory.
+ *
+ * A `MutableStateFlow` behind it rather than a plain set, because the
+ * screens observe: following a team from the roster has to move it into the
+ * followed section of the tab the referee came from, without either screen
+ * telling the other.
+ */
+class FakeFollowedTeamRepository(
+    initial: Set<TeamId> = emptySet(),
+) : FollowedTeamRepository {
+    private val teams = MutableStateFlow(initial)
+
+    override fun observe(): Flow<Set<TeamId>> = teams
+
+    override suspend fun followed(): Set<TeamId> = teams.value
+
+    override suspend fun setFollowed(
+        teamId: TeamId,
+        followed: Boolean,
+    ) {
+        teams.value = if (followed) teams.value + teamId else teams.value - teamId
+    }
+}
+
+/** Corrected default jersey numbers, in memory. */
+class FakeJerseyOverrideRepository(
+    initial: Map<PlayerId, JerseyNumber> = emptyMap(),
+) : JerseyOverrideRepository {
+    private val numbers = MutableStateFlow(initial)
+
+    override fun observe(): Flow<Map<PlayerId, JerseyNumber>> = numbers
+
+    override suspend fun overrides(): Map<PlayerId, JerseyNumber> = numbers.value
+
+    override suspend fun setDefaultJerseyNumber(
+        playerId: PlayerId,
+        number: JerseyNumber?,
+    ) {
+        numbers.value =
+            if (number == null) numbers.value - playerId else numbers.value + (playerId to number)
     }
 }
 
