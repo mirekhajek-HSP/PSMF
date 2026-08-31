@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,6 +42,9 @@ import cz.hspinovace.psmf.resources.export_problem_officials
 import cz.hspinovace.psmf.resources.export_problem_result
 import cz.hspinovace.psmf.resources.export_problem_score_mismatch
 import cz.hspinovace.psmf.resources.export_ready
+import cz.hspinovace.psmf.resources.export_save
+import cz.hspinovace.psmf.resources.export_save_failed
+import cz.hspinovace.psmf.resources.export_saved
 import cz.hspinovace.psmf.resources.export_send
 import cz.hspinovace.psmf.resources.export_sent
 import cz.hspinovace.psmf.ui.common.ActionRow
@@ -112,23 +116,19 @@ fun ExportScreen(
                 }
             }
 
-            if (state.sent) {
-                Text(
-                    text = stringResource(Res.string.export_sent, PSMF_REPORT_ADDRESS),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            }
-            if (state.sendFailed) {
-                Text(
-                    text = stringResource(Res.string.export_failed),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
+            Outcomes(state)
 
             if (state.ready) {
+                // Save first, send second: a copy on the device the
+                // referee can get back to on their own, then the mail
+                // draft that still needs their own tap to actually go.
                 ActionRow {
+                    OutlinedButton(
+                        onClick = { onEvent(ExportEvent.SavePressed) },
+                        modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
+                    ) {
+                        Text(stringResource(Res.string.export_save))
+                    }
                     PrimaryAction(
                         text = stringResource(Res.string.export_send),
                         onClick = { onEvent(ExportEvent.SendPressed) },
@@ -136,6 +136,46 @@ fun ExportScreen(
                 }
             }
         }
+    }
+}
+
+/**
+ * What happened the last time the referee pressed save or send.
+ *
+ * Both outcomes stay on screen at once where they can -- a referee who
+ * saved and then sent should see both confirmations, not have the first
+ * one replaced. Only one of a pair (saved/save-failed, sent/send-failed)
+ * is ever true at a time, which `ExportViewModel.saveHandled` enforces.
+ */
+@Composable
+private fun Outcomes(state: ExportUiState) {
+    if (state.saved) {
+        Text(
+            text = stringResource(Res.string.export_saved),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+    if (state.saveFailed) {
+        Text(
+            text = stringResource(Res.string.export_save_failed),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error,
+        )
+    }
+    if (state.sent) {
+        Text(
+            text = stringResource(Res.string.export_sent, PSMF_REPORT_ADDRESS),
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.primary,
+        )
+    }
+    if (state.sendFailed) {
+        Text(
+            text = stringResource(Res.string.export_failed),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.error,
+        )
     }
 }
 

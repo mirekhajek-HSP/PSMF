@@ -36,6 +36,7 @@ import cz.hspinovace.psmf.ui.console.ConsoleScreen
 import cz.hspinovace.psmf.ui.console.ConsoleViewModel
 import cz.hspinovace.psmf.ui.export.ExportScreen
 import cz.hspinovace.psmf.ui.export.ExportViewModel
+import cz.hspinovace.psmf.ui.export.rememberReportSaver
 import cz.hspinovace.psmf.ui.fixtures.FixturesScreen
 import cz.hspinovace.psmf.ui.fixtures.FixturesViewModel
 import cz.hspinovace.psmf.ui.fixtures.OpenMatch
@@ -470,6 +471,15 @@ private fun ExportRoute(
 ) {
     val viewModel: ExportViewModel = koinViewModel(key = matchId.value) { parametersOf(matchId) }
     val state by viewModel.state.collectAsStateWithLifecycle()
+
+    // The save itself needs a platform document picker, which the
+    // ViewModel has no business knowing about -- see `ReportSaver`. It
+    // only asks; this is where the asking becomes a real save.
+    val saver = rememberReportSaver()
+    val savePending by viewModel.savePending.collectAsStateWithLifecycle()
+    LaunchedEffect(savePending) {
+        savePending?.let { documents -> viewModel.saveHandled(saver.save(documents)) }
+    }
 
     ExportScreen(state = state, onEvent = viewModel::onEvent, modifier = modifier)
 }

@@ -223,4 +223,7 @@
     <string name="fixtures_filter_others">Others</string>
     <string name="fixtures_filter_clear">Clear the filter</string>
     <string name="fixtures_filtered_empty">No fixture matches the filter.</string>
+    <string name="export_save">Save to device</string>
+    <string name="export_saved">Report saved. The files can be reopened without the app.</string>
+    <string name="export_save_failed">Saving failed or was cancelled.</string>
 </resources>

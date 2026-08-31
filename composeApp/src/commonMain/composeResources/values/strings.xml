@@ -231,4 +231,7 @@
     <string name="fixtures_filter_others">Ostatní</string>
     <string name="fixtures_filter_clear">Zrušit filtr</string>
     <string name="fixtures_filtered_empty">Filtru neodpovídá žádný zápas.</string>
+    <string name="export_save">Uložit do zařízení</string>
+    <string name="export_saved">Zápis uložen. K souborům se lze vrátit i bez aplikace.</string>
+    <string name="export_save_failed">Uložení se nezdařilo nebo bylo zrušeno.</string>
 </resources>

@@ -382,4 +382,69 @@ class ExportZouTest {
     }
 }
 
+/**
+ * What both delivery paths write to disk.
+ *
+ * `AndroidReportSender` (mail) and `AndroidReportSaver` (the device) write
+ * through different Android APIs and neither may encode `content`
+ * independently -- see `ZouDocument.bytes()`. This is the platform-free
+ * half of that guarantee; the emulator is what proves the two Android
+ * classes actually call it, which no JVM test can.
+ */
+class ZouDocumentBytesTest {
+    @Test
+    fun theCsvBytesCarryTheByteOrderMarkAsThreeBytes() =
+        runTest {
+            val csv = ExportZou()(CompleteReport.report()).single { it.format == ZouFormat.CSV }
+
+            val bytes = csv.bytes()
+            // The UTF-8 encoding of U+FEFF is EF BB BF -- three bytes, not
+            // one. A test that only checked the first *character* of the
+            // string would miss an encoder that silently fell back to
+            // UTF-16 or dropped the mark while re-encoding.
+            assertEquals(listOf(0xEF, 0xBB, 0xBF), bytes.take(BOM_LENGTH).map { it.toInt() and 0xFF })
+        }
+
+    @Test
+    fun textAndJsonCarryNoByteOrderMark() =
+        runTest {
+            // The mark is CSV's problem alone -- Excel's, specifically. Text
+            // and JSON gain nothing by carrying it.
+            ExportZou()(CompleteReport.report())
+                .filter { it.format != ZouFormat.CSV }
+                .forEach { document ->
+                    assertTrue(
+                        document.bytes().take(BOM_LENGTH).map { it.toInt() and 0xFF } != listOf(0xEF, 0xBB, 0xBF),
+                        "${document.fileName} carries a byte-order mark it should not",
+                    )
+                }
+        }
+
+    @Test
+    fun encodingRoundTripsForEveryFormat() =
+        runTest {
+            ExportZou()(CompleteReport.report()).forEach { document ->
+                assertEquals(document.content, document.bytes().decodeToString())
+            }
+        }
+
+    @Test
+    fun theSameReportEncodesToTheSameBytesEveryTime() =
+        runTest {
+            // Nothing about `bytes()` may depend on when or how many times
+            // it is called -- which is what lets Send and Save hand the
+            // exact same `List<ZouDocument>` to two different writers and
+            // trust the result matches without comparing bytes at runtime.
+            val report = CompleteReport.report()
+            val first = ExportZou()(report).map { it.bytes().toList() }
+            val second = ExportZou()(report).map { it.bytes().toList() }
+
+            assertEquals(first, second)
+        }
+
+    private companion object {
+        const val BOM_LENGTH = 3
+    }
+}
+
 private const val ASCII_LIMIT = 128

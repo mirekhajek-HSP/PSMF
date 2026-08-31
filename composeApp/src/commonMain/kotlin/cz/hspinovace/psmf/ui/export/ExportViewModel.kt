@@ -34,6 +34,8 @@ data class ExportUiState(
     val selected: ZouFormat = ZouFormat.TEXT,
     val sendFailed: Boolean = false,
     val sent: Boolean = false,
+    val saveFailed: Boolean = false,
+    val saved: Boolean = false,
 ) {
     val ready: Boolean get() = problems.isEmpty() && report != null
 
@@ -46,6 +48,13 @@ sealed interface ExportEvent {
     ) : ExportEvent
 
     data object SendPressed : ExportEvent
+
+    /**
+     * Beside send, not instead of it (DEMO_SCOPE screen 7). The referee
+     * presses this to get the three files somewhere they can open again
+     * without the app; pressing "send" still only opens a mail draft.
+     */
+    data object SavePressed : ExportEvent
 }
 
 /**
@@ -65,6 +74,16 @@ class ExportViewModel(
     private val _state = MutableStateFlow(ExportUiState())
     val state: StateFlow<ExportUiState> = _state.asStateFlow()
 
+    /**
+     * Set when the referee has asked to save and cleared once it is
+     * handled -- the same one-shot shape as `FixturesViewModel.openMatch`:
+     * the actual save needs a live [android.app.Activity] this ViewModel
+     * has no business knowing about, so it only ever asks for one to
+     * happen and is told the answer through [saveHandled].
+     */
+    private val _savePending = MutableStateFlow<List<ZouDocument>?>(null)
+    val savePending: StateFlow<List<ZouDocument>?> = _savePending.asStateFlow()
+
     init {
         viewModelScope.launch { load() }
     }
@@ -83,9 +102,25 @@ class ExportViewModel(
 
     fun onEvent(event: ExportEvent) {
         when (event) {
-            is ExportEvent.FormatSelected -> _state.update { it.copy(selected = event.format) }
-            ExportEvent.SendPressed -> send()
+            is ExportEvent.FormatSelected -> {
+                _state.update { it.copy(selected = event.format) }
+            }
+
+            ExportEvent.SendPressed -> {
+                send()
+            }
+
+            ExportEvent.SavePressed -> {
+                val current = _state.value
+                if (current.ready) _savePending.value = current.documents
+            }
         }
+    }
+
+    /** Called back once the platform save has finished, whichever way. */
+    fun saveHandled(success: Boolean) {
+        _savePending.value = null
+        _state.update { it.copy(saved = success, saveFailed = !success) }
     }
 
     private fun send() {

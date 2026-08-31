@@ -227,4 +227,7 @@
     <string name="fixtures_filter_others">Інші</string>
     <string name="fixtures_filter_clear">Скинути фільтр</string>
     <string name="fixtures_filtered_empty">Жоден матч не відповідає фільтру.</string>
+    <string name="export_save">Зберегти на пристрій</string>
+    <string name="export_saved">Протокол збережено. До файлів можна повернутися і без застосунку.</string>
+    <string name="export_save_failed">Збереження не вдалося або було скасовано.</string>
 </resources>

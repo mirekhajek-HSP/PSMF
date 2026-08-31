@@ -9,6 +9,19 @@ data class ZouDocument(
     val format: ZouFormat get() = ZouFormat.entries.first { it.extension == fileName.substringAfterLast('.') }
 }
 
+/**
+ * What actually goes on disk, once and in one place.
+ *
+ * Both places the report is written out -- attached to the mail draft and
+ * saved to the device the referee picks -- go through this and neither may
+ * re-derive the bytes independently. `encodeToByteArray()` is UTF-8 on
+ * every Kotlin target, which is the encoding [ZouCsv.BYTE_ORDER_MARK]
+ * assumes: the mark is one character, `﻿`, and it is the UTF-8
+ * encoding of that character -- three bytes, `EF BB BF` -- that tells
+ * Excel the file is UTF-8 rather than the system code page.
+ */
+fun ZouDocument.bytes(): ByteArray = content.encodeToByteArray()
+
 enum class ZouFormat(
     val extension: String,
     val mimeType: String,

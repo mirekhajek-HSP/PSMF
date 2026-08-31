@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
 import cz.hspinovace.psmf.export.ZouDocument
+import cz.hspinovace.psmf.export.bytes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -64,7 +65,7 @@ class AndroidReportSender(
 
     private fun ZouDocument.writeTo(directory: File): Uri {
         val file = File(directory, fileName)
-        file.writeText(content)
+        file.writeBytes(bytes())
         return FileProvider.getUriForFile(context, "${context.packageName}.$REPORTS", file)
     }
 

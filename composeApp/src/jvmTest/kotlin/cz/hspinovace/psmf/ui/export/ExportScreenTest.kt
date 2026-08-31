@@ -102,6 +102,8 @@ class ExportScreenTest {
         problems: List<ReportProblem> = emptyList(),
         selected: ZouFormat = ZouFormat.TEXT,
         sent: Boolean = false,
+        saved: Boolean = false,
+        saveFailed: Boolean = false,
     ) = ExportUiState(
         loading = false,
         report = report,
@@ -109,6 +111,8 @@ class ExportScreenTest {
         problems = problems,
         selected = selected,
         sent = sent,
+        saved = saved,
+        saveFailed = saveFailed,
     )
 
     // ------------------------------------------------------------------
@@ -273,6 +277,79 @@ class ExportScreenTest {
             }
 
             onNodeWithText("Hřiště;ZAKOS", substring = true).assertIsDisplayed()
+        }
+
+    // ------------------------------------------------------------------
+    // Saving to the device
+    //
+    // The save itself needs a platform document picker and cannot be
+    // driven from a JVM test -- see `ReportSaver`. What is tested here is
+    // the screen's half of it: the button exists beside send, is withheld
+    // under the same rule send is, reports a press rather than acting on
+    // its own, and shows the two outcomes rather than staying silent.
+    // ------------------------------------------------------------------
+
+    @Test
+    fun theSaveButtonSitsBesideSendAndReportsAPress() =
+        runComposeUiTest {
+            val events = mutableListOf<ExportEvent>()
+            withLanguage("cs") {
+                setContent { PsmfTheme { ExportScreen(state = state(), onEvent = events::add) } }
+            }
+
+            page().performScrollToNode(hasText("Uložit do zařízení"))
+            onNodeWithText("Uložit do zařízení").assertIsDisplayed()
+            onNodeWithText("Odeslat na PSMF").assertIsDisplayed()
+
+            onNodeWithText("Uložit do zařízení").performClick()
+
+            assertTrue(events.contains(ExportEvent.SavePressed))
+            // And pressing it does not also send: the two are independent.
+            assertTrue(!events.contains(ExportEvent.SendPressed))
+        }
+
+    @Test
+    fun theSaveButtonIsWithheldUnderTheSameRuleAsSend() =
+        runComposeUiTest {
+            // The fine for an incomplete report lands on the delegating
+            // team either way it would leave the phone.
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme {
+                        ExportScreen(
+                            state = state(problems = listOf(ReportProblem.MissingCommentary)),
+                            onEvent = {},
+                        )
+                    }
+                }
+            }
+
+            onNodeWithText("Uložit do zařízení").assertDoesNotExist()
+        }
+
+    @Test
+    fun aSuccessfulSaveIsConfirmedRatherThanAssumed() =
+        runComposeUiTest {
+            withLanguage("cs") {
+                setContent { PsmfTheme { ExportScreen(state = state(saved = true), onEvent = {}) } }
+            }
+
+            page().performScrollToNode(hasText("Zápis uložen", substring = true))
+            onNodeWithText("Zápis uložen. K souborům se lze vrátit i bez aplikace.").assertIsDisplayed()
+        }
+
+    @Test
+    fun aFailedOrCancelledSaveIsNamedRatherThanSilent() =
+        runComposeUiTest {
+            // "Failed" and "the referee backed out of the picker" are the
+            // same outcome from here on: `ReportSaver.save` cannot tell
+            // them apart, and a demo should not pretend it can.
+            withLanguage("cs") {
+                setContent { PsmfTheme { ExportScreen(state = state(saveFailed = true), onEvent = {}) } }
+            }
+
+            page().performScrollToNode(hasText("Uložení se nezdařilo", substring = true))
+            onNodeWithText("Uložení se nezdařilo nebo bylo zrušeno.").assertIsDisplayed()
         }
 
     @Test
