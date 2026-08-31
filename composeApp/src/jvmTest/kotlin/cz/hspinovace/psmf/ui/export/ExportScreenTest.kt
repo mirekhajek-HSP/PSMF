@@ -10,6 +10,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.v2.runComposeUiTest
+import cz.hspinovace.psmf.data.settings.AppLanguage
 import cz.hspinovace.psmf.domain.ConfirmingParty
 import cz.hspinovace.psmf.domain.ReportProblem
 import cz.hspinovace.psmf.domain.TeamSide
@@ -27,6 +28,7 @@ import cz.hspinovace.psmf.export.ZouReport
 import cz.hspinovace.psmf.export.ZouResult
 import cz.hspinovace.psmf.export.ZouSide
 import cz.hspinovace.psmf.export.ZouTeamAssessment
+import cz.hspinovace.psmf.ui.locale.AppEnvironment
 import cz.hspinovace.psmf.ui.theme.PsmfTheme
 import cz.hspinovace.psmf.ui.withLanguage
 import kotlinx.datetime.LocalDate
@@ -148,6 +150,31 @@ class ExportScreenTest {
             }
 
             onNodeWithText("Протокол завжди чеською, незалежно від мови застосунку.").assertIsDisplayed()
+        }
+
+    @Test
+    fun theReportStaysCzechWhenThePickerIsSetToUkrainian() =
+        runComposeUiTest {
+            // The two tests above prove it against the *device* language,
+            // which is no longer what decides: the referee picks in the app.
+            // This one goes through the picker's own mechanism, with the
+            // host left in Czech so a failure cannot be a host artefact.
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme {
+                        AppEnvironment(AppLanguage.UKRAINIAN) {
+                            ExportScreen(state = state(), onEvent = {})
+                        }
+                    }
+                }
+
+                // The interface followed the picker...
+                onNodeWithText("Протокол завжди чеською, незалежно від мови застосунку.")
+                    .assertIsDisplayed()
+                // ...and the document did not.
+                onNodeWithText("Hřiště: ZAKOS", substring = true).assertIsDisplayed()
+                onNodeWithText("Barva dresů: modrá", substring = true).assertIsDisplayed()
+            }
         }
 
     // ------------------------------------------------------------------

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Match Report</string>
-    <string name="language_self_name">English</string>
 
     <!-- Shared -->
     <string name="action_back">Back</string>
@@ -183,7 +182,7 @@
     <string name="settings_theme_light">Light</string>
     <string name="settings_theme_dark">Dark</string>
     <string name="settings_language">Language</string>
-    <string name="settings_language_note">The app follows the device language. The report for PSMF is always in Czech.</string>
+    <string name="settings_language_note">The app language is for whoever is reading the phone. The report for PSMF is always in Czech.</string>
     <string name="settings_rules">Competition rules</string>
     <string name="settings_rules_note">The league sets these. A referee does not change them.</string>
     <!-- The shell: four tabs around the report -->

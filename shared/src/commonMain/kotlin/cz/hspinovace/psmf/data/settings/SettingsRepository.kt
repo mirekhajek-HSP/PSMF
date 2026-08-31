@@ -13,7 +13,44 @@ enum class ThemeChoice {
 }
 
 /**
- * The two things the referee may change.
+ * The language the app is read in.
+ *
+ * **Picked in the app, not inherited from the device**, and the reason is
+ * not preference: the phone is read by more than one person. The captain
+ * confirms the lineup on the referee's phone and both captains confirm the
+ * recap, so a device-level language serves the phone's owner only — and a
+ * Ukrainian captain confirming on a Czech referee's phone is precisely the
+ * case three languages exist for.
+ *
+ * **Not the report's language.** The ZoU is always Czech whatever this
+ * says; see `ZouLabels`, which is fixed strings rather than resources for
+ * exactly that reason.
+ *
+ * [autonym] is each language's own name for itself, which is what a
+ * language picker has to show: a Ukrainian captain has to find Ukrainian in
+ * a list they cannot otherwise read. It is the same in every language, so
+ * it is not a translated resource.
+ */
+enum class AppLanguage(
+    val tag: String,
+    val autonym: String,
+) {
+    CZECH("cs", "Čeština"),
+    ENGLISH("en", "English"),
+    UKRAINIAN("uk", "Українська"),
+    ;
+
+    companion object {
+        /** The app's language for a device locale, where it has one. */
+        fun forTag(tag: String): AppLanguage? {
+            val language = tag.substringBefore('-').substringBefore('_').lowercase()
+            return entries.firstOrNull { it.tag == language }
+        }
+    }
+}
+
+/**
+ * The things the referee may change.
  *
  * Everything else golblok exposes — half length, periods, players per
  * side, assists, substitutions — is **league data, not a setting**. A
@@ -22,12 +59,21 @@ enum class ThemeChoice {
  */
 data class AppSettings(
     val theme: ThemeChoice = ThemeChoice.SYSTEM,
+    /**
+     * Null until the referee picks one, which is not the same as Czech: on
+     * first run the device decides, and only a pick overrides it. Storing a
+     * resolved default would silently freeze whatever language the phone
+     * happened to be in the first time the app opened.
+     */
+    val language: AppLanguage? = null,
 )
 
 interface SettingsRepository {
     suspend fun load(): AppSettings
 
     suspend fun setTheme(theme: ThemeChoice)
+
+    suspend fun setLanguage(language: AppLanguage)
 }
 
 /**
@@ -43,10 +89,15 @@ class SqlDelightSettingsRepository(
 
     override suspend fun load(): AppSettings =
         withContext(dispatcher) {
-            val stored = queries.selectPreference(THEME).executeAsOneOrNull()
             AppSettings(
                 theme =
-                    ThemeChoice.entries.firstOrNull { it.name == stored } ?: ThemeChoice.SYSTEM,
+                    ThemeChoice.entries.firstOrNull {
+                        it.name == queries.selectPreference(THEME).executeAsOneOrNull()
+                    } ?: ThemeChoice.SYSTEM,
+                language =
+                    AppLanguage.entries.firstOrNull {
+                        it.name == queries.selectPreference(LANGUAGE).executeAsOneOrNull()
+                    },
             )
         }
 
@@ -55,7 +106,13 @@ class SqlDelightSettingsRepository(
             queries.upsertPreference(THEME, theme.name)
         }
 
+    override suspend fun setLanguage(language: AppLanguage): Unit =
+        withContext(dispatcher) {
+            queries.upsertPreference(LANGUAGE, language.name)
+        }
+
     private companion object {
         const val THEME = "theme"
+        const val LANGUAGE = "language"
     }
 }

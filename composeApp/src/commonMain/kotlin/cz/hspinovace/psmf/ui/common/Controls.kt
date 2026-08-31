@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -18,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import cz.hspinovace.psmf.ui.theme.PsmfBrand
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 
 /**
@@ -67,11 +69,27 @@ fun PrimaryAction(
         onClick = onClick,
         modifier = modifier.heightIn(min = PsmfDimens.primaryActionHeight),
         shape = RoundedCornerShape(PsmfDimens.cornerRadius),
+        colors = brandFilledColors(),
         contentPadding = ButtonDefaults.ContentPadding,
     ) {
         Text(text, style = MaterialTheme.typography.titleMedium)
     }
 }
+
+/**
+ * A filled button in PSMF's yellow, with ink on top of it.
+ *
+ * Not `primary`: Material uses that as a content colour as well as a fill,
+ * so a yellow `primary` would take every `TextButton` in the app with it.
+ * The brand lives in the container slots -- see [PsmfBrand] -- and this is
+ * how a button asks for it.
+ */
+@Composable
+fun brandFilledColors(): ButtonColors =
+    ButtonDefaults.buttonColors(
+        containerColor = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    )
 
 /** A titled block of the form, matching a block of the paper page. */
 @Composable

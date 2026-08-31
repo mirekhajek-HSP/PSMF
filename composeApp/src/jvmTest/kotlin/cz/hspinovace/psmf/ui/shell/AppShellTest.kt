@@ -1,18 +1,27 @@
 package cz.hspinovace.psmf.ui.shell
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.dp
 import cz.hspinovace.psmf.domain.AppearanceId
 import cz.hspinovace.psmf.domain.JerseyNumber
 import cz.hspinovace.psmf.domain.MatchId
@@ -33,6 +42,8 @@ import cz.hspinovace.psmf.usecase.ConsoleEntry
 import cz.hspinovace.psmf.usecase.ConsoleRow
 import cz.hspinovace.psmf.usecase.ConsoleTeam
 import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
@@ -231,9 +242,77 @@ class AppShellTest {
             }
         }
 
+    @Test
+    fun everyUkrainianTabLabelFitsOnOneLineOnAPhone() =
+        runComposeUiTest {
+            // The test this replaces asserted `assertIsDisplayed` on the
+            // four labels and passed while the emulator was drawing
+            // `Налаштуванн` / `я` -- eleven of twelve letters, then an
+            // orphan. `assertIsDisplayed` is satisfied by a wrapped label,
+            // and the harness had no width, so nothing was ever near the
+            // edge of a quarter of a phone. Hence measuring the layout, at
+            // a width a phone actually has.
+            val navigator = AppNavigator()
+            withLanguage("uk") {
+                setContent { Phone { Harness(navigator) } }
+
+                TABS_UK.forEach { label ->
+                    onNodeWithText(label).assertIsDisplayed()
+                    assertEquals(1, onNodeWithText(label).lineCount(), "\"$label\" wrapped")
+                }
+            }
+        }
+
+    @Test
+    fun theTabsStillReadAtAOneHundredAndThirtyPercentFontScale() =
+        runComposeUiTest {
+            // The referee population skews older and many will have the
+            // system font scale turned up. Two lines are allowed here --
+            // the bar has no fixed height, which is the reason it is not
+            // Material's -- but a third would mean the bar is eating the
+            // screen, and a clipped label would mean the setting is not
+            // being honoured at all.
+            val navigator = AppNavigator()
+            withLanguage("uk") {
+                setContent {
+                    Phone {
+                        CompositionLocalProvider(
+                            LocalDensity provides Density(density = 2.625f, fontScale = 1.3f),
+                        ) {
+                            Harness(navigator)
+                        }
+                    }
+                }
+
+                TABS_UK.forEach { label ->
+                    onNodeWithText(label).assertIsDisplayed()
+                    val lines = onNodeWithText(label).lineCount()
+                    assertTrue(lines <= 2, "\"$label\" took $lines lines")
+                }
+            }
+        }
+
     // -----------------------------------------------------------------
     // Harness
     // -----------------------------------------------------------------
+
+    /**
+     * A container the width of the phone the demo is shown on, so that a
+     * quarter of it is a quarter of something real. Without it the test
+     * host lays the bar out as wide as it likes and no label ever has to
+     * fit anywhere.
+     */
+    @Composable
+    private fun Phone(content: @Composable () -> Unit) {
+        Box(modifier = Modifier.width(PHONE_WIDTH)) { content() }
+    }
+
+    /** How many lines the node's text actually took once laid out. */
+    private fun SemanticsNodeInteraction.lineCount(): Int {
+        val results = mutableListOf<TextLayoutResult>()
+        fetchSemanticsNode().config[SemanticsActions.GetTextLayoutResult].action?.invoke(results)
+        return results.first().lineCount
+    }
 
     /**
      * The shell wired to the real navigator, with stand-ins for the screens
@@ -331,4 +410,11 @@ class AppShellTest {
                     powerPlays = emptyList(),
                 ),
         )
+
+    private companion object {
+        /** A Medium Phone, which is what the emulator and the demo use. */
+        val PHONE_WIDTH = 411.dp
+
+        val TABS_UK = listOf("Матчі", "Протокол", "Команди", "Налаштування")
+    }
 }

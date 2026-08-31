@@ -5,7 +5,6 @@
 -->
 <resources>
     <string name="app_name">Протокол матчу</string>
-    <string name="language_self_name">Українська</string>
 
     <!-- Shared -->
     <string name="action_back">Назад</string>
@@ -187,7 +186,7 @@
     <string name="settings_theme_light">Світлий</string>
     <string name="settings_theme_dark">Темний</string>
     <string name="settings_language">Мова</string>
-    <string name="settings_language_note">Застосунок дотримується мови пристрою. Протокол для PSMF завжди чеською.</string>
+    <string name="settings_language_note">Мова застосунку — для того, хто дивиться на телефон. Протокол для PSMF завжди чеською.</string>
     <string name="settings_rules">Правила змагань</string>
     <string name="settings_rules_note">Їх встановлює ліга. Суддя їх не змінює.</string>
     <!-- The shell: four tabs around the report -->

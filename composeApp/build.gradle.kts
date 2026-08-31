@@ -15,6 +15,16 @@ kotlin {
             .toInt(),
     )
 
+    // `expect object LocalAppLocale` is an expect *class*, which is still
+    // flagged Beta. It is the shape JetBrains document for changing the
+    // app's language without restarting the activity, and matching the
+    // documented sample is worth more here than avoiding the warning --
+    // the next person to read it can diff it against the page it came
+    // from. Silenced so real warnings are not hidden behind it.
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     android {
         // Distinct from :androidApp's cz.hspinovace.psmf. Two modules in
         // one APK may not share a namespace -- their R classes would
@@ -109,6 +119,19 @@ kotlin {
             implementation(compose.desktop.currentOs)
         }
     }
+}
+
+// The bundled fonts are test data for BundledFontTest, which reads their
+// cmap tables rather than trusting that a face said to have Cyrillic has it.
+// A property rather than a working directory, which is not the same for
+// every test task.
+tasks.withType<Test>().configureEach {
+    systemProperty(
+        "psmf.fontDirectory",
+        layout.projectDirectory
+            .dir("src/commonMain/composeResources/font")
+            .asFile.absolutePath,
+    )
 }
 
 compose.resources {

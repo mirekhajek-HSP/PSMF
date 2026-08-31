@@ -1,6 +1,9 @@
 package cz.hspinovace.psmf
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -10,7 +13,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
+import androidx.compose.ui.text.intl.Locale
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import cz.hspinovace.psmf.data.settings.AppLanguage
 import cz.hspinovace.psmf.data.settings.ThemeChoice
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.resources.Res
@@ -37,6 +42,7 @@ import cz.hspinovace.psmf.ui.header.MatchHeaderScreen
 import cz.hspinovace.psmf.ui.header.MatchHeaderViewModel
 import cz.hspinovace.psmf.ui.lineup.LineupScreen
 import cz.hspinovace.psmf.ui.lineup.LineupViewModel
+import cz.hspinovace.psmf.ui.locale.AppEnvironment
 import cz.hspinovace.psmf.ui.navigation.AppNavigator
 import cz.hspinovace.psmf.ui.navigation.Destination
 import cz.hspinovace.psmf.ui.navigation.Tab
@@ -85,41 +91,66 @@ fun App() {
     val settings: SettingsViewModel = koinViewModel()
     val settingsState by settings.state.collectAsStateWithLifecycle()
 
+    // Read on the first composition, before anything has been provided:
+    // once a language is in force the platform locale reports that instead,
+    // so asking later would be asking the app about itself.
+    val deviceTag = Locale.current.language
+    val deviceLanguage = remember { AppLanguage.forTag(deviceTag) ?: AppLanguage.CZECH }
+    val language = settingsState.language ?: deviceLanguage
+
     PsmfTheme(darkTheme = settingsState.theme.isDark()) {
-        val navigator: AppNavigator = koinInject()
-        val navigation by navigator.state.collectAsStateWithLifecycle()
-
-        val shell: ShellViewModel = koinViewModel()
-        val shellState by shell.state.collectAsStateWithLifecycle()
-
-        // The badge comes from the database and the back stacks do not, so
-        // on the first launch after a kill the two disagree: a match is in
-        // progress but the report tab is empty. Seeding it here is what
-        // makes tapping the badge land on the console rather than on "no
-        // report open". It does not change tab -- the app still opens on
-        // the fixture list, which is where the referee should land.
-        val inProgress = shellState.inProgress
-        LaunchedEffect(inProgress) {
-            inProgress?.let { navigator.adoptReport(Destination.Console(it)) }
+        // A ground to draw on for the frame or two before the stored
+        // settings arrive. Drawing the app first and correcting it after
+        // would show the wrong language and then the right one.
+        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            if (settingsState.loaded) {
+                AppEnvironment(language) {
+                    Shell(language, settings)
+                }
+            }
         }
+    }
+}
 
-        // Back is handled here whenever there is anywhere to go: within the
-        // tab, or out of a tab to the fixture list. Only at the root of the
-        // fixture list does the platform get the gesture, which on Android
-        // means leaving the app.
-        BackHandler(enabled = navigation.canGoBackWithinTab || navigation.tab != Tab.FIXTURES) {
-            navigator.back()
-        }
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun Shell(
+    language: AppLanguage,
+    settings: SettingsViewModel,
+) {
+    val navigator: AppNavigator = koinInject()
+    val navigation by navigator.state.collectAsStateWithLifecycle()
 
-        AppShell(
-            navigation = navigation,
-            title = navigation.current.title(),
-            reportInProgress = inProgress != null,
-            onSelectTab = navigator::select,
-            onBack = { navigator.back() },
-        ) { modifier ->
-            Route(navigation.current, navigator, settings, modifier)
-        }
+    val shell: ShellViewModel = koinViewModel()
+    val shellState by shell.state.collectAsStateWithLifecycle()
+
+    // The badge comes from the database and the back stacks do not, so
+    // on the first launch after a kill the two disagree: a match is in
+    // progress but the report tab is empty. Seeding it here is what
+    // makes tapping the badge land on the console rather than on "no
+    // report open". It does not change tab -- the app still opens on
+    // the fixture list, which is where the referee should land.
+    val inProgress = shellState.inProgress
+    LaunchedEffect(inProgress) {
+        inProgress?.let { navigator.adoptReport(Destination.Console(it)) }
+    }
+
+    // Back is handled here whenever there is anywhere to go: within the
+    // tab, or out of a tab to the fixture list. Only at the root of the
+    // fixture list does the platform get the gesture, which on Android
+    // means leaving the app.
+    BackHandler(enabled = navigation.canGoBackWithinTab || navigation.tab != Tab.FIXTURES) {
+        navigator.back()
+    }
+
+    AppShell(
+        navigation = navigation,
+        title = navigation.current.title(),
+        reportInProgress = inProgress != null,
+        onSelectTab = navigator::select,
+        onBack = { navigator.back() },
+    ) { modifier ->
+        Route(navigation.current, navigator, settings, language, modifier)
     }
 }
 
@@ -128,6 +159,7 @@ private fun Route(
     current: Destination,
     navigator: AppNavigator,
     settings: SettingsViewModel,
+    language: AppLanguage,
     modifier: Modifier,
 ) {
     when (current) {
@@ -189,7 +221,12 @@ private fun Route(
 
         Destination.Settings -> {
             val state by settings.state.collectAsStateWithLifecycle()
-            SettingsScreen(state = state, onEvent = settings::onEvent, modifier = modifier)
+            SettingsScreen(
+                state = state,
+                language = language,
+                onEvent = settings::onEvent,
+                modifier = modifier,
+            )
         }
     }
 }

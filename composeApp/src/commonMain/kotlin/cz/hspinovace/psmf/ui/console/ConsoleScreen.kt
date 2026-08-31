@@ -49,6 +49,7 @@ import cz.hspinovace.psmf.resources.console_start
 import cz.hspinovace.psmf.resources.console_undo
 import cz.hspinovace.psmf.resources.console_yellows
 import cz.hspinovace.psmf.ui.common.ActionRow
+import cz.hspinovace.psmf.ui.common.brandFilledColors
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.ConsoleRow
 import cz.hspinovace.psmf.usecase.ConsoleTeam
@@ -128,6 +129,7 @@ private fun Controls(
                     Button(
                         onClick = { onEvent(ConsoleEvent.StartPressed) },
                         modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
+                        colors = brandFilledColors(),
                     ) {
                         Text(stringResource(Res.string.console_start))
                     }
@@ -137,6 +139,7 @@ private fun Controls(
                     Button(
                         onClick = { onEvent(ConsoleEvent.ContinuePressed) },
                         modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
+                        colors = brandFilledColors(),
                     ) {
                         Text(stringResource(Res.string.console_continue))
                     }

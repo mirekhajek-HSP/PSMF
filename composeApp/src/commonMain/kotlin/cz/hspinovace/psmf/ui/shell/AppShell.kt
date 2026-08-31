@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +44,7 @@ import cz.hspinovace.psmf.resources.tab_settings
 import cz.hspinovace.psmf.resources.tab_teams
 import cz.hspinovace.psmf.ui.navigation.NavigationState
 import cz.hspinovace.psmf.ui.navigation.Tab
+import cz.hspinovace.psmf.ui.theme.PsmfBrand
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import org.jetbrains.compose.resources.stringResource
 
@@ -99,12 +101,29 @@ private fun ShellTopBar(
             if (canGoBack) {
                 // A word rather than a chevron. It reads at arm's length in
                 // poor light, translates, and costs no icon dependency.
-                TextButton(onClick = onBack) {
+                //
+                // The colour is spelled out because `TextButton` takes its
+                // content colour from `primary`, which is ink -- invisible
+                // on the ink bar. Nothing else in the app sits on a dark
+                // ground, so this is the only place that has to say so.
+                TextButton(
+                    onClick = onBack,
+                    colors = ButtonDefaults.textButtonColors(contentColor = PsmfBrand.Surface),
+                ) {
                     Text(stringResource(Res.string.action_back))
                 }
             }
         },
-        colors = TopAppBarDefaults.topAppBarColors(),
+        // The dark bar from psmf.cz. White on #2B2B2B is about 12.6:1,
+        // which is the best contrast anywhere in the app -- worth having on
+        // the strip that says which step of the report this is.
+        colors =
+            TopAppBarDefaults.topAppBarColors(
+                containerColor = PsmfBrand.Ink,
+                titleContentColor = PsmfBrand.Surface,
+                navigationIconContentColor = PsmfBrand.Surface,
+                actionIconContentColor = PsmfBrand.Surface,
+            ),
     )
 }
 
@@ -178,26 +197,35 @@ private fun TabItem(
                 // A minimum, never a fixed height: the label may be two
                 // lines of Ukrainian at 130% font scale.
                 .heightIn(min = PsmfDimens.minTouchTarget)
-                .clickable(onClick = onClick),
+                .clickable(onClick = onClick)
+                // Without this the longest label -- Ukrainian
+                // "Налаштування" -- runs to the physical edge of the screen.
+                .padding(horizontal = PsmfDimens.labelGap),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        // The selected indicator. Brand yellow once the palette lands; a
-        // surface, never something to read text off.
+        // The selected indicator.
         Box(
             modifier =
                 Modifier
                     .padding(bottom = PsmfDimens.labelGap)
                     .size(width = INDICATOR_WIDTH, height = INDICATOR_HEIGHT)
                     .background(
-                        color = if (selected) MaterialTheme.colorScheme.primary else Color.Transparent,
+                        // The brand, and a fill: never something to read off.
+                        color = if (selected) MaterialTheme.colorScheme.secondaryContainer else Color.Transparent,
                         shape = RoundedCornerShape(INDICATOR_HEIGHT / 2),
                     ),
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelLarge,
+                // 12sp Medium: Material's own bottom-bar size, and the size at
+                // which "Налаштування" fits a quarter of a phone on one line.
+                // 14sp bold was the first choice and it broke the word after
+                // eleven of twelve letters, leaving an orphaned "я" on the
+                // second line. The 56dp target below is what makes this
+                // tappable in gloves; the label does not have to carry that.
+                style = MaterialTheme.typography.labelMedium,
                 color = content,
                 textAlign = TextAlign.Center,
                 maxLines = 2,
@@ -209,7 +237,7 @@ private fun TabItem(
                     modifier =
                         Modifier
                             .size(BADGE_DIAMETER)
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
+                            .background(MaterialTheme.colorScheme.secondaryContainer, CircleShape)
                             .semantics { contentDescription = badgeDescription },
                 )
             }

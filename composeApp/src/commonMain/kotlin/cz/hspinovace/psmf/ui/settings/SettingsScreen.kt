@@ -15,9 +15,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import cz.hspinovace.psmf.data.settings.AppLanguage
 import cz.hspinovace.psmf.data.settings.ThemeChoice
 import cz.hspinovace.psmf.resources.Res
-import cz.hspinovace.psmf.resources.language_self_name
 import cz.hspinovace.psmf.resources.settings_language
 import cz.hspinovace.psmf.resources.settings_language_note
 import cz.hspinovace.psmf.resources.settings_rules
@@ -43,6 +43,13 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun SettingsScreen(
     state: SettingsUiState,
+    /**
+     * The language actually in force, which is not the same as
+     * [SettingsUiState.language]: that is null until something is picked,
+     * and the device decides in the meantime. The chip has to show what the
+     * referee is reading, not what is stored.
+     */
+    language: AppLanguage,
     onEvent: (SettingsEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -70,12 +77,23 @@ fun SettingsScreen(
 
             Section(
                 title = stringResource(Res.string.settings_language),
-                // Read-only: the app follows the device language. Changing
-                // it in-app needs a platform API that minSdk 28 does not
-                // have on every version, and the report is Czech either way.
+                // What this note has to say, and the only thing it has to
+                // say: the report does not follow the picker.
                 note = stringResource(Res.string.settings_language_note),
             ) {
-                Text(stringResource(Res.string.language_self_name), style = MaterialTheme.typography.bodyLarge)
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) {
+                    AppLanguage.entries.forEach { choice ->
+                        FilterChip(
+                            selected = language == choice,
+                            onClick = { onEvent(SettingsEvent.LanguageSelected(choice)) },
+                            // Each language's own name for itself. A
+                            // Ukrainian captain has to find Ukrainian in a
+                            // list they cannot otherwise read.
+                            label = { Text(choice.autonym) },
+                            modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
+                        )
+                    }
+                }
             }
 
             Section(
