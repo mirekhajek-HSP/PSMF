@@ -18,9 +18,12 @@ actual class DatabaseDriverFactory(
     private val url: String = JdbcSqliteDriver.IN_MEMORY,
 ) {
     /**
-     * The schema is handed to the driver rather than created by hand, so
-     * that opening an *existing* database is a no-op instead of failing on
-     * tables that are already there.
+     * The schema is handed to the driver rather than created by hand, and
+     * that is what makes updates survivable: the driver compares SQLite's
+     * `user_version` against [PsmfDatabase.Schema] and creates, migrates or
+     * does nothing accordingly. Creating the tables by hand would open an
+     * old database perfectly happily and then fail on the first query
+     * against a column that a migration should have added.
      */
     actual fun create(): SqlDriver = JdbcSqliteDriver(url, Properties(), PsmfDatabase.Schema)
 }

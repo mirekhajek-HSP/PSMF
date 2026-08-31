@@ -106,6 +106,13 @@ kotlin {
         jvmMain.dependencies {
             implementation(libs.sqldelight.driver.jvm)
         }
+        jvmTest.dependencies {
+            // Named explicitly, not inherited: SchemaMigrationTest builds a
+            // driver with NO schema on purpose, to write rows that predate a
+            // migration, and that is not something the app's own factory can
+            // or should be able to do.
+            implementation(libs.sqldelight.driver.jvm)
+        }
     }
 }
 
@@ -113,6 +120,33 @@ sqldelight {
     databases {
         create("PsmfDatabase") {
             packageName.set("cz.hspinovace.psmf.db")
+
+            // Where the recorded schema of each released version lives.
+            //
+            // Setting it is what registers generateCommonMainPsmfDatabaseSchema
+            // at all -- with no directory the plugin has nowhere to write, so
+            // the task simply does not appear and `gradlew tasks` gives no hint
+            // that migration verification is running against nothing.
+            schemaOutputDirectory.set(file("src/commonMain/sqldelight/databases"))
+
+            // Makes `check` depend on verifyCommonMainPsmfDatabaseMigration,
+            // which applies every .sqm to every recorded .db and compares the
+            // result against the .sq files. Verification nobody has to
+            // remember to run is the only kind that stays true.
+            verifyMigrations.set(true)
         }
     }
+}
+
+// The recorded schema files are test data: SchemaMigrationTest starts from
+// the bytes of a released schema rather than from an empty database. Passed
+// as a property rather than resolved from the working directory, which is
+// not the same for every test task.
+tasks.withType<Test>().configureEach {
+    systemProperty(
+        "psmf.schemaDirectory",
+        layout.projectDirectory
+            .dir("src/commonMain/sqldelight/databases")
+            .asFile.absolutePath,
+    )
 }

@@ -177,6 +177,36 @@ re-downloads it **on every container run**, because
 `androidBuildTools` in the catalog and the `sdkmanager` line in the
 Dockerfile in step.
 
+### 5. No `schemaOutputDirectory`, no schema task — and no warning
+
+`generateCommonMainPsmfDatabaseSchema` is the task that records the current
+schema as `<version>.db`, which is the file migration verification is
+verified *against*. It is **registered only if `schemaOutputDirectory` is
+set**. Leave it unset and the task does not exist, `gradlew tasks` lists no
+sign that anything is missing, and
+`verifyCommonMainPsmfDatabaseMigration` — which does exist either way, and
+passes — is checking the migrations against nothing at all.
+
+The same family of failure as the Android host-test trap above: a green
+build that ran no check.
+
+```kotlin
+sqldelight {
+    databases {
+        create("PsmfDatabase") {
+            packageName.set("cz.hspinovace.psmf.db")
+            schemaOutputDirectory.set(file("src/commonMain/sqldelight/databases"))
+            verifyMigrations.set(true)     // this is what puts it on `check`
+        }
+    }
+}
+```
+
+Two further details worth not rediscovering: the generated `.db` is **not
+stamped with its own version** — `user_version` stays 0, where a database
+created on a device carries the real number — and `.sqm` files are **not
+package-scoped**, unlike the `.sq` files they sit beside.
+
 ---
 
 ## Two workarounds that survived the migration

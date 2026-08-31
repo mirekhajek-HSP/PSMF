@@ -136,6 +136,15 @@ Listed because they will otherwise be copied from a familiar codebase:
 ## Working agreements
 
 - Czech-first localisation from the first screen. No hardcoded user-facing strings.
+- **A schema change needs a migration, and the old schema recorded before the
+  change.** `.sq` files are the schema as it is now, `.sqm` files the path to
+  it, and `shared/src/commonMain/sqldelight/databases/<n>.db` the recorded
+  bytes of version *n*. Record *before* editing a `.sq` file — run afterwards
+  and the task files the new schema under the old number.
+  `shared/src/commonMain/sqldelight/README.md` has the sequence and the two
+  things about it that surprise. **The old "clean install required"
+  instruction is withdrawn:** an uninstall takes the match database with it,
+  and losing a match record is the failure that ends a pilot.
 - League data is **data, not code**. Adding a group is a file plus one index line;
   see `composeApp/src/commonMain/composeResources/files/leagues/README.md`, which
   also carries the rule that seed UUIDs are never regenerated.

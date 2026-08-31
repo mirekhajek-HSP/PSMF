@@ -325,14 +325,23 @@ private fun MatchRecordQueries.hydrate(row: Match_record): Match {
         assessment = row.toAssessment(),
         result = row.toResult(),
         confirmations =
-            selectConfirmations(id).executeAsList().map {
-                Confirmation(
-                    party = ConfirmingParty.valueOf(it.party),
-                    at = Instant.parse(it.confirmed_at),
-                    confirmedBy = PersonName.of(it.confirmed_by),
-                    asDeputy = it.as_deputy == 1L,
-                )
-            },
+            selectConfirmations(id)
+                .executeAsList()
+                .map {
+                    Confirmation(
+                        party = ConfirmingParty.valueOf(it.party),
+                        at = Instant.parse(it.confirmed_at),
+                        confirmedBy = PersonName.of(it.confirmed_by),
+                        asDeputy = it.as_deputy == 1L,
+                    )
+                }
+                // The table is keyed on (match_id, party) and the query has
+                // no ORDER BY, so without this the order is whatever SQLite's
+                // index happens to walk -- and a load that is not reproducible
+                // is a trap even while nothing depends on it. Sorted by the
+                // enum, which is declared in the order the three signature
+                // boxes appear on the form.
+                .sortedBy { it.party.ordinal },
     )
 }
 

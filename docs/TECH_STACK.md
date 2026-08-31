@@ -55,7 +55,7 @@ polish. Platform code is confined to what genuinely differs.
 | DI | **Koin** | Hilt is Android-only and does not work in shared code |
 | Serialization | kotlinx.serialization | replaces golblok's hand-written `org.json` |
 | HTTP | Ktor client | **Versioned in the catalog, applied to no module.** Settled 2026-08-29: no network calls for now. The report leaves by platform email intent, which is not an HTTP call |
-| Local storage | SQLDelight | KMP-native; offline is a hard requirement |
+| Local storage | SQLDelight | KMP-native; offline is a hard requirement. **Versioned from 2026-08-31** — schema 1 is what the demo shipped, `.sqm` migrations carry a database forward, and `check` verifies them |
 | ViewModels | `androidx.lifecycle` multiplatform | |
 
 Two of these are direct corrections of golblok habits that **do not carry over**:
@@ -112,6 +112,14 @@ for a multiplatform mocking library only if fakes become unwieldy.
   and versions drifted.
 - **detekt + ktlint from the first commit.** On a green field the baseline starts
   empty, which is worth far more than retrofitting one later.
+- **Migration verification is part of `check`**, not a thing to remember:
+  `verifyMigrations = true` makes `./gradlew build` apply every `.sqm` to every
+  recorded `.db` and diff the result against the `.sq` files. It reports the
+  difference by name (`/tables[schema_meta] - REMOVED`), and it catches the
+  mistake in both directions — a migration that does too little and one that
+  does something the `.sq` files never describe. What it cannot see is whether
+  the *rows* survived; `SchemaMigrationTest` covers that by starting from the
+  recorded bytes of version 1 with a finished report already in them.
 - CI on GitHub Actions: Linux runner for shared + Android, **macOS runner for iOS**.
 - Czech-first localisation from the first screen. Retrofitting it is far worse than
   maintaining it.

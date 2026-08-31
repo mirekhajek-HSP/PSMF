@@ -1,0 +1,14 @@
+-- Version 1 -> 2. Removes the hand-rolled schema version table.
+--
+-- `schema_meta` was Phase 1 wiring, written before there was a migration
+-- mechanism for a version number to mean anything to. Nothing in the app
+-- ever read it; only a smoke test did. Leaving it beside SQLite's own
+-- `user_version` -- which is what SQLDelight actually reads to decide
+-- whether to migrate -- leaves two versioning mechanisms in one database
+-- and makes the decoy the more obvious of the two.
+--
+-- It is also why this migration exists at this point in the project rather
+-- than later. The mechanism has to be proved by a real schema change that
+-- a real database survives, and a mechanism first exercised by the change
+-- that needed it is a mechanism first exercised on a referee's phone.
+DROP TABLE schema_meta;
