@@ -8,6 +8,7 @@ import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
+import cz.hspinovace.psmf.domain.PeriodBreak
 import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamSide
@@ -379,4 +380,91 @@ class MinuteDraftTest {
         assertEquals(MinuteMark.HALF_TIME, MinuteDraft.of(Minute.HalfTime).mark)
         assertEquals(MinuteMark.AFTER_FINAL_WHISTLE, MinuteDraft.of(Minute.AfterFinalWhistle).mark)
     }
+}
+
+/**
+ * RULE: **a half-time exists, and ending one is a fact about the match,
+ * not a pause.** No pause, stop, resume or adjust operation exists to
+ * test -- see StartMatchTest above -- and this adds exactly one more kind
+ * of instant to what gets recorded, the same way the whistle already is.
+ */
+class EndPeriodTest {
+    @Test
+    fun endingAPeriodRecordsOneInstantAndSavesIt() =
+        runTest {
+            val started = match().copy(kickoffAt = KICKOFF)
+            val matches = FakeMatchRepository(listOf(started))
+
+            val ended = EndPeriod(matches)(started, KICKOFF + 32.minutes)
+
+            assertEquals(listOf(PeriodBreak(endedAt = KICKOFF + 32.minutes)), ended.periodBreaks)
+            assertEquals(ended, matches.load(MatchId("m1")))
+        }
+
+    @Test
+    fun endingAPeriodBeforeKickoffDoesNothing() =
+        runTest {
+            val matches = FakeMatchRepository(listOf(match()))
+
+            val unchanged = EndPeriod(matches)(match(), KICKOFF)
+
+            assertEquals(emptyList(), unchanged.periodBreaks)
+        }
+
+    @Test
+    fun endingAPeriodWhileAlreadyOnABreakDoesNothing() =
+        runTest {
+            val onBreak =
+                match().copy(kickoffAt = KICKOFF, periodBreaks = listOf(PeriodBreak(endedAt = KICKOFF + 30.minutes)))
+            val matches = FakeMatchRepository(listOf(onBreak))
+
+            val unchanged = EndPeriod(matches)(onBreak, KICKOFF + 31.minutes)
+
+            assertEquals(onBreak.periodBreaks, unchanged.periodBreaks)
+        }
+}
+
+class StartNextPeriodTest {
+    @Test
+    fun startingTheNextPeriodFillsInWhenPlayResumed() =
+        runTest {
+            val onBreak =
+                match().copy(kickoffAt = KICKOFF, periodBreaks = listOf(PeriodBreak(endedAt = KICKOFF + 30.minutes)))
+            val matches = FakeMatchRepository(listOf(onBreak))
+
+            val resumed = StartNextPeriod(matches)(onBreak, KICKOFF + 33.minutes)
+
+            assertEquals(
+                listOf(PeriodBreak(endedAt = KICKOFF + 30.minutes, nextStartedAt = KICKOFF + 33.minutes)),
+                resumed.periodBreaks,
+            )
+            assertEquals(resumed, matches.load(MatchId("m1")))
+        }
+
+    @Test
+    fun startingTheNextPeriodWithNoBreakOpenDoesNothing() =
+        runTest {
+            val started = match().copy(kickoffAt = KICKOFF)
+            val matches = FakeMatchRepository(listOf(started))
+
+            val unchanged = StartNextPeriod(matches)(started, KICKOFF + 5.minutes)
+
+            assertEquals(emptyList(), unchanged.periodBreaks)
+        }
+
+    @Test
+    fun startingTheNextPeriodAgainDoesNotOverwriteAnAlreadyStartedOne() =
+        runTest {
+            val resumed =
+                match().copy(
+                    kickoffAt = KICKOFF,
+                    periodBreaks =
+                        listOf(PeriodBreak(endedAt = KICKOFF + 30.minutes, nextStartedAt = KICKOFF + 33.minutes)),
+                )
+            val matches = FakeMatchRepository(listOf(resumed))
+
+            val unchanged = StartNextPeriod(matches)(resumed, KICKOFF + 40.minutes)
+
+            assertEquals(resumed.periodBreaks, unchanged.periodBreaks)
+        }
 }

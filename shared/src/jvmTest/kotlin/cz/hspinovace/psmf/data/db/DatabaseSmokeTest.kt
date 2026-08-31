@@ -38,6 +38,6 @@ class DatabaseSmokeTest {
         // Not a tautology: the version is derived from the number of .sqm
         // files, so this fails the moment a migration is added without the
         // recorded .db file and the test that go with it.
-        assertEquals(3L, PsmfDatabase.Schema.version)
+        assertEquals(4L, PsmfDatabase.Schema.version)
     }
 }

@@ -12,11 +12,13 @@ import cz.hspinovace.psmf.usecase.BuildConsoleEntry
 import cz.hspinovace.psmf.usecase.CardDraft
 import cz.hspinovace.psmf.usecase.CardProblem
 import cz.hspinovace.psmf.usecase.ConsoleEntry
+import cz.hspinovace.psmf.usecase.EndPeriod
 import cz.hspinovace.psmf.usecase.FinishMatch
 import cz.hspinovace.psmf.usecase.LogCard
 import cz.hspinovace.psmf.usecase.LogGoal
 import cz.hspinovace.psmf.usecase.MinuteDraft
 import cz.hspinovace.psmf.usecase.StartMatch
+import cz.hspinovace.psmf.usecase.StartNextPeriod
 import cz.hspinovace.psmf.usecase.UndoLastEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -46,6 +48,11 @@ sealed interface ConsoleEvent {
     data object StartPressed : ConsoleEvent
 
     data object FinishPressed : ConsoleEvent
+
+    /** Not the whole match -- see [EndPeriod]. */
+    data object EndPeriodPressed : ConsoleEvent
+
+    data object StartNextPeriodPressed : ConsoleEvent
 
     data class SideSelected(
         val side: TeamSide,
@@ -98,6 +105,8 @@ class ConsoleViewModel(
     private val logGoal: LogGoal,
     private val logCard: LogCard,
     private val undoLastEvent: UndoLastEvent,
+    private val endPeriod: EndPeriod,
+    private val startNextPeriod: StartNextPeriod,
     private val clock: Clock = Clock.System,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ConsoleUiState())
@@ -116,19 +125,8 @@ class ConsoleViewModel(
     }
 
     fun onEvent(event: ConsoleEvent) {
+        if (handleLifecycleEvent(event)) return
         when (event) {
-            ConsoleEvent.StartPressed -> {
-                record { startMatch(it, clock.now()) }
-            }
-
-            ConsoleEvent.FinishPressed -> {
-                record { finishMatch(it) }
-            }
-
-            ConsoleEvent.UndoPressed -> {
-                record { undoLastEvent(it) }
-            }
-
             is ConsoleEvent.SideSelected -> {
                 _state.update { it.copy(selectedSide = event.side) }
             }
@@ -161,7 +159,28 @@ class ConsoleViewModel(
             ConsoleEvent.ContinuePressed -> {
                 _state.update { it.copy(readyToContinue = true) }
             }
+
+            // Handled by handleLifecycleEvent, which already returned.
+            else -> {}
         }
+    }
+
+    /**
+     * Start, finish, undo, and the two new period-boundary events -- every
+     * event here is a single instant handed to a use case and nothing
+     * else. Split from [onEvent] once the number of event types alone (not
+     * their handling) pushed that function's complexity over the limit.
+     */
+    private fun handleLifecycleEvent(event: ConsoleEvent): Boolean {
+        when (event) {
+            ConsoleEvent.StartPressed -> record { startMatch(it, clock.now()) }
+            ConsoleEvent.FinishPressed -> record { finishMatch(it) }
+            ConsoleEvent.EndPeriodPressed -> record { endPeriod(it, clock.now()) }
+            ConsoleEvent.StartNextPeriodPressed -> record { startNextPeriod(it, clock.now()) }
+            ConsoleEvent.UndoPressed -> record { undoLastEvent(it) }
+            else -> return false
+        }
+        return true
     }
 
     private fun openCard(event: ConsoleEvent.CardOpened) {

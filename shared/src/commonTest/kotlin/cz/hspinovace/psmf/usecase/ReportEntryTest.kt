@@ -11,6 +11,7 @@ import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
+import cz.hspinovace.psmf.domain.PeriodBreak
 import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.YellowCard
@@ -127,25 +128,48 @@ class ResultDraftTest {
     }
 
     @Test
-    fun theFinalScoreIsSuggestedFromTheGoalsAndTheHalfTimeIsNot() =
+    fun theHalfTimeScoreIsSuggestedFromTheGoalsUpToTheBreakAndNeverBlank() =
         runTest {
-            // Only the referee knows where the break fell: the clock never
-            // stops, so added time makes minute 31 as likely to be first
-            // half as second.
-            val played =
+            // Found by using the app: there was no way to end the first
+            // half, so this could not have been true before Phase 1 --
+            // "only the referee knows where the break fell" stopped being
+            // the case the moment there is a button for it.
+            val withBreak =
                 match().copy(
+                    periodBreaks = listOf(PeriodBreak(endedAt = Instant.parse("2026-08-31T19:32:00Z"))),
                     goals =
                         listOf(
                             GoalEvent(Minute.Played(5), TeamSide.AWAY, null, Score(0, 1)),
-                            GoalEvent(Minute.Played(45), TeamSide.HOME, null, Score(1, 1)),
+                            GoalEvent(Minute.HalfTime, TeamSide.HOME, null, Score(1, 1)),
+                            GoalEvent(Minute.Played(45), TeamSide.HOME, null, Score(2, 1)),
                         ),
+                )
+
+            val suggested = ResultDraft.suggestedFrom(withBreak)
+
+            // The first two goals happened up to and including the break;
+            // the third is in the second half and does not count toward it.
+            assertEquals("1", suggested.halfTimeHome)
+            assertEquals("1", suggested.halfTimeAway)
+            assertEquals("2", suggested.fullTimeHome)
+            assertEquals("1", suggested.fullTimeAway)
+        }
+
+    @Test
+    fun withNoBreakYetTheHalfTimeSuggestionFallsBackToTheScoreSoFarRatherThanBlank() =
+        runTest {
+            // An abandoned match, or simply not reached the break yet: there
+            // is no moment to read a half-time score from, and "never blank"
+            // still has to mean something.
+            val played =
+                match().copy(
+                    goals = listOf(GoalEvent(Minute.Played(5), TeamSide.AWAY, null, Score(0, 1))),
                 )
 
             val suggested = ResultDraft.suggestedFrom(played)
 
-            assertEquals("1", suggested.fullTimeHome)
-            assertEquals("1", suggested.fullTimeAway)
-            assertEquals("", suggested.halfTimeHome)
+            assertEquals("0", suggested.halfTimeHome)
+            assertEquals("1", suggested.halfTimeAway)
         }
 
     @Test

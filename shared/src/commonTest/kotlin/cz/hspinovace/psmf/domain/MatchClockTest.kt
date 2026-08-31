@@ -94,6 +94,73 @@ class MatchClockTest {
 }
 
 /**
+ * RULE: **a half-time exists, and it is not part of the sixty minutes.**
+ *
+ * Analysis section 2.6: 2 x 30 with a break between them. The clock inside
+ * a period still never pauses -- see [MatchClockTest] above -- but the
+ * break itself is not play, which is what [Match.periodBreaks] and this
+ * corrected [Match.elapsedAt] exist to say. Found by using the app: there
+ * was no way to end the first half at all (2026-08-31 decision log).
+ */
+class PeriodBreakTest {
+    private val kickoff = Fixtures.kickoffAt
+
+    private fun running() = Fixtures.matchInSetup().copy(status = MatchStatus.IN_PROGRESS, kickoffAt = kickoff)
+
+    @Test
+    fun beforeAnyBreakThePeriodIsTheFirstOne() {
+        val match = running()
+        assertEquals(1, match.currentPeriodNumber())
+        assertFalse(match.inPeriodInterval)
+    }
+
+    @Test
+    fun endingAPeriodHoldsElapsedTimeAtTheMomentItEnded() {
+        val ended = running().copy(periodBreaks = listOf(PeriodBreak(endedAt = kickoff + 32.minutes)))
+
+        assertTrue(ended.inPeriodInterval)
+        assertNull(ended.currentPeriodNumber())
+        // Whatever real time passes on the break, elapsed play does not
+        // move -- that is the whole point of recording where it is.
+        assertEquals(32.minutes, ended.elapsedAt(kickoff + 32.minutes))
+        assertEquals(32.minutes, ended.elapsedAt(kickoff + 40.minutes))
+    }
+
+    @Test
+    fun startingTheNextPeriodResumesFromWhereTheBreakBegan() {
+        val resumed =
+            running().copy(
+                periodBreaks =
+                    listOf(PeriodBreak(endedAt = kickoff + 32.minutes, nextStartedAt = kickoff + 35.minutes)),
+            )
+
+        assertFalse(resumed.inPeriodInterval)
+        assertEquals(2, resumed.currentPeriodNumber())
+        // Gross time: the second period continues the same sixty minutes
+        // rather than restarting the count from zero.
+        assertEquals(32.minutes, resumed.elapsedAt(kickoff + 35.minutes))
+        assertEquals(57.minutes, resumed.elapsedAt(kickoff + 35.minutes + 25.minutes))
+    }
+
+    @Test
+    fun aSecondBreakIsHeldTheSameWayAsTheFirst() {
+        // Nothing here assumes exactly two periods; a competition with
+        // more reads the same way (Group.periods, not a hardcoded two).
+        val match =
+            running().copy(
+                periodBreaks =
+                    listOf(
+                        PeriodBreak(endedAt = kickoff + 30.minutes, nextStartedAt = kickoff + 30.minutes),
+                        PeriodBreak(endedAt = kickoff + 65.minutes),
+                    ),
+            )
+
+        assertTrue(match.inPeriodInterval)
+        assertEquals(65.minutes, match.elapsedAt(kickoff + 90.minutes))
+    }
+}
+
+/**
  * RULE: **a dismissed player's team plays a player short for ten minutes**,
  * a period *not* shortened by a goal and unaffected by further dismissals
  * (analysis section 2.6).

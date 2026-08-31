@@ -11,6 +11,7 @@ import cz.hspinovace.psmf.domain.GoalEvent
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
+import cz.hspinovace.psmf.domain.PeriodBreak
 import cz.hspinovace.psmf.domain.PersonName
 import cz.hspinovace.psmf.domain.PowerPlay
 import cz.hspinovace.psmf.domain.RedCard
@@ -18,6 +19,7 @@ import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.YellowCard
 import cz.hspinovace.psmf.domain.cards
+import cz.hspinovace.psmf.domain.inPeriodInterval
 import kotlin.time.Instant
 
 /**
@@ -50,6 +52,56 @@ class FinishMatch(
         val finished = match.copy(status = MatchStatus.FINISHED)
         matches.save(finished)
         return finished
+    }
+}
+
+/**
+ * The whistle for the end of a period -- not the whole match.
+ *
+ * A half-time exists (analysis section 2.6: 2 x 30 with a break between
+ * them), and this is the only new thing Phase 1 adds to the clock: one
+ * more instant, persisted, so the interval can be told apart from play
+ * without anything ticking through it. There is still no pause, stop,
+ * resume or adjust operation -- ending a period is a fact about the match,
+ * recorded once, exactly like the whistle [StartMatch] stores.
+ */
+class EndPeriod(
+    private val matches: MatchRepository,
+) {
+    suspend operator fun invoke(
+        match: Match,
+        at: Instant,
+    ): Match {
+        if (match.kickoffAt == null) return match
+        if (match.inPeriodInterval) return match
+        val updated = match.copy(periodBreaks = match.periodBreaks + PeriodBreak(endedAt = at))
+        matches.save(updated)
+        return updated
+    }
+}
+
+/**
+ * The whistle to resume play.
+ *
+ * Nothing ticked in the interval; this only records when it ended, which
+ * is what lets the minute pick up from where the break began rather than
+ * from zero -- 2 x 30 is gross time, and the second period continues the
+ * same sixty minutes rather than starting a new count.
+ */
+class StartNextPeriod(
+    private val matches: MatchRepository,
+) {
+    suspend operator fun invoke(
+        match: Match,
+        at: Instant,
+    ): Match {
+        val open = match.periodBreaks.lastOrNull()?.takeIf { it.nextStartedAt == null } ?: return match
+        val updated =
+            match.copy(
+                periodBreaks = match.periodBreaks.dropLast(1) + open.copy(nextStartedAt = at),
+            )
+        matches.save(updated)
+        return updated
     }
 }
 

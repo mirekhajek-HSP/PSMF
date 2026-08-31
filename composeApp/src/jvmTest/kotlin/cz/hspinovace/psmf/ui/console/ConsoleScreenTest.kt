@@ -13,6 +13,7 @@ import cz.hspinovace.psmf.domain.AppearanceId
 import cz.hspinovace.psmf.domain.JerseyNumber
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
+import cz.hspinovace.psmf.domain.PeriodBreak
 import cz.hspinovace.psmf.domain.PersonName
 import cz.hspinovace.psmf.domain.PlayerName
 import cz.hspinovace.psmf.domain.PowerPlay
@@ -67,6 +68,7 @@ class ConsoleScreenTest {
         score: Score = Score.GOALLESS,
         powerPlays: List<PowerPlay> = emptyList(),
         status: MatchStatus = MatchStatus.IN_PROGRESS,
+        periodBreaks: List<PeriodBreak> = emptyList(),
     ) = ConsoleEntry(
         home = ConsoleTeam(TeamSide.HOME, UiTestData.homeTeam.name, rows),
         away = ConsoleTeam(TeamSide.AWAY, UiTestData.awayTeam.name, emptyList()),
@@ -75,6 +77,7 @@ class ConsoleScreenTest {
         status = status,
         log = emptyList(),
         powerPlays = powerPlays,
+        periodBreaks = periodBreaks,
     )
 
     private fun state(
@@ -92,11 +95,11 @@ class ConsoleScreenTest {
         runComposeUiTest {
             withLanguage("cs") {
                 setContent {
-                    PsmfTheme { ConsoleScreen(state = state(), now = KICKOFF + 34.minutes, onEvent = {}) }
+                    PsmfTheme { ConsoleScreen(state = state(), now = KICKOFF + 25.minutes, onEvent = {}) }
                 }
             }
 
-            onNodeWithText("34´").assertIsDisplayed()
+            onNodeWithText("25´").assertIsDisplayed()
         }
 
     @Test
@@ -104,7 +107,10 @@ class ConsoleScreenTest {
         runComposeUiTest {
             // The clock runs continuously and the referee adds time. golblok
             // pauses; that behaviour must not come across, and the absence
-            // of the control is the only way to be sure it has not.
+            // of the control is the only way to be sure it has not. Checked
+            // again below with a half-time button on screen, specifically so
+            // that button cannot be mistaken later for permission to add a
+            // pause: ending a period is not one.
             withLanguage("cs") {
                 setContent {
                     PsmfTheme { ConsoleScreen(state = state(), now = KICKOFF + 34.minutes, onEvent = {}) }
@@ -113,9 +119,87 @@ class ConsoleScreenTest {
 
             onNodeWithText("Pauza").assertDoesNotExist()
             onNodeWithText("Zastavit").assertDoesNotExist()
+            onNodeWithText("Pozastavit").assertDoesNotExist()
             // Nor anything golblok has that the ZoU does not.
             onNodeWithText("Střídání").assertDoesNotExist()
             onNodeWithText("Asistence").assertDoesNotExist()
+        }
+
+    @Test
+    fun endingAHalfIsNotAPauseEvenWithItsButtonOnScreen() =
+        runComposeUiTest {
+            // The same absences as above, re-checked in the one state where
+            // a reader might mistake "Ukončit poločas" for a pause control.
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme { ConsoleScreen(state = state(), now = KICKOFF + 31.minutes, onEvent = {}) }
+                }
+            }
+
+            onNodeWithText("Ukončit poločas").assertIsDisplayed()
+            onNodeWithText("Pauza").assertDoesNotExist()
+            onNodeWithText("Zastavit").assertDoesNotExist()
+            onNodeWithText("Pozastavit").assertDoesNotExist()
+        }
+
+    // ------------------------------------------------------------------
+    // The half-time break
+    // ------------------------------------------------------------------
+
+    @Test
+    fun endingTheFirstPeriodIsOfferedWhileItIsRunningAndFiresTheEvent() =
+        runComposeUiTest {
+            val events = mutableListOf<ConsoleEvent>()
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme { ConsoleScreen(state = state(), now = KICKOFF + 20.minutes, onEvent = events::add) }
+                }
+            }
+
+            onNodeWithText("Ukončit poločas").performClick()
+
+            assertTrue(events.contains(ConsoleEvent.EndPeriodPressed))
+        }
+
+    @Test
+    fun startingTheSecondPeriodIsOfferedDuringTheIntervalAndFiresTheEvent() =
+        runComposeUiTest {
+            val events = mutableListOf<ConsoleEvent>()
+            val onBreak = entry(periodBreaks = listOf(PeriodBreak(endedAt = KICKOFF + 30.minutes)))
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme {
+                        ConsoleScreen(state = state(onBreak), now = KICKOFF + 33.minutes, onEvent = events::add)
+                    }
+                }
+            }
+
+            // The minute holds at the break rather than climbing through it.
+            onNodeWithText("30´+").assertIsDisplayed()
+            onNodeWithText("Zahájit 2. poločas").performClick()
+
+            assertTrue(events.contains(ConsoleEvent.StartNextPeriodPressed))
+        }
+
+    @Test
+    fun onceTheSecondPeriodIsRunningTheOnlyWayForwardIsToEndTheMatch() =
+        runComposeUiTest {
+            // HL's 2 x 30 has one break. Nothing more to offer here --
+            // "Ukončit utkání" is what ends the match, unaffected by this.
+            val secondHalf =
+                entry(
+                    periodBreaks =
+                        listOf(PeriodBreak(endedAt = KICKOFF + 30.minutes, nextStartedAt = KICKOFF + 32.minutes)),
+                )
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme { ConsoleScreen(state = state(secondHalf), now = KICKOFF + 50.minutes, onEvent = {}) }
+                }
+            }
+
+            onNodeWithText("Ukončit poločas").assertDoesNotExist()
+            onNodeWithText("Zahájit", substring = true).assertDoesNotExist()
+            onNodeWithText("Ukončit utkání").assertIsDisplayed()
         }
 
     @Test

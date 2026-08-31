@@ -30,11 +30,42 @@ import kotlin.time.Instant
 /**
  * Time since the whistle, or null before kickoff.
  *
- * A pure function of [Match.kickoffAt] and [now]. Nothing ticks, nothing is
- * stored but the kickoff instant, and no event in the match can change the
- * answer.
+ * A pure function of [Match.kickoffAt], [Match.periodBreaks] and [now].
+ * Nothing ticks and nothing is stored but instants, so no event in the
+ * match can change the answer.
+ *
+ * **Holds during a period break rather than counting through it.**
+ * Analysis section 2.6 is explicit that the interval between periods is
+ * not part of the sixty minutes -- a half-time exists, even though the
+ * clock inside each period still never pauses. The break is skipped by
+ * walking the recorded boundaries rather than by subtracting a duration,
+ * because a break still in progress has no end to subtract yet.
  */
-fun Match.elapsedAt(now: Instant): Duration? = kickoffAt?.let { now - it }
+fun Match.elapsedAt(now: Instant): Duration? {
+    val start = kickoffAt ?: return null
+    var total = Duration.ZERO
+    var segmentStart = start
+    for (brk in periodBreaks) {
+        total += brk.endedAt - segmentStart
+        val nextStart = brk.nextStartedAt ?: return total
+        segmentStart = nextStart
+    }
+    return total + (now - segmentStart)
+}
+
+/** True once a period has ended and the next one has not started yet. */
+val Match.inPeriodInterval: Boolean
+    get() = periodBreaks.isNotEmpty() && periodBreaks.last().nextStartedAt == null
+
+/**
+ * Which period is running, 1-based. Null before kickoff, and **null during
+ * the interval between periods** -- nothing is running on a break.
+ */
+fun Match.currentPeriodNumber(): Int? {
+    if (kickoffAt == null) return null
+    if (inPeriodInterval) return null
+    return periodBreaks.size + 1
+}
 
 /**
  * `Čas` as the referee would write it: whole minutes elapsed, from 0.

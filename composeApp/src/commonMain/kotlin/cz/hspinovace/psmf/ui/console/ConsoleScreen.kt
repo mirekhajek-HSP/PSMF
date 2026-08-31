@@ -36,6 +36,7 @@ import cz.hspinovace.psmf.resources.console_card
 import cz.hspinovace.psmf.resources.console_card_other
 import cz.hspinovace.psmf.resources.console_continue
 import cz.hspinovace.psmf.resources.console_dismissed
+import cz.hspinovace.psmf.resources.console_end_period
 import cz.hspinovace.psmf.resources.console_finish
 import cz.hspinovace.psmf.resources.console_goal
 import cz.hspinovace.psmf.resources.console_goal_no_scorer
@@ -46,6 +47,7 @@ import cz.hspinovace.psmf.resources.console_marker_red
 import cz.hspinovace.psmf.resources.console_marker_yellow
 import cz.hspinovace.psmf.resources.console_not_started
 import cz.hspinovace.psmf.resources.console_start
+import cz.hspinovace.psmf.resources.console_start_next_period
 import cz.hspinovace.psmf.resources.console_undo
 import cz.hspinovace.psmf.resources.console_yellows
 import cz.hspinovace.psmf.ui.common.ActionRow
@@ -53,6 +55,7 @@ import cz.hspinovace.psmf.ui.common.brandFilledColors
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.ConsoleRow
 import cz.hspinovace.psmf.usecase.ConsoleTeam
+import cz.hspinovace.psmf.usecase.PeriodAction
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
 
@@ -123,6 +126,34 @@ private fun Controls(
                 modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
             ) {
                 Text(stringResource(Res.string.console_undo))
+            }
+            // Not a pause: a half-time exists, but nothing here stops the
+            // clock inside a period. See PeriodAction and ConsoleEntry.minuteAt.
+            when (entry.periodAction) {
+                PeriodAction.END_PERIOD -> {
+                    OutlinedButton(
+                        onClick = { onEvent(ConsoleEvent.EndPeriodPressed) },
+                        modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
+                    ) {
+                        Text(stringResource(Res.string.console_end_period))
+                    }
+                }
+
+                PeriodAction.START_NEXT_PERIOD -> {
+                    OutlinedButton(
+                        onClick = { onEvent(ConsoleEvent.StartNextPeriodPressed) },
+                        modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
+                    ) {
+                        Text(
+                            stringResource(
+                                Res.string.console_start_next_period,
+                                (entry.periodBreaks.size + 1).toString(),
+                            ),
+                        )
+                    }
+                }
+
+                PeriodAction.NONE -> {}
             }
             when {
                 !entry.started -> {

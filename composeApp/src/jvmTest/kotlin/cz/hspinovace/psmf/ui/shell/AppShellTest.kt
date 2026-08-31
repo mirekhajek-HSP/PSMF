@@ -149,13 +149,13 @@ class AppShellTest {
             withLanguage("cs") {
                 setContent { Harness(navigator) }
 
-                onNodeWithText("34´").assertIsDisplayed()
+                onNodeWithText("25´").assertIsDisplayed()
 
                 onNodeWithText("Nastavení").performClick()
                 onNodeWithText("SETTINGS").assertIsDisplayed()
 
                 onNodeWithText("Zápis").performClick()
-                onNodeWithText("34´").assertIsDisplayed()
+                onNodeWithText("25´").assertIsDisplayed()
             }
         }
 
@@ -171,7 +171,7 @@ class AppShellTest {
             withLanguage("cs") {
                 setContent { Harness(navigator) }
 
-                onNodeWithText("34´").assertIsDisplayed()
+                onNodeWithText("25´").assertIsDisplayed()
 
                 onNodeWithText("Týmy").performClick()
                 onNodeWithText("Nastavení").performClick()
@@ -180,7 +180,7 @@ class AppShellTest {
 
                 // Only the console draws a minute, so this also says the
                 // console itself came back rather than some other screen.
-                onNodeWithText("34´").assertIsDisplayed()
+                onNodeWithText("25´").assertIsDisplayed()
             }
         }
 
@@ -221,7 +221,7 @@ class AppShellTest {
             withLanguage("cs") {
                 setContent { Harness(navigator) }
 
-                onNodeWithText("34´").assertIsDisplayed()
+                onNodeWithText("25´").assertIsDisplayed()
                 onNodeWithText("Zpět").assertDoesNotExist()
             }
         }
@@ -238,7 +238,7 @@ class AppShellTest {
                 onNodeWithText("Zpět").assertIsDisplayed()
                 onNodeWithText("Zpět").performClick()
 
-                onNodeWithText("34´").assertIsDisplayed()
+                onNodeWithText("25´").assertIsDisplayed()
             }
         }
 
@@ -350,7 +350,7 @@ class AppShellTest {
                     is Destination.Console -> {
                         ConsoleScreen(
                             state = consoleState(),
-                            now = KICKOFF + 34.minutes,
+                            now = KICKOFF + 25.minutes,
                             onEvent = {},
                             modifier = modifier,
                         )

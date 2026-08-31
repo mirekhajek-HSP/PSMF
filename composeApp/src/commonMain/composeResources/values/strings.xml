@@ -90,6 +90,8 @@
     <string name="console_not_started">Utkání ještě nezačalo. Hodiny se rozběhnou výkopem a už se nezastaví.</string>
     <string name="console_start">Zahájit utkání</string>
     <string name="console_finish">Ukončit utkání</string>
+    <string name="console_end_period">Ukončit poločas</string>
+    <string name="console_start_next_period">Zahájit %1$s. poločas</string>
     <string name="console_continue">Pokračovat na hodnocení</string>
     <string name="console_finished">Utkání ukončeno</string>
     <string name="console_undo">Vzít zpět</string>
@@ -141,7 +143,7 @@
     <string name="recap_title">Rekapitulace</string>
     <string name="recap_loading">Načítání zápisu…</string>
     <string name="recap_result">Výsledek</string>
-    <string name="recap_result_note">Konečný výsledek je předvyplněný ze zaznamenaných gólů. Poločas zadejte podle skutečnosti — hodiny se nezastavují, takže nastavený čas nemusí odpovídat 30. minutě.</string>
+    <string name="recap_result_note">Oba výsledky jsou předvyplněné — konečný ze zaznamenaných gólů, poločas ze stavu utkání v okamžiku, kdy skončil první poločas. Oba zůstávají upravitelné, kdyby bylo potřeba gól opravit dodatečně.</string>
     <string name="recap_half_time">Poločas</string>
     <string name="recap_full_time">Konečný výsledek</string>
     <string name="recap_document">Zápis, jak bude odeslán</string>

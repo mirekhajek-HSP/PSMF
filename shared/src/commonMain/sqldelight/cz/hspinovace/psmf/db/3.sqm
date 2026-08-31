@@ -1,0 +1,15 @@
+-- Version 3 to version 4: a match now records where its period breaks are.
+--
+-- New and empty for every match that already exists: nothing before this
+-- version had a way to end a period through the app, so there is nothing
+-- to move and no row to backfill. A report written before this version
+-- reads back exactly as it did, with no breaks recorded -- which is the
+-- true state of a match nobody ever pressed "end of period" on.
+
+CREATE TABLE period_break_record (
+    match_id         TEXT    NOT NULL,
+    position         INTEGER NOT NULL,
+    ended_at         TEXT    NOT NULL,
+    next_started_at  TEXT,
+    PRIMARY KEY (match_id, position)
+);

@@ -69,6 +69,18 @@ data class Match(
      * explains why one of them stops and the other cannot.
      */
     val powerPlays: List<PowerPlay> = emptyList(),
+    /**
+     * Every period boundary crossed so far.
+     *
+     * Grows by one entry each time the referee ends a period; that entry's
+     * [PeriodBreak.nextStartedAt] is filled in when they start the next
+     * one. **Not a second clock** -- [kickoffAt] is still the only instant
+     * the match clock itself is built from (see `MatchClock.kt`); this is
+     * the record of where the gaps are, so elapsed time can be computed by
+     * skipping them rather than counting through a break that analysis
+     * section 2.6 says is not part of the sixty minutes.
+     */
+    val periodBreaks: List<PeriodBreak> = emptyList(),
 ) {
     fun lineup(side: TeamSide): Lineup? =
         when (side) {
@@ -105,4 +117,36 @@ data class Match(
     /** The score implied by the recorded goals, for cross-checking `Stav`. */
     fun scoreFromGoals(): Score =
         goals.sortedBy { it.minute }.fold(Score.GOALLESS) { running, goal -> running.scoredBy(goal.side) }
+
+    /**
+     * `poločas`: the score once the first period ended.
+     *
+     * Null until the first period actually has -- there is no moment to
+     * read a half-time score from before that, and pretending otherwise
+     * would be a fabrication, not a suggestion. Every goal up to and
+     * including the interval carries a minute no later than
+     * [Minute.HalfTime] -- the console's own clock guarantees it, see
+     * `ConsoleEntry.minuteAt` -- so the cut is a comparison on
+     * [GoalEvent.minute], not on when the goal happened to be saved.
+     */
+    fun scoreAtEndOfFirstPeriod(): Score? {
+        if (periodBreaks.isEmpty()) return null
+        return goals
+            .sortedBy { it.minute }
+            .filter { it.minute <= Minute.HalfTime }
+            .fold(Score.GOALLESS) { running, goal -> running.scoredBy(goal.side) }
+    }
 }
+
+/**
+ * When a period ended, and -- once pressed -- when the next one started.
+ *
+ * The match is in the interval between periods whenever the last entry in
+ * [Match.periodBreaks] has no [nextStartedAt] yet: the minute holds there
+ * rather than counting through a break that is not part of the match.
+ */
+@Serializable
+data class PeriodBreak(
+    val endedAt: Instant,
+    val nextStartedAt: Instant? = null,
+)

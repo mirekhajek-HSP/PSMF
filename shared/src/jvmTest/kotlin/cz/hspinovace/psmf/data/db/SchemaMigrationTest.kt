@@ -162,6 +162,33 @@ class SchemaMigrationTest {
         }
 
     @Test
+    fun aReportWrittenBeforeThereWereBreaksIsIntactAfterItsMigration() =
+        runTest {
+            // The step Phase 1 added, on its own -- starting immediately
+            // before it, the same way the Týmy tab's own migration test
+            // does, so only 3.sqm can be responsible for the result. A v3
+            // report cannot itself have a period break -- the feature did
+            // not exist yet -- the same way a v2 report could not already
+            // follow a team; what this proves is that the *table* arrives
+            // empty and the report already there is untouched.
+            val database = databaseAtVersion(3)
+            val report = finishedReport()
+
+            beforeTheUpdate(database) { it.save(report) }
+
+            assertEquals(3, userVersion(database))
+            assertFalse("period_break_record" in tableNames(database), "3.db already had the new table")
+
+            val restored = afterTheUpdate(database) { it.load(report.id) }
+
+            assertEquals(current, userVersion(database), "3.sqm did not run")
+            assertContains(tableNames(database), "period_break_record")
+            val nonNullRestored = assertNotNull(restored, "the report did not survive 3.sqm")
+            assertEquals(report, nonNullRestored)
+            assertEquals(emptyList(), nonNullRestored.periodBreaks)
+        }
+
+    @Test
     fun theSnapshottedColumnsSurviveAndAreNotRederived() =
         runTest {
             // These are stored rather than derived precisely so that a later

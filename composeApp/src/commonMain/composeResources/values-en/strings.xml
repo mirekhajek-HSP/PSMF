@@ -82,6 +82,8 @@
     <string name="console_not_started">The match has not started. The clock starts at kickoff and never stops.</string>
     <string name="console_start">Start the match</string>
     <string name="console_finish">End the match</string>
+    <string name="console_end_period">End the half</string>
+    <string name="console_start_next_period">Start half %1$s</string>
     <string name="console_continue">Continue to the assessment</string>
     <string name="console_finished">Match ended</string>
     <string name="console_undo">Undo</string>
@@ -133,7 +135,7 @@
     <string name="recap_title">Recap</string>
     <string name="recap_loading">Loading the report…</string>
     <string name="recap_result">Result</string>
-    <string name="recap_result_note">The final score is pre-filled from the goals recorded. Enter the half-time score as it stood — the clock never stops, so added time means the break need not fall on minute 30.</string>
+    <string name="recap_result_note">Both scores are pre-filled — the final score from the goals recorded, the half-time score from how the match stood when the first half ended. Both stay editable in case a goal needs correcting afterwards.</string>
     <string name="recap_half_time">Half time</string>
     <string name="recap_full_time">Final score</string>
     <string name="recap_document">The report as it will be sent</string>

@@ -7,6 +7,7 @@ import cz.hspinovace.psmf.db.Card_record
 import cz.hspinovace.psmf.db.Goal_record
 import cz.hspinovace.psmf.db.MatchRecordQueries
 import cz.hspinovace.psmf.db.Match_record
+import cz.hspinovace.psmf.db.Period_break_record
 import cz.hspinovace.psmf.db.Power_play_record
 import cz.hspinovace.psmf.db.PsmfDatabase
 import cz.hspinovace.psmf.db.SelectSummaries
@@ -33,6 +34,7 @@ import cz.hspinovace.psmf.domain.MatchResult
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
 import cz.hspinovace.psmf.domain.Official
+import cz.hspinovace.psmf.domain.PeriodBreak
 import cz.hspinovace.psmf.domain.PersonName
 import cz.hspinovace.psmf.domain.PlayerId
 import cz.hspinovace.psmf.domain.PowerPlay
@@ -79,6 +81,7 @@ class SqlDelightMatchRepository(
                 queries.writeGoals(match)
                 queries.writeCards(match)
                 queries.writePowerPlays(match)
+                queries.writePeriodBreaks(match)
                 queries.writeConfirmations(match)
             }
         }
@@ -288,6 +291,21 @@ private fun MatchRecordQueries.writePowerPlays(match: Match) {
     }
 }
 
+// No matching delete: unlike goals, cards and power plays, a period
+// break is never undone -- it only grows, or has its last row's
+// next_started_at filled in -- so INSERT OR REPLACE alone keeps every
+// existing row correct without a delete-then-rewrite pass first.
+private fun MatchRecordQueries.writePeriodBreaks(match: Match) {
+    match.periodBreaks.forEachIndexed { index, brk ->
+        insertPeriodBreak(
+            match_id = match.id.value,
+            position = index.toLong(),
+            ended_at = brk.endedAt.toString(),
+            next_started_at = brk.nextStartedAt?.toString(),
+        )
+    }
+}
+
 private fun MatchRecordQueries.writeConfirmations(match: Match) {
     match.confirmations.forEach { confirmation ->
         insertConfirmation(
@@ -333,6 +351,7 @@ private fun MatchRecordQueries.hydrate(row: Match_record): Match {
         goals = selectGoals(id).executeAsList().map { it.toDomain() },
         cards = cardsSection(row.cards_state, selectCards(id).executeAsList().map { it.toDomain() }),
         powerPlays = selectPowerPlays(id).executeAsList().map { it.toDomain() },
+        periodBreaks = selectPeriodBreaks(id).executeAsList().map { it.toDomain() },
         assessment = row.toAssessment(),
         result = row.toResult(),
         confirmations =
@@ -425,6 +444,12 @@ private fun Power_play_record.toDomain() =
         dismissedAtMinute = minuteOf(minute_kind, minute_value),
     )
 
+private fun Period_break_record.toDomain() =
+    PeriodBreak(
+        endedAt = Instant.parse(ended_at),
+        nextStartedAt = next_started_at?.let { Instant.parse(it) },
+    )
+
 private fun Goal_record.toDomain() =
     GoalEvent(
         minute = minuteOf(minute_kind, minute_value),
@@ -464,52 +489,3 @@ private fun cardsSection(
         CARDS_NONE_ISSUED -> CardsSection.NoneIssued
         else -> CardsSection.Issued(cards)
     }
-
-// ---------------------------------------------------------------------------
-// Encoding
-// ---------------------------------------------------------------------------
-
-private const val COLOUR_RED = "RED"
-private const val COLOUR_YELLOW = "YELLOW"
-private const val CARDS_NONE_ISSUED = "NONE_ISSUED"
-private const val CARDS_ISSUED = "ISSUED"
-private const val SUBJECT_PLAYER = "PLAYER"
-private const val SUBJECT_NAMED_PERSON = "NAMED_PERSON"
-
-private fun Boolean.toLong(): Long = if (this) 1L else 0L
-
-private fun CardsSection.stateName(): String =
-    when (this) {
-        CardsSection.NoneIssued -> CARDS_NONE_ISSUED
-        is CardsSection.Issued -> CARDS_ISSUED
-    }
-
-private fun CardSubject.kindName(): String =
-    when (this) {
-        is CardSubject.Player -> SUBJECT_PLAYER
-        is CardSubject.NamedPerson -> SUBJECT_NAMED_PERSON
-    }
-
-/** A minute is stored as a kind plus an optional number, never as one integer. */
-private fun Minute.kindName(): String =
-    when (this) {
-        is Minute.Played -> MINUTE_PLAYED
-        Minute.HalfTime -> MINUTE_HALF_TIME
-        Minute.AfterFinalWhistle -> MINUTE_AFTER_FINAL_WHISTLE
-    }
-
-private fun Minute.numericValue(): Long? = (this as? Minute.Played)?.value?.toLong()
-
-private fun minuteOf(
-    kind: String,
-    value: Long?,
-): Minute =
-    when (kind) {
-        MINUTE_HALF_TIME -> Minute.HalfTime
-        MINUTE_AFTER_FINAL_WHISTLE -> Minute.AfterFinalWhistle
-        else -> Minute.Played(value?.toInt() ?: 0)
-    }
-
-private const val MINUTE_PLAYED = "PLAYED"
-private const val MINUTE_HALF_TIME = "HALF_TIME"
-private const val MINUTE_AFTER_FINAL_WHISTLE = "AFTER_FINAL_WHISTLE"

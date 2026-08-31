@@ -120,21 +120,21 @@ class LanguagePickerTest {
                     AppEnvironment(language) {
                         ConsoleScreen(
                             state = consoleState(),
-                            now = KICKOFF + 34.minutes,
+                            now = KICKOFF + 25.minutes,
                             onEvent = {},
                         )
                     }
                 }
             }
 
-            onNodeWithText("34´").assertIsDisplayed()
+            onNodeWithText("25´").assertIsDisplayed()
             onNodeWithText("2:1").assertIsDisplayed()
 
             language = AppLanguage.UKRAINIAN
             onNodeWithText("Скасувати останнє").assertIsDisplayed()
 
             // Still the same match, at the same minute.
-            onNodeWithText("34´").assertIsDisplayed()
+            onNodeWithText("25´").assertIsDisplayed()
             onNodeWithText("2:1").assertIsDisplayed()
         }
 

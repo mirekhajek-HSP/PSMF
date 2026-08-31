@@ -80,6 +80,27 @@ CREATE TABLE appearance_record (
     identification_source TEXT    NOT NULL
 );
 
+-- When a period ended, and -- once pressed -- when the next one started.
+--
+-- Own table for the same reason power_play_record is: a match may have
+-- more than one transition, because how many periods a competition plays
+-- is data (Group.periods), not code. next_started_at is NULL while the
+-- match is in that interval; a match with no rows here has never had a
+-- period end at all.
+-- No undo exists for ending or starting a period (EndPeriod,
+-- StartNextPeriod), so unlike goals, cards and power plays this list only
+-- ever grows or has its last row's next_started_at filled in -- never
+-- shrinks. INSERT OR REPLACE on every save is therefore sufficient on its
+-- own; there is no matching delete query, and there does not need to be
+-- one unless an undo for a period is ever added.
+CREATE TABLE period_break_record (
+    match_id         TEXT    NOT NULL,
+    position         INTEGER NOT NULL,
+    ended_at         TEXT    NOT NULL,
+    next_started_at  TEXT,
+    PRIMARY KEY (match_id, position)
+);
+
 -- A dismissed player's team plays a player short for ten minutes.
 --
 -- Its own table because a match may have more than one running at once: a
@@ -276,6 +297,13 @@ SELECT * FROM power_play_record WHERE match_id = ? ORDER BY position;
 
 deletePowerPlays:
 DELETE FROM power_play_record WHERE match_id = ?;
+
+insertPeriodBreak:
+INSERT OR REPLACE INTO period_break_record (match_id, position, ended_at, next_started_at)
+VALUES (?, ?, ?, ?);
+
+selectPeriodBreaks:
+SELECT * FROM period_break_record WHERE match_id = ? ORDER BY position;
 
 selectPreference:
 SELECT value FROM preference_record WHERE key = ?;

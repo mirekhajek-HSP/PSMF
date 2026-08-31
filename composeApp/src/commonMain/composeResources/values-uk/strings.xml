@@ -86,6 +86,8 @@
     <string name="console_not_started">Матч ще не розпочався. Годинник почне йти зі стартовим свистком і вже не зупиниться.</string>
     <string name="console_start">Розпочати матч</string>
     <string name="console_finish">Завершити матч</string>
+    <string name="console_end_period">Завершити тайм</string>
+    <string name="console_start_next_period">Розпочати %1$s. тайм</string>
     <string name="console_continue">Далі до оцінювання</string>
     <string name="console_finished">Матч завершено</string>
     <string name="console_undo">Скасувати останнє</string>
@@ -137,7 +139,7 @@
     <string name="recap_title">Підсумок</string>
     <string name="recap_loading">Завантаження протоколу…</string>
     <string name="recap_result">Результат</string>
-    <string name="recap_result_note">Кінцевий рахунок підставлено із записаних голів. Рахунок першого тайму введіть за фактом — годинник не зупиняється, тому перерва не обовʼязково припадає на 30-ту хвилину.</string>
+    <string name="recap_result_note">Обидва рахунки підставлено автоматично — кінцевий із записаних голів, рахунок першого тайму — зі стану матчу на момент завершення першого тайму. Обидва можна виправити, якщо гол потрібно скоригувати пізніше.</string>
     <string name="recap_half_time">Перший тайм</string>
     <string name="recap_full_time">Кінцевий рахунок</string>
     <string name="recap_document">Протокол у тому вигляді, як буде надіслано</string>

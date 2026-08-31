@@ -121,7 +121,6 @@ data class ResultDraft(
 
     fun problems(): List<ResultProblem> =
         buildList {
-            if (scoreOf(halfTimeHome, halfTimeAway) == null) add(ResultProblem.HALF_TIME_MISSING)
             if (scoreOf(fullTimeHome, fullTimeAway) == null) add(ResultProblem.FULL_TIME_MISSING)
             if (isEmpty() && toResult() == null) add(ResultProblem.FULL_TIME_BELOW_HALF_TIME)
         }
@@ -165,14 +164,22 @@ data class ResultDraft(
             )
 
         /**
-         * Pre-filled from the goals: full time from what was recorded, half
-         * time left blank because only the referee knows where the break
-         * fell — the clock never stops, so added time makes minute 31 as
-         * likely to be first half as second.
+         * Pre-filled from the goals, and **never blank**.
+         *
+         * Full time is what was recorded. Half time is the score at the
+         * moment the first period ended (analysis section 2.5) — a fact
+         * about the match now, not a guess, once a half-time exists to
+         * read it from. If it does not — an abandoned match that never
+         * reached the break — the closest true statement is the score
+         * recorded so far, which is what [Match.scoreFromGoals] already
+         * is.
          */
         fun suggestedFrom(match: Match): ResultDraft {
             val fromGoals = match.scoreFromGoals()
+            val halfTime = match.scoreAtEndOfFirstPeriod() ?: fromGoals
             return ResultDraft(
+                halfTimeHome = halfTime.home.toString(),
+                halfTimeAway = halfTime.away.toString(),
                 fullTimeHome = fromGoals.home.toString(),
                 fullTimeAway = fromGoals.away.toString(),
             )
@@ -181,7 +188,6 @@ data class ResultDraft(
 }
 
 enum class ResultProblem {
-    HALF_TIME_MISSING,
     FULL_TIME_MISSING,
     FULL_TIME_BELOW_HALF_TIME,
 }

@@ -41,6 +41,7 @@ import cz.hspinovace.psmf.usecase.BrowseTeams
 import cz.hspinovace.psmf.usecase.BuildConsoleEntry
 import cz.hspinovace.psmf.usecase.BuildLineupEntry
 import cz.hspinovace.psmf.usecase.ConfirmReport
+import cz.hspinovace.psmf.usecase.EndPeriod
 import cz.hspinovace.psmf.usecase.FinishMatch
 import cz.hspinovace.psmf.usecase.ListFixtures
 import cz.hspinovace.psmf.usecase.LoadTeamRoster
@@ -54,6 +55,7 @@ import cz.hspinovace.psmf.usecase.SaveLineup
 import cz.hspinovace.psmf.usecase.SaveMatchHeader
 import cz.hspinovace.psmf.usecase.SetDefaultJerseyNumber
 import cz.hspinovace.psmf.usecase.StartMatch
+import cz.hspinovace.psmf.usecase.StartNextPeriod
 import cz.hspinovace.psmf.usecase.StartOrResumeMatch
 import cz.hspinovace.psmf.usecase.ToggleFollowedTeam
 import cz.hspinovace.psmf.usecase.UndoLastEvent
@@ -115,7 +117,7 @@ val appModule: Module =
         viewModel { (matchId: MatchId) -> MatchHeaderViewModel(matchId, get(), get(), get()) }
         viewModel { (matchId: MatchId) -> LineupViewModel(matchId, get(), get(), get(), get()) }
         viewModel { (matchId: MatchId) ->
-            ConsoleViewModel(matchId, get(), get(), get(), get(), get(), get(), get())
+            ConsoleViewModel(matchId, get(), get(), get(), get(), get(), get(), get(), get(), get())
         }
         viewModel { (matchId: MatchId) -> AssessmentViewModel(matchId, get(), get(), get()) }
         viewModel { (matchId: MatchId) -> RecapViewModel(matchId, get(), get(), get(), get(), get()) }
@@ -146,6 +148,8 @@ private fun Module.factoryOfUseCases() {
     factory { BuildConsoleEntry(get(), get()) }
     factory { StartMatch(get()) }
     factory { FinishMatch(get()) }
+    factory { EndPeriod(get()) }
+    factory { StartNextPeriod(get()) }
     factory { LogGoal(get()) }
     factory { LogCard(get()) }
     factory { UndoLastEvent(get()) }

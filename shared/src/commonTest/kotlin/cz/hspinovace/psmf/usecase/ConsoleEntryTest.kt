@@ -7,7 +7,9 @@ import cz.hspinovace.psmf.domain.Dismissal
 import cz.hspinovace.psmf.domain.Fixtures
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
+import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
+import cz.hspinovace.psmf.domain.PeriodBreak
 import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.YellowCard
@@ -76,8 +78,86 @@ class ConsoleEntryTest {
 
             assertEquals(Minute.Played(0), entry.minuteAt(KICKOFF_AT))
             assertEquals(Minute.Played(29), entry.minuteAt(KICKOFF_AT + 29.minutes))
-            // Past the nominal 60: the referee adds time, nothing stops.
+        }
+
+    @Test
+    fun pastTheFirstPeriodsNominalLengthTheMinuteIsHalfTimeUntilTheRefereeSaysOtherwise() =
+        runTest {
+            // Found by using the app on a physical phone: there was no way
+            // to end the first half at all, so added time inside it had
+            // nowhere to go but an ordinary, ever-climbing integer. The
+            // form has no notation for "31'" -- only for the break itself
+            // -- so this now reads 30'+ even before anyone presses "end of
+            // period".
+            val entry = console(matchWithLineups().copy(kickoffAt = KICKOFF_AT))
+
+            assertEquals(Minute.HalfTime, entry.minuteAt(KICKOFF_AT + 30.minutes))
+            assertEquals(Minute.HalfTime, entry.minuteAt(KICKOFF_AT + 31.minutes))
+        }
+
+    @Test
+    fun onceTheSecondPeriodIsRunningAddedTimeIsAnOrdinaryMinuteAgain() =
+        runTest {
+            // 60'+ is the final whistle, not merely the last period running
+            // long -- past the nominal 60 here, nothing stops, exactly as
+            // it always has.
+            val match =
+                matchWithLineups().copy(
+                    kickoffAt = KICKOFF_AT,
+                    periodBreaks =
+                        listOf(
+                            PeriodBreak(endedAt = KICKOFF_AT + 30.minutes, nextStartedAt = KICKOFF_AT + 30.minutes),
+                        ),
+                )
+            val entry = console(match)
+
             assertEquals(Minute.Played(64), entry.minuteAt(KICKOFF_AT + 64.minutes))
+        }
+
+    @Test
+    fun duringTheIntervalTheMinuteHoldsAtHalfTime() =
+        runTest {
+            val match =
+                matchWithLineups().copy(
+                    kickoffAt = KICKOFF_AT,
+                    periodBreaks = listOf(PeriodBreak(endedAt = KICKOFF_AT + 32.minutes)),
+                )
+            val entry = console(match)
+
+            assertTrue(entry.inPeriodInterval)
+            assertEquals(Minute.HalfTime, entry.minuteAt(KICKOFF_AT + 32.minutes))
+            assertEquals(Minute.HalfTime, entry.minuteAt(KICKOFF_AT + 38.minutes))
+        }
+
+    @Test
+    fun afterTheFinalWhistleEveryEventIsSixtyPlus() =
+        runTest {
+            val match =
+                matchWithLineups().copy(kickoffAt = KICKOFF_AT, status = MatchStatus.FINISHED)
+            val entry = console(match)
+
+            assertEquals(Minute.AfterFinalWhistle, entry.minuteAt(KICKOFF_AT + 61.minutes))
+        }
+
+    @Test
+    fun theConsoleOffersToEndTheFirstPeriodThenToStartTheSecond() =
+        runTest {
+            val started = matchWithLineups().copy(kickoffAt = KICKOFF_AT)
+            assertEquals(PeriodAction.END_PERIOD, console(started).periodAction)
+
+            val onBreak = started.copy(periodBreaks = listOf(PeriodBreak(endedAt = KICKOFF_AT + 30.minutes)))
+            assertEquals(PeriodAction.START_NEXT_PERIOD, console(onBreak).periodAction)
+
+            // The second period is the last one for HL's 2 x 30: nothing
+            // more to offer here, "Ukončit utkání" is unaffected by this.
+            val secondHalf =
+                started.copy(
+                    periodBreaks =
+                        listOf(
+                            PeriodBreak(endedAt = KICKOFF_AT + 30.minutes, nextStartedAt = KICKOFF_AT + 30.minutes),
+                        ),
+                )
+            assertEquals(PeriodAction.NONE, console(secondHalf).periodAction)
         }
 
     @Test
