@@ -29,6 +29,20 @@ sealed interface Destination {
     data class Console(
         val matchId: MatchId,
     ) : Destination
+
+    data class Assessment(
+        val matchId: MatchId,
+    ) : Destination
+
+    data class Recap(
+        val matchId: MatchId,
+    ) : Destination
+
+    data class Export(
+        val matchId: MatchId,
+    ) : Destination
+
+    data object Settings : Destination
 }
 
 /**

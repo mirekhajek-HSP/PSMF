@@ -91,6 +91,8 @@ kotlin {
             // androidContext(). The Activity and Application are in
             // :androidApp.
             implementation(libs.koin.android)
+            // FileProvider, for the exported files.
+            implementation(libs.androidx.core.ktx)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

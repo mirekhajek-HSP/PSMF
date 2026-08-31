@@ -83,6 +83,7 @@
     <string name="console_not_started">The match has not started. The clock starts at kickoff and never stops.</string>
     <string name="console_start">Start the match</string>
     <string name="console_finish">End the match</string>
+    <string name="console_continue">Continue to the assessment</string>
     <string name="console_finished">Match ended</string>
     <string name="console_undo">Undo</string>
     <string name="console_goal">Goal</string>
@@ -115,4 +116,75 @@
     <string name="card_error_reason">Enter a reason.</string>
     <string name="card_error_dismissal">Choose whether this is a straight red or a second yellow.</string>
     <string name="card_error_minute">Enter the minute.</string>
+
+    <!-- Screen 5: assessment -->
+    <string name="assessment_title">Assessment</string>
+    <string name="assessment_best_player">NH — best player (shirt number)</string>
+    <string name="assessment_waiting_time">Čd — waiting time (min)</string>
+    <string name="assessment_shirts">Č — shirts properly numbered?</string>
+    <string name="assessment_uniform_kit">B — uniform kit colour?</string>
+    <string name="assessment_yes">Yes</string>
+    <string name="assessment_no">No</string>
+    <string name="assessment_fines_note">Č and B feed into fines. They stay unanswered until you answer them — a blank is not counted as a yes.</string>
+    <string name="assessment_commentary">Mandatory commentary</string>
+    <string name="assessment_commentary_note">It should cover every important moment of the match. It stays editable until the report is sent.</string>
+    <string name="assessment_continue">Continue to the recap</string>
+
+    <!-- Screen 6: recap and confirmation -->
+    <string name="recap_title">Recap</string>
+    <string name="recap_loading">Loading the report…</string>
+    <string name="recap_result">Result</string>
+    <string name="recap_result_note">The final score is pre-filled from the goals recorded. Enter the half-time score as it stood — the clock never stops, so added time means the break need not fall on minute 30.</string>
+    <string name="recap_half_time">Half time</string>
+    <string name="recap_full_time">Final score</string>
+    <string name="recap_document">The report as it will be sent</string>
+    <string name="recap_document_note">This is exactly what the captains confirm. Whatever is not here is not being checked.</string>
+    <string name="recap_no_cards_title">Personal punishments</string>
+    <string name="recap_no_cards">No cards were issued</string>
+    <string name="recap_no_cards_note">On paper the boxes are struck through. An unfilled block is not the same as “no cards”, so it has to be said.</string>
+    <string name="recap_no_cards_confirmed">Confirmed: no cards</string>
+    <string name="recap_signatures">Signatures</string>
+    <string name="recap_confirm_home_captain">Home captain</string>
+    <string name="recap_confirm_away_captain">Away captain</string>
+    <string name="recap_confirm_referee">Referee</string>
+    <string name="recap_confirmed">confirmed</string>
+    <string name="recap_confirm">Confirm</string>
+    <string name="recap_confirm_name">Name</string>
+    <string name="recap_confirm_error">Enter a name in the Latin alphabet.</string>
+    <string name="recap_deputy">Deputy captain</string>
+    <string name="recap_continue">Continue to sending</string>
+
+    <!-- Screen 7: export -->
+    <string name="export_title">Send</string>
+    <string name="export_loading">Preparing the report…</string>
+    <string name="export_ready">The report is complete and ready to send.</string>
+    <string name="export_blocked">The report cannot be sent yet</string>
+    <string name="export_preview">Preview</string>
+    <string name="export_czech_note">The report is always in Czech, whatever language the app is in.</string>
+    <string name="export_send">Send to PSMF</string>
+    <string name="export_sent">An email to %1$s is open. Confirm sending in your mail app.</string>
+    <string name="export_failed">There is no mail app on this device that can handle it.</string>
+    <string name="export_problem_officials">The referee or the delegating team is missing.</string>
+    <string name="export_problem_lineup">The lineup is missing (%1$s).</string>
+    <string name="export_problem_cards">The personal punishments block has not been filled in. If no cards were issued, confirm that on the recap.</string>
+    <string name="export_problem_card_reason">The card at %1$s has no reason.</string>
+    <string name="export_problem_commentary">The mandatory commentary is missing.</string>
+    <string name="export_problem_assessment">The Č or B rating is missing (%1$s).</string>
+    <string name="export_problem_result">The result is missing.</string>
+    <string name="export_problem_score_mismatch">The result entered, %1$s, does not match the goals recorded, %2$s.</string>
+    <string name="export_problem_confirmation_home">The home captain has not confirmed.</string>
+    <string name="export_problem_confirmation_away">The away captain has not confirmed.</string>
+    <string name="export_problem_confirmation_referee">The referee has not confirmed.</string>
+
+    <!-- Screen 8: settings -->
+    <string name="settings_title">Settings</string>
+    <string name="action_settings">Settings</string>
+    <string name="settings_theme">Appearance</string>
+    <string name="settings_theme_system">Follow the system</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_note">The app follows the device language. The report for PSMF is always in Czech.</string>
+    <string name="settings_rules">Competition rules</string>
+    <string name="settings_rules_note">The league sets these. A referee does not change them.</string>
 </resources>

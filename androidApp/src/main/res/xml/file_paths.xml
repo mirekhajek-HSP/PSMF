@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The app's own storage, and only the reports directory inside it. Nothing
+  the referee has to clean up, and nothing else in the app is exposed.
+
+  Not the cache: Android deletes cached files whenever it wants the space,
+  and on a phone near full it does so within seconds. That is fine for a
+  thumbnail and fatal for an attachment another app has yet to read.
+-->
+<paths>
+    <files-path name="reports" path="reports/" />
+</paths>

@@ -10,22 +10,34 @@ import cz.hspinovace.psmf.data.player.SqlDelightAddedPlayerRepository
 import cz.hspinovace.psmf.data.seed.ComposeResourceSeedFileReader
 import cz.hspinovace.psmf.data.seed.SeedFileReader
 import cz.hspinovace.psmf.data.seed.SeedLeagueCatalog
+import cz.hspinovace.psmf.data.settings.SettingsRepository
+import cz.hspinovace.psmf.data.settings.SqlDelightSettingsRepository
 import cz.hspinovace.psmf.db.PsmfDatabase
 import cz.hspinovace.psmf.domain.MatchId
+import cz.hspinovace.psmf.export.BuildZouReport
+import cz.hspinovace.psmf.export.ExportZou
+import cz.hspinovace.psmf.ui.assessment.AssessmentViewModel
 import cz.hspinovace.psmf.ui.console.ConsoleViewModel
+import cz.hspinovace.psmf.ui.export.ExportViewModel
 import cz.hspinovace.psmf.ui.fixtures.FixturesViewModel
 import cz.hspinovace.psmf.ui.header.MatchHeaderViewModel
 import cz.hspinovace.psmf.ui.lineup.LineupViewModel
 import cz.hspinovace.psmf.ui.navigation.AppNavigator
+import cz.hspinovace.psmf.ui.recap.RecapViewModel
+import cz.hspinovace.psmf.ui.settings.SettingsViewModel
 import cz.hspinovace.psmf.usecase.AddPlayerAtThePitch
 import cz.hspinovace.psmf.usecase.AddPlayerToLineup
+import cz.hspinovace.psmf.usecase.AffirmNoCards
 import cz.hspinovace.psmf.usecase.BuildConsoleEntry
 import cz.hspinovace.psmf.usecase.BuildLineupEntry
+import cz.hspinovace.psmf.usecase.ConfirmReport
 import cz.hspinovace.psmf.usecase.FinishMatch
 import cz.hspinovace.psmf.usecase.ListFixtures
 import cz.hspinovace.psmf.usecase.LogCard
 import cz.hspinovace.psmf.usecase.LogGoal
 import cz.hspinovace.psmf.usecase.NewId
+import cz.hspinovace.psmf.usecase.RecordResult
+import cz.hspinovace.psmf.usecase.SaveAssessment
 import cz.hspinovace.psmf.usecase.SaveLineup
 import cz.hspinovace.psmf.usecase.SaveMatchHeader
 import cz.hspinovace.psmf.usecase.StartMatch
@@ -53,6 +65,7 @@ val appModule: Module =
         single { PsmfDatabase(get<DatabaseDriverFactory>().create()) }
         single<MatchRepository> { SqlDelightMatchRepository(get()) }
         single<AddedPlayerRepository> { SqlDelightAddedPlayerRepository(get()) }
+        single<SettingsRepository> { SqlDelightSettingsRepository(get()) }
 
         // Seed data. The reader lives in this module because Compose
         // resources are generated here and `shared` cannot see them.
@@ -79,6 +92,10 @@ val appModule: Module =
         viewModel { (matchId: MatchId) ->
             ConsoleViewModel(matchId, get(), get(), get(), get(), get(), get(), get())
         }
+        viewModel { (matchId: MatchId) -> AssessmentViewModel(matchId, get(), get(), get()) }
+        viewModel { (matchId: MatchId) -> RecapViewModel(matchId, get(), get(), get(), get(), get()) }
+        viewModel { (matchId: MatchId) -> ExportViewModel(matchId, get(), get(), get(), get()) }
+        viewModel { SettingsViewModel(get(), get()) }
     }
 
 /**
@@ -99,6 +116,12 @@ private fun Module.factoryOfUseCases() {
     factory { LogGoal(get()) }
     factory { LogCard(get()) }
     factory { UndoLastEvent(get()) }
+    factory { BuildZouReport(get(), get()) }
+    factory { ExportZou() }
+    factory { SaveAssessment(get()) }
+    factory { RecordResult(get()) }
+    factory { ConfirmReport(get()) }
+    factory { AffirmNoCards(get()) }
 }
 
 /**

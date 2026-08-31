@@ -152,6 +152,15 @@ CREATE TABLE card_record (
     PRIMARY KEY (match_id, position)
 );
 
+-- App settings. Two of them, and neither is league data: half length,
+-- period count and players per side belong to the league and a referee
+-- changing one is a defect, so they are shown as information and are not
+-- stored here.
+CREATE TABLE preference_record (
+    key   TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
 CREATE TABLE confirmation_record (
     match_id      TEXT    NOT NULL,
     party         TEXT    NOT NULL,
@@ -267,6 +276,12 @@ SELECT * FROM power_play_record WHERE match_id = ? ORDER BY position;
 
 deletePowerPlays:
 DELETE FROM power_play_record WHERE match_id = ?;
+
+selectPreference:
+SELECT value FROM preference_record WHERE key = ?;
+
+upsertPreference:
+INSERT OR REPLACE INTO preference_record (key, value) VALUES (?, ?);
 
 insertConfirmation:
 INSERT OR REPLACE INTO confirmation_record (match_id, party, confirmed_at, confirmed_by, as_deputy)

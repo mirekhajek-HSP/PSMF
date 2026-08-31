@@ -34,6 +34,8 @@ data class ConsoleUiState(
     /** Open only while a card is being written. */
     val card: CardDraft? = null,
     val cardProblems: List<CardProblem> = emptyList(),
+    /** The final whistle has gone and the referee is moving on. */
+    val readyToContinue: Boolean = false,
 ) {
     val selected get() = entry?.side(selectedSide)
 
@@ -73,6 +75,8 @@ sealed interface ConsoleEvent {
     data object CardSubmitted : ConsoleEvent
 
     data object UndoPressed : ConsoleEvent
+
+    data object ContinuePressed : ConsoleEvent
 }
 
 /**
@@ -106,6 +110,10 @@ class ConsoleViewModel(
     }
 
     fun now(): Instant = clock.now()
+
+    fun continued() {
+        _state.update { it.copy(readyToContinue = false) }
+    }
 
     fun onEvent(event: ConsoleEvent) {
         when (event) {
@@ -148,6 +156,10 @@ class ConsoleViewModel(
 
             ConsoleEvent.CardSubmitted -> {
                 submitCard()
+            }
+
+            ConsoleEvent.ContinuePressed -> {
+                _state.update { it.copy(readyToContinue = true) }
             }
         }
     }

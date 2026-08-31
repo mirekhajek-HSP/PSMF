@@ -34,9 +34,9 @@ import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.resources.Res
 import cz.hspinovace.psmf.resources.console_card
 import cz.hspinovace.psmf.resources.console_card_other
+import cz.hspinovace.psmf.resources.console_continue
 import cz.hspinovace.psmf.resources.console_dismissed
 import cz.hspinovace.psmf.resources.console_finish
-import cz.hspinovace.psmf.resources.console_finished
 import cz.hspinovace.psmf.resources.console_goal
 import cz.hspinovace.psmf.resources.console_goal_no_scorer
 import cz.hspinovace.psmf.resources.console_loading
@@ -134,11 +134,12 @@ private fun Controls(
                 }
 
                 entry.status == MatchStatus.FINISHED -> {
-                    Text(
-                        text = stringResource(Res.string.console_finished),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
+                    Button(
+                        onClick = { onEvent(ConsoleEvent.ContinuePressed) },
+                        modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
+                    ) {
+                        Text(stringResource(Res.string.console_continue))
+                    }
                 }
 
                 else -> {

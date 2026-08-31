@@ -18,20 +18,22 @@ enum class ResumePoint {
     /** Nothing has been recorded yet; start at the top of the report. */
     HEADER,
 
-    /**
-     * The whistle has gone, or the match is over. Straight to the console.
-     *
-     * FINISHED and CONFIRMED will point at the recap once that screen
-     * exists; until then the console is the last thing built and the
-     * nearest right answer.
-     */
+    /** The whistle has gone. Straight to the console. */
     CONSOLE,
+
+    /**
+     * Played, and now being finished off. The recap holds the result, the
+     * confirmations and the way to the export, so it is where a report
+     * that is over but not sent belongs.
+     */
+    RECAP,
 }
 
 fun MatchStatus.resumePoint(): ResumePoint =
     when (this) {
         MatchStatus.SETUP -> ResumePoint.HEADER
-        MatchStatus.IN_PROGRESS, MatchStatus.FINISHED, MatchStatus.CONFIRMED -> ResumePoint.CONSOLE
+        MatchStatus.IN_PROGRESS -> ResumePoint.CONSOLE
+        MatchStatus.FINISHED, MatchStatus.CONFIRMED -> ResumePoint.RECAP
     }
 
 /** Mints ids for things the app creates. Injected so tests are deterministic. */

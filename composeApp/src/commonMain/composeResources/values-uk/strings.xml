@@ -87,6 +87,7 @@
     <string name="console_not_started">Матч ще не розпочався. Годинник почне йти зі стартовим свистком і вже не зупиниться.</string>
     <string name="console_start">Розпочати матч</string>
     <string name="console_finish">Завершити матч</string>
+    <string name="console_continue">Далі до оцінювання</string>
     <string name="console_finished">Матч завершено</string>
     <string name="console_undo">Скасувати останнє</string>
     <string name="console_goal">Гол</string>
@@ -119,4 +120,75 @@
     <string name="card_error_reason">Введіть причину.</string>
     <string name="card_error_dismissal">Виберіть: пряма ЧК або друга ЖК.</string>
     <string name="card_error_minute">Введіть хвилину.</string>
+
+    <!-- Screen 5: assessment -->
+    <string name="assessment_title">Оцінювання</string>
+    <string name="assessment_best_player">NH — найкращий гравець (номер)</string>
+    <string name="assessment_waiting_time">Čd — час очікування (хв)</string>
+    <string name="assessment_shirts">Č — номери на футболках у порядку?</string>
+    <string name="assessment_uniform_kit">B — єдиний колір форми?</string>
+    <string name="assessment_yes">Так</string>
+    <string name="assessment_no">Ні</string>
+    <string name="assessment_fines_note">Č і B впливають на штрафи. Поки ви не відповісте, вони лишаються незаповненими — порожня відповідь не рахується як «так».</string>
+    <string name="assessment_commentary">Обовʼязковий коментар</string>
+    <string name="assessment_commentary_note">Має охоплювати всі важливі моменти матчу. Його можна редагувати аж до надсилання.</string>
+    <string name="assessment_continue">Далі до підсумку</string>
+
+    <!-- Screen 6: recap and confirmation -->
+    <string name="recap_title">Підсумок</string>
+    <string name="recap_loading">Завантаження протоколу…</string>
+    <string name="recap_result">Результат</string>
+    <string name="recap_result_note">Кінцевий рахунок підставлено із записаних голів. Рахунок першого тайму введіть за фактом — годинник не зупиняється, тому перерва не обовʼязково припадає на 30-ту хвилину.</string>
+    <string name="recap_half_time">Перший тайм</string>
+    <string name="recap_full_time">Кінцевий рахунок</string>
+    <string name="recap_document">Протокол у тому вигляді, як буде надіслано</string>
+    <string name="recap_document_note">Капітани підтверджують саме це. Чого тут немає, того ніхто не перевіряє.</string>
+    <string name="recap_no_cards_title">Особисті покарання</string>
+    <string name="recap_no_cards">Карток не було</string>
+    <string name="recap_no_cards_note">На папері клітинки перекреслюють. Незаповнений розділ — це не те саме, що «без карток», тому це треба підтвердити.</string>
+    <string name="recap_no_cards_confirmed">Підтверджено: без карток</string>
+    <string name="recap_signatures">Підписи</string>
+    <string name="recap_confirm_home_captain">Капітан господарів</string>
+    <string name="recap_confirm_away_captain">Капітан гостей</string>
+    <string name="recap_confirm_referee">Суддя</string>
+    <string name="recap_confirmed">підтверджено</string>
+    <string name="recap_confirm">Підтвердити</string>
+    <string name="recap_confirm_name">Імʼя</string>
+    <string name="recap_confirm_error">Введіть імʼя латиницею.</string>
+    <string name="recap_deputy">Заступник капітана</string>
+    <string name="recap_continue">Далі до надсилання</string>
+
+    <!-- Screen 7: export -->
+    <string name="export_title">Надсилання</string>
+    <string name="export_loading">Підготовка протоколу…</string>
+    <string name="export_ready">Протокол повний і готовий до надсилання.</string>
+    <string name="export_blocked">Протокол поки не можна надіслати</string>
+    <string name="export_preview">Перегляд</string>
+    <string name="export_czech_note">Протокол завжди чеською, незалежно від мови застосунку.</string>
+    <string name="export_send">Надіслати до PSMF</string>
+    <string name="export_sent">Відкрито лист на %1$s. Підтвердьте надсилання у поштовому застосунку.</string>
+    <string name="export_failed">На цьому пристрої немає поштового застосунку, який це впорає.</string>
+    <string name="export_problem_officials">Бракує судді або команди, що делегує.</string>
+    <string name="export_problem_lineup">Бракує складу (%1$s).</string>
+    <string name="export_problem_cards">Розділ особистих покарань не заповнено. Якщо карток не було, підтвердьте це в підсумку.</string>
+    <string name="export_problem_card_reason">Картка на %1$s не має причини.</string>
+    <string name="export_problem_commentary">Бракує обовʼязкового коментаря.</string>
+    <string name="export_problem_assessment">Бракує оцінки Č або B (%1$s).</string>
+    <string name="export_problem_result">Бракує результату.</string>
+    <string name="export_problem_score_mismatch">Введений результат %1$s не збігається із записаними голами %2$s.</string>
+    <string name="export_problem_confirmation_home">Капітан господарів не підтвердив.</string>
+    <string name="export_problem_confirmation_away">Капітан гостей не підтвердив.</string>
+    <string name="export_problem_confirmation_referee">Суддя не підтвердив.</string>
+
+    <!-- Screen 8: settings -->
+    <string name="settings_title">Налаштування</string>
+    <string name="action_settings">Налаштування</string>
+    <string name="settings_theme">Вигляд</string>
+    <string name="settings_theme_system">За системою</string>
+    <string name="settings_theme_light">Світлий</string>
+    <string name="settings_theme_dark">Темний</string>
+    <string name="settings_language">Мова</string>
+    <string name="settings_language_note">Застосунок дотримується мови пристрою. Протокол для PSMF завжди чеською.</string>
+    <string name="settings_rules">Правила змагань</string>
+    <string name="settings_rules_note">Їх встановлює ліга. Суддя їх не змінює.</string>
 </resources>

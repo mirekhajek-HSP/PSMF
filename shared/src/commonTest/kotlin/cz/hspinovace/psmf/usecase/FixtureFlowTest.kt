@@ -294,9 +294,10 @@ class ResumePointTest {
     }
 
     @Test
-    fun aFinishedMatchDoesNotSendTheRefereeBackToTheHeader() {
-        // Will point at the recap once that screen exists.
-        assertEquals(ResumePoint.CONSOLE, MatchStatus.FINISHED.resumePoint())
-        assertEquals(ResumePoint.CONSOLE, MatchStatus.CONFIRMED.resumePoint())
+    fun aPlayedMatchResumesAtTheRecapWhereItIsFinishedOff() {
+        // The recap holds the result, the confirmations and the way to the
+        // export, so a report that is over but not sent belongs there.
+        assertEquals(ResumePoint.RECAP, MatchStatus.FINISHED.resumePoint())
+        assertEquals(ResumePoint.RECAP, MatchStatus.CONFIRMED.resumePoint())
     }
 }

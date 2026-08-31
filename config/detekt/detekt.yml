@@ -16,6 +16,10 @@ complexity:
     # point. The in-class threshold is left at its default.
     thresholdInFiles: 25
     thresholdInInterfaces: 15
+    # The ZoU has nine blocks and each formatter writes one small function
+    # per block. Folding them together to satisfy a count would produce one
+    # long method and a worse file.
+    thresholdInObjects: 20
   LongParameterList:
     # Domain constructors from the ZoU field spec are genuinely wide: the
     # match header alone carries pitch, date, time, group, referee,

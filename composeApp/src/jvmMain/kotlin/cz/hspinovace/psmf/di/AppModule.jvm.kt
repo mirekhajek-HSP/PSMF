@@ -1,6 +1,8 @@
 package cz.hspinovace.psmf.di
 
 import cz.hspinovace.psmf.data.db.DatabaseDriverFactory
+import cz.hspinovace.psmf.ui.export.ReportSender
+import cz.hspinovace.psmf.ui.export.UnavailableReportSender
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -13,4 +15,5 @@ import org.koin.dsl.module
 actual fun platformModule(): Module =
     module {
         single { DatabaseDriverFactory() }
+        single<ReportSender> { UnavailableReportSender() }
     }

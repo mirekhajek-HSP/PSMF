@@ -91,6 +91,7 @@
     <string name="console_not_started">Utkání ještě nezačalo. Hodiny se rozběhnou výkopem a už se nezastaví.</string>
     <string name="console_start">Zahájit utkání</string>
     <string name="console_finish">Ukončit utkání</string>
+    <string name="console_continue">Pokračovat na hodnocení</string>
     <string name="console_finished">Utkání ukončeno</string>
     <string name="console_undo">Vzít zpět</string>
     <string name="console_goal">Gól</string>
@@ -123,4 +124,75 @@
     <string name="card_error_reason">Zadejte důvod.</string>
     <string name="card_error_dismissal">Vyberte, zda jde o přímou ČK, nebo o 2. ŽK.</string>
     <string name="card_error_minute">Zadejte minutu.</string>
+
+    <!-- Screen 5: assessment -->
+    <string name="assessment_title">Hodnocení</string>
+    <string name="assessment_best_player">NH — nejlepší hráč (číslo dresu)</string>
+    <string name="assessment_waiting_time">Čd — čekací doba (min)</string>
+    <string name="assessment_shirts">Č — čísla dresů v pořádku?</string>
+    <string name="assessment_uniform_kit">B — jednotná barva dresů?</string>
+    <string name="assessment_yes">Ano</string>
+    <string name="assessment_no">Ne</string>
+    <string name="assessment_fines_note">Č a B se promítají do pokut. Dokud neodpovíte, zůstávají nevyplněné — prázdná odpověď se nepočítá jako „ano“.</string>
+    <string name="assessment_commentary">Povinný komentář</string>
+    <string name="assessment_commentary_note">Měl by obsahovat všechny důležité okamžiky utkání. Zůstává upravitelný až do odeslání.</string>
+    <string name="assessment_continue">Pokračovat na rekapitulaci</string>
+
+    <!-- Screen 6: recap and confirmation -->
+    <string name="recap_title">Rekapitulace</string>
+    <string name="recap_loading">Načítání zápisu…</string>
+    <string name="recap_result">Výsledek</string>
+    <string name="recap_result_note">Konečný výsledek je předvyplněný ze zaznamenaných gólů. Poločas zadejte podle skutečnosti — hodiny se nezastavují, takže nastavený čas nemusí odpovídat 30. minutě.</string>
+    <string name="recap_half_time">Poločas</string>
+    <string name="recap_full_time">Konečný výsledek</string>
+    <string name="recap_document">Zápis, jak bude odeslán</string>
+    <string name="recap_document_note">Kapitáni potvrzují přesně tohle. Co tu není, nikdo nekontroluje.</string>
+    <string name="recap_no_cards_title">Osobní tresty</string>
+    <string name="recap_no_cards">Žádné karty nebyly uděleny</string>
+    <string name="recap_no_cards_note">Na papíře se políčka proškrtávají. Nevyplněný oddíl není totéž jako „bez karet“, proto to potvrďte.</string>
+    <string name="recap_no_cards_confirmed">Potvrzeno: bez karet</string>
+    <string name="recap_signatures">Podpisy</string>
+    <string name="recap_confirm_home_captain">Kapitán domácích</string>
+    <string name="recap_confirm_away_captain">Kapitán hostí</string>
+    <string name="recap_confirm_referee">Rozhodčí</string>
+    <string name="recap_confirmed">potvrzeno</string>
+    <string name="recap_confirm">Potvrdit</string>
+    <string name="recap_confirm_name">Jméno</string>
+    <string name="recap_confirm_error">Zadejte jméno latinkou.</string>
+    <string name="recap_deputy">Zástupce kapitána</string>
+    <string name="recap_continue">Pokračovat na odeslání</string>
+
+    <!-- Screen 7: export -->
+    <string name="export_title">Odeslání</string>
+    <string name="export_loading">Příprava zápisu…</string>
+    <string name="export_ready">Zápis je kompletní a připravený k odeslání.</string>
+    <string name="export_blocked">Zápis zatím nelze odeslat</string>
+    <string name="export_preview">Náhled</string>
+    <string name="export_czech_note">Zápis je vždy česky, bez ohledu na jazyk aplikace.</string>
+    <string name="export_send">Odeslat na PSMF</string>
+    <string name="export_sent">Otevřen e-mail na %1$s. Odeslání potvrďte v poštovní aplikaci.</string>
+    <string name="export_failed">Na tomto zařízení není poštovní aplikace, která by to zvládla.</string>
+    <string name="export_problem_officials">Chybí rozhodčí nebo delegující tým.</string>
+    <string name="export_problem_lineup">Chybí sestava (%1$s).</string>
+    <string name="export_problem_cards">Není vyplněný oddíl osobních trestů. Pokud nebyly žádné karty, potvrďte to v rekapitulaci.</string>
+    <string name="export_problem_card_reason">Karta v %1$s nemá důvod.</string>
+    <string name="export_problem_commentary">Chybí povinný komentář.</string>
+    <string name="export_problem_assessment">Chybí hodnocení Č nebo B (%1$s).</string>
+    <string name="export_problem_result">Chybí výsledek.</string>
+    <string name="export_problem_score_mismatch">Zadaný výsledek %1$s neodpovídá zaznamenaným gólům %2$s.</string>
+    <string name="export_problem_confirmation_home">Chybí potvrzení kapitána domácích.</string>
+    <string name="export_problem_confirmation_away">Chybí potvrzení kapitána hostí.</string>
+    <string name="export_problem_confirmation_referee">Chybí potvrzení rozhodčího.</string>
+
+    <!-- Screen 8: settings -->
+    <string name="settings_title">Nastavení</string>
+    <string name="action_settings">Nastavení</string>
+    <string name="settings_theme">Vzhled</string>
+    <string name="settings_theme_system">Podle systému</string>
+    <string name="settings_theme_light">Světlý</string>
+    <string name="settings_theme_dark">Tmavý</string>
+    <string name="settings_language">Jazyk</string>
+    <string name="settings_language_note">Aplikace se řídí jazykem zařízení. Zápis pro PSMF je vždy česky.</string>
+    <string name="settings_rules">Pravidla soutěže</string>
+    <string name="settings_rules_note">Nastavuje je liga. Rozhodčí je nemění.</string>
 </resources>
