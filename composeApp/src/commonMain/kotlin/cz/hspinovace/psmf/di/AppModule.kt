@@ -25,6 +25,7 @@ import cz.hspinovace.psmf.ui.lineup.LineupViewModel
 import cz.hspinovace.psmf.ui.navigation.AppNavigator
 import cz.hspinovace.psmf.ui.recap.RecapViewModel
 import cz.hspinovace.psmf.ui.settings.SettingsViewModel
+import cz.hspinovace.psmf.ui.shell.ShellViewModel
 import cz.hspinovace.psmf.usecase.AddPlayerAtThePitch
 import cz.hspinovace.psmf.usecase.AddPlayerToLineup
 import cz.hspinovace.psmf.usecase.AffirmNoCards
@@ -36,6 +37,7 @@ import cz.hspinovace.psmf.usecase.ListFixtures
 import cz.hspinovace.psmf.usecase.LogCard
 import cz.hspinovace.psmf.usecase.LogGoal
 import cz.hspinovace.psmf.usecase.NewId
+import cz.hspinovace.psmf.usecase.ObserveReportInProgress
 import cz.hspinovace.psmf.usecase.RecordResult
 import cz.hspinovace.psmf.usecase.SaveAssessment
 import cz.hspinovace.psmf.usecase.SaveLineup
@@ -96,6 +98,7 @@ val appModule: Module =
         viewModel { (matchId: MatchId) -> RecapViewModel(matchId, get(), get(), get(), get(), get()) }
         viewModel { (matchId: MatchId) -> ExportViewModel(matchId, get(), get(), get(), get()) }
         viewModel { SettingsViewModel(get(), get()) }
+        viewModel { ShellViewModel(get()) }
     }
 
 /**
@@ -104,6 +107,7 @@ val appModule: Module =
  */
 private fun Module.factoryOfUseCases() {
     factory { ListFixtures(get(), get()) }
+    factory { ObserveReportInProgress(get()) }
     factory { StartOrResumeMatch(get(), get(), get()) }
     factory { SaveMatchHeader(get()) }
     factory { BuildLineupEntry(get(), get(), get()) }

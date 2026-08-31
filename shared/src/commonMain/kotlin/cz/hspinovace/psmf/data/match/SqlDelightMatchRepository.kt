@@ -1,5 +1,7 @@
 package cz.hspinovace.psmf.data.match
 
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
 import cz.hspinovace.psmf.db.Appearance_record
 import cz.hspinovace.psmf.db.Card_record
 import cz.hspinovace.psmf.db.Goal_record
@@ -7,6 +9,7 @@ import cz.hspinovace.psmf.db.MatchRecordQueries
 import cz.hspinovace.psmf.db.Match_record
 import cz.hspinovace.psmf.db.Power_play_record
 import cz.hspinovace.psmf.db.PsmfDatabase
+import cz.hspinovace.psmf.db.SelectSummaries
 import cz.hspinovace.psmf.domain.Appearance
 import cz.hspinovace.psmf.domain.AppearanceId
 import cz.hspinovace.psmf.domain.Assessment
@@ -43,6 +46,8 @@ import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.YellowCard
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import kotlin.time.Instant
 
@@ -88,14 +93,20 @@ class SqlDelightMatchRepository(
             queries
                 .selectSummaries()
                 .executeAsList()
-                .map {
-                    MatchSummary(
-                        id = MatchId(it.id),
-                        fixtureId = FixtureId(it.fixture_id),
-                        status = MatchStatus.valueOf(it.status),
-                    )
-                }
+                .map { it.toSummary() }
         }
+
+    /**
+     * SQLDelight re-runs the query whenever a table it reads is written,
+     * which is what makes the badge appear the moment the whistle goes
+     * rather than the next time the tab bar happens to recompose.
+     */
+    override fun observeSummaries(): Flow<List<MatchSummary>> =
+        queries
+            .selectSummaries()
+            .asFlow()
+            .mapToList(dispatcher)
+            .map { rows -> rows.map { it.toSummary() } }
 
     override suspend fun findByStatus(status: MatchStatus): List<Match> =
         withContext(dispatcher) {
@@ -344,6 +355,13 @@ private fun MatchRecordQueries.hydrate(row: Match_record): Match {
                 .sortedBy { it.party.ordinal },
     )
 }
+
+private fun SelectSummaries.toSummary(): MatchSummary =
+    MatchSummary(
+        id = MatchId(id),
+        fixtureId = FixtureId(fixture_id),
+        status = MatchStatus.valueOf(status),
+    )
 
 private fun Match_record.toOfficials(): RefereeAssignment? {
     val refereeName = referee_name ?: return null

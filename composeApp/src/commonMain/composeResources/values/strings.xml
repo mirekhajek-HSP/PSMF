@@ -186,7 +186,6 @@
 
     <!-- Screen 8: settings -->
     <string name="settings_title">Nastavení</string>
-    <string name="action_settings">Nastavení</string>
     <string name="settings_theme">Vzhled</string>
     <string name="settings_theme_system">Podle systému</string>
     <string name="settings_theme_light">Světlý</string>
@@ -195,4 +194,19 @@
     <string name="settings_language_note">Aplikace se řídí jazykem zařízení. Zápis pro PSMF je vždy česky.</string>
     <string name="settings_rules">Pravidla soutěže</string>
     <string name="settings_rules_note">Nastavuje je liga. Rozhodčí je nemění.</string>
+    <!-- The shell: four tabs around the report -->
+    <string name="tab_fixtures">Zápasy</string>
+    <string name="tab_report">Zápis</string>
+    <string name="tab_teams">Týmy</string>
+    <string name="tab_settings">Nastavení</string>
+    <string name="tab_report_in_progress">Zápis právě probíhá</string>
+
+    <!-- The report tab before a report has been opened -->
+    <string name="no_report_title">Žádný zápis</string>
+    <string name="no_report_body">Zápis začíná výběrem zápasu v Zápasech.</string>
+    <string name="no_report_action">Vybrat zápas</string>
+
+    <!-- Screen 3a: teams -->
+    <string name="teams_title">Týmy</string>
+    <string name="teams_placeholder">Sledované týmy, hledání a soupisky. Zatím prázdné.</string>
 </resources>

@@ -4,6 +4,7 @@ import cz.hspinovace.psmf.domain.FixtureId
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.MatchStatus
+import kotlinx.coroutines.flow.Flow
 
 /**
  * A report's identity and state, without its contents.
@@ -33,6 +34,15 @@ interface MatchRepository {
 
     /** Every report on the device, as identity and state only. */
     suspend fun summaries(): List<MatchSummary>
+
+    /**
+     * The same, as a stream.
+     *
+     * The tab bar has to show that a match is under way from every tab, and
+     * it cannot ask on entry: it is already on screen when the whistle
+     * goes. A read would answer once and then be wrong.
+     */
+    fun observeSummaries(): Flow<List<MatchSummary>>
 
     /**
      * Reports the app was in the middle of. This is what the app offers to

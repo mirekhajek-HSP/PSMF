@@ -78,6 +78,13 @@ object UiTestData {
  * so this is how a test asks for the Czech, English or Ukrainian strings.
  * **The report is always Czech regardless**, which is why nothing in the
  * export path is reachable from here.
+ *
+ * **Wrap the whole test, not just `setContent`.** Compose resolves each
+ * string the first time it is composed, so a string that first appears
+ * *after* a tap resolves in whatever locale the host is in by then. Put the
+ * assertions outside this block and a test reads Czech correctly for
+ * everything drawn on the first frame and English for everything the tap
+ * revealed -- which looks exactly like a navigation bug and is not one.
  */
 fun withLanguage(
     tag: String,

@@ -16,6 +16,9 @@ import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Season
 import cz.hspinovace.psmf.domain.Venue
 import cz.hspinovace.psmf.domain.VenueCode
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 
@@ -32,9 +35,12 @@ class FakeMatchRepository(
     var saves: Int = 0
         private set
 
+    private val writes = MutableStateFlow(0)
+
     override suspend fun save(match: Match) {
         stored[match.id] = match
         saves++
+        writes.value = writes.value + 1
     }
 
     override suspend fun load(id: MatchId): Match? = stored[id]
@@ -42,10 +48,20 @@ class FakeMatchRepository(
     override suspend fun summaries(): List<MatchSummary> =
         stored.values.map { MatchSummary(it.id, it.fixtureId, it.status) }
 
+    /**
+     * Re-emits on every write, the way the real query does. Driven by a
+     * counter rather than a second copy of the data, so a test that changes
+     * something through [save] sees it without the fake holding two
+     * versions of the truth.
+     */
+    override fun observeSummaries(): Flow<List<MatchSummary>> =
+        writes.map { stored.values.map { match -> MatchSummary(match.id, match.fixtureId, match.status) } }
+
     override suspend fun findByStatus(status: MatchStatus): List<Match> = stored.values.filter { it.status == status }
 
     override suspend fun delete(id: MatchId) {
         stored.remove(id)
+        writes.value = writes.value + 1
     }
 }
 
