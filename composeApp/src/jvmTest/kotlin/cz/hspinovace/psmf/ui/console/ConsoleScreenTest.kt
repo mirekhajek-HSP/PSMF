@@ -4,6 +4,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollToNode
@@ -239,7 +240,9 @@ class ConsoleScreenTest {
                 }
             }
 
-            onNodeWithText("Gól").performClick()
+            // Icon-only: this button carries "Gol" as contentDescription,
+            // not as visible Text -- onNodeWithText does not find it.
+            onNodeWithContentDescription("Gól").performClick()
 
             assertEquals<List<ConsoleEvent>>(listOf(ConsoleEvent.GoalScoredBy(novak.appearanceId)), events)
         }
@@ -289,7 +292,8 @@ class ConsoleScreenTest {
                 }
             }
 
-            onNodeWithText("Karta").performClick()
+            // Icon-only, same as the goal button above.
+            onNodeWithContentDescription("Karta").performClick()
 
             assertEquals<List<ConsoleEvent>>(
                 listOf(ConsoleEvent.CardOpened(novak.appearanceId, TeamSide.HOME)),
@@ -438,8 +442,8 @@ class ConsoleScreenTest {
 
             onNodeWithText("Bača Tomáš").assertIsDisplayed()
             onNodeWithText("Vyloučen").assertIsDisplayed()
-            onNodeWithText("Gól").assertDoesNotExist()
-            onNodeWithText("Karta").assertDoesNotExist()
+            onNodeWithContentDescription("Gól").assertDoesNotExist()
+            onNodeWithContentDescription("Karta").assertDoesNotExist()
         }
 
     @Test
