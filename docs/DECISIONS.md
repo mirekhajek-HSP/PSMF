@@ -5,6 +5,122 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-09-01 · The planning documents moved into the app repository
+
+`DECISIONS.md`, `TODO.md`, `QUESTIONS.md` and `DEMO_SCOPE.md` now live in `docs/`;
+`prompts/` and `reports/` sit beside it. **One copy of each. The Windows planning
+folder is frozen and carries a pointer README.**
+
+Two reasons, and the second is the one that decided it.
+
+**The audience premise failed.** The split was: agents read the code repo, humans
+read the planning repo. But agents need the decisions — the iOS session was told
+to read `docs/DECISIONS.md`, found it absent, and declined to finalise its verdict
+without it. Exactly right, and exactly the premise breaking.
+
+**The durability argument inverted.** The planning repo was once the half with any
+permanence. Now the app repo has a remote, CI ahead of it, and two machines reading
+it, while the planning folder had never left one disk.
+
+Also settled by the same move: reports and prompts travel with the commits they
+describe, and a session on another machine no longer needs anything copied to it.
+
+**What this costs:** every planning edit now goes over the 9P share rather than
+native NTFS. Irrelevant for markdown.
+
+**What did NOT move:** `builds/`, the sideloading APKs — gitignored, Windows-side
+convenience, no business in the repository.
+
+**The rule that replaces the old one**, written into `CLAUDE.md`: *there is one
+copy of each. Do not make a second.* The previous rule — "nothing is duplicated"
+— was right and was not enforced by anything. This one is at least checkable.
+
+**Reverses if:** the repository has to be handed to PSMF or split for ownership
+reasons, at which point the commercial and question documents come back out.
+
+---
+
+## 2026-09-01 · iOS: the answer is (b), and the Mac has until roughly April 2027
+
+Part 1 of the toolchain proof, on the MacBook Pro 15-inch 2018 (`MacBookPro15,1`,
+Intel i7, 16 GB). Externally verified rather than taken on trust.
+
+**It can develop *and* submit today** — which is better than expected:
+
+| | |
+|---|---|
+| macOS | **15.7.9 Sequoia**, and that is its ceiling. Tahoe 26 dropped every 2018 MacBook Pro. |
+| Xcode reachable | **26.3**, needing macOS ≥ 15.6. Xcode 26 ships Universal and runs on Intel. |
+| App Store floor | **Xcode 26 / iOS 26 SDK**, in force since 28 April 2026. |
+| Satisfied? | **Yes.** 26.3 ≥ 26, iOS 26.2 SDK ≥ iOS 26. |
+
+**The ceiling is two point releases wide — 26.2 and 26.3 — and there is nothing
+above it.** Xcode 27 fails here twice over: it needs macOS Tahoe 26.4, which this
+Mac cannot run, *and* it is Apple-silicon-only.
+
+**Firmer than the report put it.** It called the next SDK floor "a projection, not
+a fact". It is close to a fact: macOS 27 was announced at WWDC 2026, is in
+developer beta now, and is **Apple silicon only** — Intel support ends with Tahoe.
+Xcode 27's own release notes carry an explicit Intel Deprecation section. So the
+only unknown is Apple's *date*, and their pattern has been an April floor bump
+three years running: Xcode 15 in April 2024, 16 in April 2025, 26 in April 2026.
+
+**Read plainly: roughly seven months of submission capability left on this
+machine.** Enough for the demo and a first release. Not enough to plan around.
+
+**What an Apple Silicon Mac actually buys** is (i) the iOS simulator, and
+(ii) headroom past ~April 2027 — **not** the ability to ship, which exists today.
+So it is a 2027 budget line, not a blocker.
+
+**Cheapest thing that unblocks day-to-day iOS work: an iPhone already owned, a
+cable, and a free Apple Developer account** (seven-day provisioning). €0 if a
+phone is to hand. The Intel simulator does not exist for this project and no
+purchase changes that short of a new Mac.
+
+**Reverses if:** Apple's next floor lands later than April 2027, or an Apple
+Silicon Mac arrives, either of which extends the runway rather than changing the
+shape.
+
+---
+
+## 2026-09-01 · The no-duplication rule was broken, and the drift it predicted happened
+
+`README.md` says: *"Nothing is duplicated across the two — duplicated documents
+drift, and drifted documents are worse than missing ones."* Both halves came true.
+
+The iOS session was told to read `docs/DECISIONS.md`, found it absent, and
+**correctly withheld its verdict** rather than answering without it. That is the
+first time the gap cost anything, and it cost the right thing.
+
+Two failures, both mine:
+
+- **`docs/DEMO_SCOPE.md` in the app repo had not been touched since `9d74f87`** —
+  before the screens were built. It still described six screens in a wizard and
+  "no ongoing-match hero", a decision reversed two sessions ago, while the planning
+  copy had grown to 407 lines. **Every prompt since 04 told sessions to read it.**
+  Nothing broke only because the prompts carry their substance inline, which is
+  luck, not design.
+- **`docs/DECISIONS.md` never existed in the app repo**, though prompts 05, 06 and
+  07 all cite it.
+
+**Immediate fix, done:** both synced into `docs/` and pushed (`a88ed1c`).
+
+**The structural question is now open, and the trigger has changed.** The split was
+by audience — agents read the code repo, humans read the planning repo — and that
+premise has failed: **agents now need the decisions**, as the iOS session
+demonstrated. The planning repo was also once the only half with any durability
+story; now the app repo is the one with a remote, with CI ahead of it, and with two
+machines reading it.
+
+So the honest options are to **move the planning documents into the app repo**
+(one truth, already remote, reports already travel that way) or to **keep the split
+and strip every planning-doc reference out of the prompts.** Syncing copies by hand
+is the option that just failed.
+
+**Reverses if:** nothing. The drift is a fact; only the remedy is open.
+
+---
+
 ## 2026-09-01 · The app repository has a remote, and it is the channel between machines
 
 `https://github.com/mirekhajek-HSP/PSMF.git`, default branch **`main`**. Full

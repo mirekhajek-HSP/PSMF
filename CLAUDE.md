@@ -8,6 +8,21 @@ the same report the paper form does.
 `docs/LEAGUE_APP_ANALYSIS.md` for the domain. The analysis is the authority on
 what the product must do — do not infer requirements, look them up.
 
+**Then, before changing anything a decision might already cover:**
+
+| | |
+|---|---|
+| `docs/DECISIONS.md` | Every decision, newest first, with **what would reverse it**. Read the entries near your work before re-deciding something. |
+| `docs/DEMO_SCOPE.md` | What is in the demo and what is deliberately cut |
+| `docs/TODO.md` | What is next, grouped by what blocks what |
+| `docs/QUESTIONS.md` | The 30 open questions to PSMF, and their status |
+| `prompts/` | How each session was briefed. `README.md` says which are live |
+| `reports/` | What each session actually built, and what it cost |
+
+These moved here on 2026-09-01 from a separate planning folder. They had drifted
+badly while every prompt still pointed at them — `docs/DECISIONS.md` records the
+episode. **There is one copy of each now. Do not make a second.**
+
 **This is not golblok.** golblok is a separate live product. Some habits from it
 are wrong here and are called out below.
 
@@ -42,7 +57,10 @@ androidApp/   Android entry point ONLY — MainActivity, PsmfApplication,
                 androidMain/. Put nothing here that could live in
                 composeApp; AGP 9 forces the split, it is not a design.
 iosApp/       Xcode wrapper. Touched rarely; changes here need the Mac.
-docs/         TECH_STACK.md, LEAGUE_APP_ANALYSIS.md
+docs/         TECH_STACK.md, LEAGUE_APP_ANALYSIS.md, DECISIONS.md,
+                DEMO_SCOPE.md, TODO.md, QUESTIONS.md, BUILD_MATRIX.md
+prompts/      Session briefs. See prompts/README.md for which are live.
+reports/      One per working session. Write yours here and push it.
 ```
 
 Prefer `commonMain` always. Dropping into `androidMain`/`iosMain` is a decision that
