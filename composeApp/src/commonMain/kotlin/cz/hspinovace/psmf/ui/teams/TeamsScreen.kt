@@ -13,16 +13,25 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import cz.hspinovace.psmf.domain.TeamId
@@ -111,6 +120,16 @@ private fun Directory(
     onEvent: (TeamsEvent) -> Unit,
     onOpenTeam: (TeamId) -> Unit,
 ) {
+    // Which league sections are open, by group id. Missing means closed.
+    //
+    // Browsing by league is secondary to followed teams and to search --
+    // at full scale this is sixty sections of up to fifteen teams each,
+    // and a tab that opened with all of them expanded would bury the
+    // followed section the tab exists for under a wall of rows. A search
+    // ignores this map entirely: a query is already a narrowing, and
+    // hiding its own results behind a second tap would be perverse.
+    val expandedLeagues = remember { mutableStateMapOf<String, Boolean>() }
+
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize(),
@@ -133,8 +152,18 @@ private fun Directory(
         }
 
         directory.leagues.forEach { league ->
-            item(key = "league-${league.group.id.value}") { SectionHeading(league.group.name) }
-            teamRows(league.teams, onEvent, onOpenTeam, keyPrefix = league.group.id.value)
+            val key = league.group.id.value
+            val open = directory.searching || expandedLeagues[key] == true
+            item(key = "league-$key") {
+                CollapsibleSectionHeading(
+                    text = league.group.name,
+                    expanded = open,
+                    onToggle = { expandedLeagues[key] = !(expandedLeagues[key] ?: false) },
+                )
+            }
+            if (open) {
+                teamRows(league.teams, onEvent, onOpenTeam, keyPrefix = key)
+            }
         }
     }
 }
@@ -196,20 +225,29 @@ private fun TeamRow(
                 )
             }
 
-            // A word, not a star. It translates, it says which way the tap
-            // goes, and it needs no icon dependency -- the same reasoning
-            // as the back button in the top bar.
-            TextButton(
+            // A star, not a word: "which teams have I starred" is a
+            // glance, not a read, and the Týmy tab is opened far more
+            // often than the label is. The old localised string stays as
+            // contentDescription, so screen readers are unaffected.
+            val followDescription =
+                stringResource(if (card.followed) Res.string.teams_unfollow else Res.string.teams_follow)
+            IconButton(
                 onClick = onToggleFollow,
                 modifier =
                     Modifier
                         .heightIn(min = PsmfDimens.minTouchTarget)
-                        .padding(end = PsmfDimens.labelGap),
+                        .padding(end = PsmfDimens.labelGap)
+                        .semantics { contentDescription = followDescription },
             ) {
-                Text(
-                    stringResource(
-                        if (card.followed) Res.string.teams_unfollow else Res.string.teams_follow,
-                    ),
+                Icon(
+                    imageVector = if (card.followed) Icons.Filled.Star else Icons.Filled.StarBorder,
+                    contentDescription = null,
+                    tint =
+                        if (card.followed) {
+                            MaterialTheme.colorScheme.primary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        },
                 )
             }
         }
@@ -233,6 +271,48 @@ private fun SectionHeading(text: String) {
                     bottom = PsmfDimens.labelGap,
                 ).semantics { heading() },
     )
+}
+
+/**
+ * A league heading that opens and closes its section.
+ *
+ * The chevron is decoration, not the control -- the whole row is the
+ * target, sized the same as everything else a cold thumb has to hit, and
+ * its accessible name is the league name Compose already merges in from
+ * the [Text] below rather than a second, separately translated label.
+ */
+@Composable
+private fun CollapsibleSectionHeading(
+    text: String,
+    expanded: Boolean,
+    onToggle: () -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(min = PsmfDimens.minTouchTarget)
+                .clickable(onClick = onToggle)
+                .padding(
+                    start = PsmfDimens.screenPadding,
+                    end = PsmfDimens.screenPadding,
+                    top = PsmfDimens.sectionSpacing,
+                    bottom = PsmfDimens.labelGap,
+                ).semantics(mergeDescendants = true) { heading() },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Icon(
+            imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
 }
 
 @Composable

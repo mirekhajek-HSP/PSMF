@@ -211,7 +211,7 @@
     <string name="teams_title">Týmy</string>
     <string name="teams_search">Hledat tým</string>
     <string name="teams_followed">Sledované týmy</string>
-    <string name="teams_followed_empty">Zatím žádné. Sledováním se tým dostane sem a na začátek filtru zápasů.</string>
+    <string name="teams_followed_empty">Zatím žádné. Sledováním se tým dostane sem.</string>
     <string name="teams_no_matches">Nic pro „%1$s“.</string>
     <string name="teams_follow">Sledovat</string>
     <string name="teams_unfollow">Nesledovat</string>
@@ -227,10 +227,9 @@
     <string name="teams_jersey_range">0–99</string>
     <string name="teams_jersey_restore">Vrátit číslo z ligy</string>
     <string name="fixtures_filter_league">Liga</string>
+    <string name="fixtures_filter_group">Skupina</string>
     <string name="fixtures_filter_team">Tým</string>
     <string name="fixtures_filter_any">Vše</string>
-    <string name="fixtures_filter_followed">Sledované</string>
-    <string name="fixtures_filter_others">Ostatní</string>
     <string name="fixtures_filter_clear">Zrušit filtr</string>
     <string name="fixtures_filtered_empty">Filtru neodpovídá žádný zápas.</string>
     <string name="export_save">Uložit do zařízení</string>

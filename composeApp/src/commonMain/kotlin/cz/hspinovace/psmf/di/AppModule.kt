@@ -133,7 +133,7 @@ val appModule: Module =
  * per injection costs an allocation.
  */
 private fun Module.factoryOfUseCases() {
-    factory { ListFixtures(get(), get(), get()) }
+    factory { ListFixtures(get(), get()) }
     factory { ObserveReportInProgress(get()) }
     factory { BrowseTeams(get(), get()) }
     factory { LoadTeamRoster(get(), get(), get()) }

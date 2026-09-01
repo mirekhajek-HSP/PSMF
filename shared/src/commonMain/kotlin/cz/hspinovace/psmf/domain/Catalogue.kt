@@ -73,6 +73,24 @@ data class Group(
     /** Full match length, e.g. 60 minutes for 2 x 30. */
     val fullLengthMinutes: Int get() = halfLengthMinutes * periods
 
+    /**
+     * The league number, e.g. `6` for "6K" -- one of the eight levels the
+     * analysis (2.2) describes, though nothing here hardcodes that there
+     * are eight: it reads however many digits [reportCode] leads with.
+     *
+     * Null for a group whose report code does not lead with one -- the
+     * parallel competitions (veteran, futsal, ...) are not part of the
+     * numbered Hanspaulská liga hierarchy at all (analysis 2.2) and are
+     * not assumed to fit its "<digits><letters>" shape.
+     */
+    val leagueLevel: Int? get() = reportCode.takeWhile { it.isDigit() }.toIntOrNull()
+
+    /**
+     * The group letter within its league, e.g. `K` for "6K" -- or the
+     * whole report code, for a group with no [leagueLevel].
+     */
+    val groupLetter: String get() = reportCode.dropWhile { it.isDigit() }.ifEmpty { reportCode }
+
     companion object {
         const val DEFAULT_PERIODS: Int = 2
     }

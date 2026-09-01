@@ -2,15 +2,15 @@ package cz.hspinovace.psmf.usecase
 
 import cz.hspinovace.psmf.data.league.LeagueRepository
 import cz.hspinovace.psmf.data.match.MatchRepository
-import cz.hspinovace.psmf.data.team.FollowedTeamRepository
+import cz.hspinovace.psmf.data.seed.LeagueGroup
 import cz.hspinovace.psmf.domain.Fixture
 import cz.hspinovace.psmf.domain.Group
 import cz.hspinovace.psmf.domain.GroupId
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Season
 import cz.hspinovace.psmf.domain.Team
-import cz.hspinovace.psmf.domain.TeamId
 import cz.hspinovace.psmf.domain.Venue
+import cz.hspinovace.psmf.domain.VenueCode
 
 /**
  * One row of the fixture list, with everything it displays resolved.
@@ -48,7 +48,7 @@ data class GroupFixtures(
 )
 
 /**
- * What the referee has narrowed the list to. Both null means everything.
+ * What the referee has narrowed the list to. All empty means everything.
  *
  * # Why this exists at all
  *
@@ -56,13 +56,35 @@ data class GroupFixtures(
  * fine for one group of twelve teams and it does not survive contact with
  * the real competition: nine divisions is on the order of nine hundred
  * teams and several thousand fixtures, and a referee officiates a handful.
+ *
+ * # Four dimensions, not one picker each
+ *
+ * - [leagueLevel] alone is a valid filter -- a referee narrowing to "6.
+ *   liga" and nothing more is asking for the whole level, not a single
+ *   group, so [groupId] stays null until a letter is actually picked.
+ * - [groupId], once set, narrows within that level. Picking a group without
+ *   [leagueLevel] also set would be a contradiction the UI does not allow:
+ *   choosing a letter always sets both.
+ * - [venue] and [teamQuery] are independent of the league dimension and of
+ *   each other -- a referee can be looking for "every match at ZAKOS" or
+ *   "every match Kominíci play" without narrowing the league at all.
  */
 data class FixtureFilter(
+    val leagueLevel: Int? = null,
     val groupId: GroupId? = null,
-    val teamId: TeamId? = null,
+    val venue: VenueCode? = null,
+    /** Matched against a team name, diacritics folded. Blank means any. */
+    val teamQuery: String = "",
 ) {
-    val isEmpty: Boolean get() = groupId == null && teamId == null
+    val isEmpty: Boolean
+        get() = leagueLevel == null && groupId == null && venue == null && teamQuery.isBlank()
 }
+
+/** One league level (e.g. `6`) and the groups -- letters -- it holds. */
+data class LeagueLevelOption(
+    val level: Int,
+    val groups: List<Group>,
+)
 
 /**
  * Everything the filter row can offer, whatever the current filter is.
@@ -70,32 +92,21 @@ data class FixtureFilter(
  * Built from the unfiltered data on purpose: options that disappear as
  * soon as they are used leave the referee with no way back except knowing
  * to clear the filter first.
+ *
+ * No team list here: at league scale (~900 teams) a list to pick from is
+ * itself the problem the text field replaces. The followed-team shortcut
+ * this used to carry now lives entirely in the Týmy tab.
  */
 data class FilterOptions(
-    val leagues: List<Group>,
-    /**
-     * **Followed teams first**, then everyone else, each alphabetical.
-     *
-     * The one ordering decision here, and it is the reason the Týmy tab's
-     * follow button earns its place: at league scale this picker is the
-     * only part of the app that would otherwise be a nine-hundred-item
-     * scroll.
-     */
-    val followedTeams: List<Team>,
-    val otherTeams: List<Team>,
-) {
-    val teams: List<Team> get() = followedTeams + otherTeams
-
-    fun team(id: TeamId): Team? = teams.firstOrNull { it.id == id }
-
-    fun league(id: GroupId): Group? = leagues.firstOrNull { it.id == id }
-}
+    val leagueLevels: List<LeagueLevelOption>,
+    val venues: List<Venue>,
+)
 
 /** Every fixture the app knows about, grouped the way the season is. */
 data class FixtureListing(
     val groups: List<GroupFixtures>,
     val filter: FixtureFilter = FixtureFilter(),
-    val options: FilterOptions = FilterOptions(emptyList(), emptyList(), emptyList()),
+    val options: FilterOptions = FilterOptions(emptyList(), emptyList()),
 ) {
     val isEmpty: Boolean get() = groups.all { group -> group.rounds.all { it.fixtures.isEmpty() } }
 
@@ -127,29 +138,41 @@ data class FixtureListing(
 class ListFixtures(
     private val league: LeagueRepository,
     private val matches: MatchRepository,
-    private val followedTeams: FollowedTeamRepository,
 ) {
     private val byKickoff =
         compareBy<FixtureRow>({ it.fixture.date }, { it.fixture.time }, { it.fixture.ref })
 
     suspend operator fun invoke(filter: FixtureFilter = FixtureFilter()): FixtureListing {
         val statusByFixture = matches.summaries().associate { it.fixtureId to it.status }
-        val followed = followedTeams.followed()
         val leagueGroups = league.groups()
+        val needle = filter.teamQuery.foldForSearch()
 
-        val allTeams = leagueGroups.flatMap { it.teams }.sortedBy { it.name }
-        // Lifted out of the loop so the null check reads once rather than
-        // once per fixture, and so the lambda takes a non-null value.
-        val onlyTeam = filter.teamId
+        fun matchesLeague(leagueGroup: LeagueGroup): Boolean =
+            when {
+                filter.groupId != null -> leagueGroup.group.id == filter.groupId
+                filter.leagueLevel != null -> leagueGroup.group.leagueLevel == filter.leagueLevel
+                else -> true
+            }
+
+        fun matchesTeamQuery(
+            leagueGroup: LeagueGroup,
+            fixture: Fixture,
+        ): Boolean {
+            if (needle.isEmpty()) return true
+            val home = leagueGroup.team(fixture.homeTeamId)?.name?.foldForSearch()
+            val away = leagueGroup.team(fixture.awayTeamId)?.name?.foldForSearch()
+            return home?.contains(needle) == true || away?.contains(needle) == true
+        }
 
         return FixtureListing(
             groups =
                 leagueGroups
-                    .filter { filter.groupId == null || it.group.id == filter.groupId }
+                    .filter { matchesLeague(it) }
                     .map { leagueGroup ->
                         val rows =
                             leagueGroup.fixtures
-                                .filter { onlyTeam == null || it.involves(onlyTeam) }
+                                .filter { filter.venue == null || it.venue == filter.venue }
+                                .filter { matchesTeamQuery(leagueGroup, it) }
                                 .mapNotNull { fixture ->
                                     val home = leagueGroup.team(fixture.homeTeamId) ?: return@mapNotNull null
                                     val away = leagueGroup.team(fixture.awayTeamId) ?: return@mapNotNull null
@@ -184,12 +207,22 @@ class ListFixtures(
             filter = filter,
             options =
                 FilterOptions(
-                    leagues = leagueGroups.map { it.group }.sortedBy { it.name },
-                    followedTeams = allTeams.filter { it.id in followed },
-                    otherTeams = allTeams.filterNot { it.id in followed },
+                    // Only groups with a level participate in the cascade -- a
+                    // parallel competition outside the numbered hierarchy
+                    // (veteran, futsal, ...) has no level to group under.
+                    leagueLevels =
+                        leagueGroups
+                            .mapNotNull { it.group.leagueLevel?.let { level -> level to it.group } }
+                            .groupBy({ it.first }, { it.second })
+                            .entries
+                            .sortedBy { it.key }
+                            .map { (level, groups) ->
+                                LeagueLevelOption(level, groups.sortedBy { it.groupLetter })
+                            },
+                    // League-wide and identical on every LeagueGroup (loaded
+                    // once from venues.json), so the first one carries them.
+                    venues = leagueGroups.firstOrNull()?.venues.orEmpty(),
                 ),
         )
     }
-
-    private fun Fixture.involves(teamId: TeamId): Boolean = homeTeamId == teamId || awayTeamId == teamId
 }

@@ -203,7 +203,7 @@
     <string name="teams_title">Teams</string>
     <string name="teams_search">Search for a team</string>
     <string name="teams_followed">Followed teams</string>
-    <string name="teams_followed_empty">None yet. Following a team brings it here and to the top of the fixture filter.</string>
+    <string name="teams_followed_empty">None yet. Following a team brings it here.</string>
     <string name="teams_no_matches">Nothing for “%1$s”.</string>
     <string name="teams_follow">Follow</string>
     <string name="teams_unfollow">Unfollow</string>
@@ -219,10 +219,9 @@
     <string name="teams_jersey_range">0–99</string>
     <string name="teams_jersey_restore">Restore the league’s number</string>
     <string name="fixtures_filter_league">League</string>
+    <string name="fixtures_filter_group">Group</string>
     <string name="fixtures_filter_team">Team</string>
     <string name="fixtures_filter_any">All</string>
-    <string name="fixtures_filter_followed">Followed</string>
-    <string name="fixtures_filter_others">Others</string>
     <string name="fixtures_filter_clear">Clear the filter</string>
     <string name="fixtures_filtered_empty">No fixture matches the filter.</string>
     <string name="export_save">Save to device</string>

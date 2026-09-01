@@ -11,7 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextClearance
@@ -44,30 +46,60 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalTestApi::class)
 class TeamsScreenTest {
     @Test
-    fun theTeamsOfEachLeagueAreListedUnderIt() =
+    fun browsingByLeagueStartsCollapsed() =
         runComposeUiTest {
-            // Nothing followed, so each team is drawn exactly once and the
-            // assertions can be about the league section.
+            // Followed teams first, search second: browsing by league is
+            // secondary, and at full scale (up to sixty sections) opening
+            // on all of them expanded would bury the followed section
+            // under a wall of rows.
             withLanguage("cs") {
                 setContent { Screen(directory(followed = false)) }
 
                 onNodeWithText("6. liga K").assertIsDisplayed()
+                onNodeWithText("Kominíci").assertDoesNotExist()
+            }
+        }
+
+    @Test
+    fun tappingTheLeagueHeadingExpandsAndCollapsesItsSection() =
+        runComposeUiTest {
+            withLanguage("cs") {
+                setContent { Screen(directory(followed = false)) }
+
+                onNodeWithText("6. liga K").performClick()
                 onNodeWithText("Kominíci").assertIsDisplayed()
                 onNodeWithText("Sp. Sumýš").assertIsDisplayed()
                 // The squad size, because an empty squad is bad data the
                 // referee should see before the match rather than at it.
                 onAllNodesWithText("12 na soupisce").assertCountEquals(2)
+
+                onNodeWithText("6. liga K").performClick()
+                onNodeWithText("Kominíci").assertDoesNotExist()
             }
         }
 
     @Test
-    fun aFollowedTeamIsDrawnBothAtTheTopAndUnderItsLeague() =
+    fun aFollowedTeamIsDrawnAtTheTopWithoutExpandingAnything() =
+        runComposeUiTest {
+            // The reason the tab opens collapsed is safe: the team it is
+            // meant to show is not behind the collapse at all.
+            withLanguage("cs") {
+                setContent { Screen(directory()) }
+
+                onNodeWithText("Sp. Sumýš").assertIsDisplayed()
+            }
+        }
+
+    @Test
+    fun aFollowedTeamIsDrawnBothAtTheTopAndUnderItsLeagueOnceExpanded() =
         runComposeUiTest {
             // Following is a shortcut, not a move. The team stays where a
             // referee browsing by league would expect to find it, which is
             // also why the list keys are prefixed by section.
             withLanguage("cs") {
                 setContent { Screen(directory()) }
+
+                onNodeWithText("6. liga K").performClick()
 
                 onAllNodesWithText("Sp. Sumýš").assertCountEquals(2)
                 onAllNodesWithText("Kominíci").assertCountEquals(1)
@@ -91,6 +123,10 @@ class TeamsScreenTest {
     @Test
     fun followingATeamReportsThatTeamAndThatDirection() =
         runComposeUiTest {
+            // A star, not a word (icon-only): the old "Sledovat" string
+            // stays as contentDescription, which is where this test now
+            // finds it -- onNodeWithText would not, since there is no
+            // visible Text node carrying it any more.
             var event: TeamsEvent.FollowToggled? = null
             withLanguage("cs") {
                 setContent {
@@ -100,9 +136,10 @@ class TeamsScreenTest {
                     )
                 }
 
+                onNodeWithText("6. liga K").performClick()
                 // Two teams, one row each, and only one of them is offered
                 // "Sledovat" -- the other is already followed.
-                onNodeWithText("Sledovat").performClick()
+                onNodeWithContentDescription("Sledovat").performClick()
             }
             assertEquals(TeamId("kominici"), event?.teamId)
             assertEquals(true, event?.followed)
@@ -121,9 +158,10 @@ class TeamsScreenTest {
                 }
 
                 onNodeWithText("Sledované týmy").assertIsDisplayed()
+                onNodeWithText("6. liga K").performClick()
                 // Two of them, for the one team: the followed section and
                 // the league section. Either is the same tap.
-                onAllNodesWithText("Nesledovat")[0].performClick()
+                onAllNodesWithContentDescription("Nesledovat")[0].performClick()
             }
             assertEquals(TeamId("sp-sumys"), event?.teamId)
             assertEquals(false, event?.followed)
@@ -136,6 +174,7 @@ class TeamsScreenTest {
             withLanguage("cs") {
                 setContent { Screen(directory(), onOpenTeam = { opened = it }) }
 
+                onNodeWithText("6. liga K").performClick()
                 onNodeWithText("Kominíci").performClick()
             }
             assertEquals(TeamId("kominici"), opened)

@@ -26,7 +26,7 @@ import kotlin.test.assertTrue
 /** Screen 1's data: seed fixtures joined to whatever reports exist. */
 class ListFixturesTest {
     private fun listFixtures(matches: FakeMatchRepository = FakeMatchRepository()) =
-        ListFixtures(TestLeague.repository(), matches, FakeFollowedTeamRepository())
+        ListFixtures(TestLeague.repository(), matches)
 
     @Test
     fun groupsFixturesByRoundInOrder() =
@@ -116,13 +116,31 @@ class ListFixturesTest {
     @Test
     fun anEmptyCatalogueIsEmptyRatherThanBroken() =
         runTest {
-            val empty =
-                ListFixtures(
-                    FakeLeagueRepository(emptyList()),
-                    FakeMatchRepository(),
-                    FakeFollowedTeamRepository(),
-                )
+            val empty = ListFixtures(FakeLeagueRepository(emptyList()), FakeMatchRepository())
             assertTrue(empty().isEmpty)
+        }
+
+    @Test
+    fun filteringByVenueLeavesOnlyFixturesAtThatPitch() =
+        runTest {
+            // TestLeague.group plays two fixtures at ZAKOS and one at
+            // METE1 -- the pitch that is not the group's default, so a
+            // filter that quietly ignored venue would still pass by luck.
+            val listing = listFixtures()(FixtureFilter(venue = TestLeague.otherVenue.code))
+
+            val fixtures = listing.groups.flatMap { it.rounds.flatMap { round -> round.fixtures } }
+            assertEquals(listOf(TestLeague.secondRoundLate.id), fixtures.map { it.fixture.id })
+        }
+
+    @Test
+    fun theOptionsCarryEveryPitchInTheLeague() =
+        runTest {
+            // Built from the unfiltered data, same reasoning as leagues: a
+            // chip that vanished as soon as it was picked would leave no
+            // way back to the pitches not currently selected.
+            val venues = listFixtures()().options.venues.map { it.code }
+
+            assertEquals(listOf(TestLeague.venue.code, TestLeague.otherVenue.code), venues)
         }
 }
 
@@ -178,12 +196,58 @@ class FixtureFilterTest {
             venues = listOf(TestLeague.venue),
         )
 
-    private fun listFixtures(followed: FakeFollowedTeamRepository = FakeFollowedTeamRepository()) =
-        ListFixtures(
-            FakeLeagueRepository(listOf(TestLeague.group, otherGroup)),
-            FakeMatchRepository(),
-            followed,
+    /** Same level as TestLeague.group (6), a different letter. */
+    private val anotherSixthLevelGroupId = GroupId("6l")
+
+    private val anotherSixthLevelTeam =
+        Team(
+            id = TeamId("dynamo-kotelna"),
+            ref = "dynamo-kotelna",
+            groupId = anotherSixthLevelGroupId,
+            name = "Dynamo Kotelna",
+            kits = listOf(Kit(KitId("kit-dynamo-1"), "černá", listOf("černá"))),
         )
+
+    private val anotherSixthLevelOpponent =
+        Team(
+            id = TeamId("sk-vinohrady"),
+            ref = "sk-vinohrady",
+            groupId = anotherSixthLevelGroupId,
+            name = "SK Vinohrady",
+            kits = listOf(Kit(KitId("kit-vinohrady-1"), "zelená", listOf("zelená"))),
+        )
+
+    private val anotherSixthLevelGroup =
+        LeagueGroup(
+            season = TestLeague.season,
+            group =
+                Group(
+                    id = anotherSixthLevelGroupId,
+                    seasonId = Fixtures.seasonId,
+                    name = "6. liga L",
+                    reportCode = "6L",
+                ),
+            teams = listOf(anotherSixthLevelTeam, anotherSixthLevelOpponent),
+            players = emptyList(),
+            fixtures =
+                listOf(
+                    Fixture(
+                        id = FixtureId("6l-r1-01"),
+                        ref = "6l-r1-01",
+                        groupId = anotherSixthLevelGroupId,
+                        round = 1,
+                        date = LocalDate(2026, 9, 2),
+                        time = LocalTime(19, 0),
+                        venue = TestLeague.venue.code,
+                        homeTeamId = anotherSixthLevelTeam.id,
+                        awayTeamId = anotherSixthLevelOpponent.id,
+                    ),
+                ),
+            venues = listOf(TestLeague.venue),
+        )
+
+    private fun listFixtures(groups: List<LeagueGroup> = listOf(TestLeague.group, otherGroup)) =
+        ListFixtures(FakeLeagueRepository(groups), FakeMatchRepository())
 
     private fun FixtureListing.teamNames(): List<String> =
         groups
@@ -213,7 +277,9 @@ class FixtureFilterTest {
     @Test
     fun filteringByTeamLeavesOnlyThatTeamsFixtures() =
         runTest {
-            val listing = listFixtures()(FixtureFilter(teamId = otherTeam.id))
+            // Diacritics folded, the same rule the Týmy tab's own search
+            // uses: typing "letna" has to find "FK Letná".
+            val listing = listFixtures()(FixtureFilter(teamQuery = "letna"))
 
             val fixtures = listing.groups.flatMap { group -> group.rounds.flatMap { it.fixtures } }
             assertEquals(1, fixtures.size)
@@ -224,31 +290,78 @@ class FixtureFilterTest {
         }
 
     @Test
+    fun filteringByTeamMatchesEitherSideOfTheFixture() =
+        runTest {
+            // "AC Stromovka" is the away side of the one fixture in
+            // otherGroup -- a query that only checked the home team would
+            // miss it.
+            val listing = listFixtures()(FixtureFilter(teamQuery = "stromovka"))
+
+            assertTrue(listing.teamNames().contains("AC Stromovka"))
+        }
+
+    @Test
     fun aFilterThatExcludesEverythingSaysSoRatherThanLookingLikeNoData() =
         runTest {
             // "No fixtures" and "no fixtures matching what you asked for"
             // are different sentences, and only one of them is alarming.
-            val listing = listFixtures()(FixtureFilter(groupId = otherGroupId, teamId = Fixtures.homeTeamId))
+            val listing = listFixtures()(FixtureFilter(groupId = otherGroupId, teamQuery = "no such team"))
 
             assertTrue(listing.isEmpty)
             assertTrue(listing.filteredToNothing)
         }
 
     @Test
-    fun theTeamMenuPutsFollowedTeamsFirst() =
+    fun aLeagueLevelAloneFiltersToEveryGroupUnderIt() =
         runTest {
-            // Where the Týmy tab's follow button pays for itself: at league
-            // scale this picker is otherwise a nine-hundred-item scroll.
-            val followed = FakeFollowedTeamRepository(setOf(otherTeam.id, Fixtures.awayTeamId))
-            val options = listFixtures(followed)().options
+            // "A league alone is a valid filter" -- picking level 6 with no
+            // letter must keep both of that level's groups, not force one.
+            val listing =
+                listFixtures(listOf(TestLeague.group, otherGroup, anotherSixthLevelGroup))(
+                    FixtureFilter(leagueLevel = 6),
+                )
 
-            assertEquals(listOf("FK Letná", "Sp. Sumýš"), options.followedTeams.map { it.name })
-            assertEquals(listOf("AC Stromovka", "Kominíci"), options.otherTeams.map { it.name })
-            // And followed ones come first in the combined list, which is
-            // the order the menu is drawn in.
             assertEquals(
-                listOf("FK Letná", "Sp. Sumýš", "AC Stromovka", "Kominíci"),
-                options.teams.map { it.name },
+                setOf("6. liga K", "6. liga L"),
+                listing.groups.map { it.group.name }.toSet(),
+            )
+        }
+
+    @Test
+    fun pickingASpecificGroupNarrowsPastTheLevelItIsIn() =
+        runTest {
+            // The more specific dimension wins: a groupId always means
+            // exactly that group, whatever leagueLevel also says.
+            val listing =
+                listFixtures(listOf(TestLeague.group, otherGroup, anotherSixthLevelGroup))(
+                    FixtureFilter(leagueLevel = 6, groupId = anotherSixthLevelGroup.group.id),
+                )
+
+            assertEquals(listOf("6. liga L"), listing.groups.map { it.group.name })
+        }
+
+    @Test
+    fun theOptionsCascadeFromLevelToLetter() =
+        runTest {
+            // Row one is levels, row two is that level's letters -- built
+            // from whatever groups are loaded, not a hardcoded count.
+            val options =
+                listFixtures(listOf(TestLeague.group, otherGroup, anotherSixthLevelGroup))().options
+
+            assertEquals(listOf(6, 7), options.leagueLevels.map { it.level })
+            assertEquals(
+                listOf("K", "L"),
+                options.leagueLevels
+                    .first { it.level == 6 }
+                    .groups
+                    .map { it.groupLetter },
+            )
+            assertEquals(
+                listOf("A"),
+                options.leagueLevels
+                    .first { it.level == 7 }
+                    .groups
+                    .map { it.groupLetter },
             )
         }
 
@@ -260,19 +373,7 @@ class FixtureFilterTest {
             // the filter first.
             val options = listFixtures()(FixtureFilter(groupId = otherGroupId)).options
 
-            assertEquals(2, options.leagues.size)
-            assertEquals(4, options.teams.size)
-        }
-
-    @Test
-    fun theFilterCanNameWhatItIsSetTo() =
-        runTest {
-            // The screen shows "Liga: 7. liga A", so it has to be able to
-            // turn an id back into a name.
-            val listing = listFixtures()(FixtureFilter(groupId = otherGroupId, teamId = otherTeam.id))
-
-            assertEquals("7. liga A", listing.options.league(otherGroupId)?.name)
-            assertEquals("FK Letná", listing.options.team(otherTeam.id)?.name)
+            assertEquals(2, options.leagueLevels.sumOf { it.groups.size })
         }
 }
 
