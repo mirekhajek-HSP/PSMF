@@ -191,6 +191,14 @@
     <string name="settings_language_note">Мова застосунку — для того, хто дивиться на телефон. Протокол для PSMF завжди чеською.</string>
     <string name="settings_rules">Правила змагань</string>
     <string name="settings_rules_note">Їх встановлює ліга. Суддя їх не змінює.</string>
+    <string name="settings_rule_half_length">Тривалість тайму</string>
+    <string name="settings_rule_periods">Кількість таймів</string>
+    <string name="settings_rule_players">Гравців на полі (5+1)</string>
+    <string name="settings_rule_power_play">У меншості після вилучення</string>
+    <string name="settings_export_folder">Збереження протоколу</string>
+    <string name="settings_export_folder_note">Куди зберігаються копії протоколу. Питає лише вперше.</string>
+    <string name="settings_export_folder_choose">Обрати теку</string>
+    <string name="settings_export_folder_change">Змінити теку</string>
     <!-- The shell: four tabs around the report -->
     <string name="tab_fixtures">Матчі</string>
     <string name="tab_report">Протокол</string>

@@ -9,6 +9,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -50,6 +51,7 @@ import cz.hspinovace.psmf.ui.navigation.Destination
 import cz.hspinovace.psmf.ui.navigation.Tab
 import cz.hspinovace.psmf.ui.recap.RecapScreen
 import cz.hspinovace.psmf.ui.recap.RecapViewModel
+import cz.hspinovace.psmf.ui.settings.SettingsEvent
 import cz.hspinovace.psmf.ui.settings.SettingsScreen
 import cz.hspinovace.psmf.ui.settings.SettingsViewModel
 import cz.hspinovace.psmf.ui.shell.AppShell
@@ -62,6 +64,7 @@ import cz.hspinovace.psmf.ui.teams.TeamsViewModel
 import cz.hspinovace.psmf.ui.theme.PsmfTheme
 import cz.hspinovace.psmf.usecase.ResumePoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
@@ -217,7 +220,7 @@ private fun Route(
         }
 
         is Destination.Export -> {
-            ExportRoute(matchId = current.matchId, modifier = modifier)
+            ExportRoute(matchId = current.matchId, settings = settings, modifier = modifier)
         }
 
         Destination.Teams -> {
@@ -233,10 +236,20 @@ private fun Route(
 
         Destination.Settings -> {
             val state by settings.state.collectAsStateWithLifecycle()
+            // Opening the folder picker needs the hosting Activity -- see
+            // ReportSaver -- which SettingsViewModel has no business
+            // knowing about, the same split ExportRoute keeps for saving.
+            val saver = rememberReportSaver()
+            val scope = rememberCoroutineScope()
             SettingsScreen(
                 state = state,
                 language = language,
                 onEvent = settings::onEvent,
+                onChangeExportFolder = {
+                    scope.launch {
+                        if (saver.changeFolder()) settings.onEvent(SettingsEvent.ExportFolderChosen)
+                    }
+                },
                 modifier = modifier,
             )
         }
@@ -467,6 +480,7 @@ private fun RecapRoute(
 @Composable
 private fun ExportRoute(
     matchId: MatchId,
+    settings: SettingsViewModel,
     modifier: Modifier = Modifier,
 ) {
     val viewModel: ExportViewModel = koinViewModel(key = matchId.value) { parametersOf(matchId) }
@@ -478,7 +492,14 @@ private fun ExportRoute(
     val saver = rememberReportSaver()
     val savePending by viewModel.savePending.collectAsStateWithLifecycle()
     LaunchedEffect(savePending) {
-        savePending?.let { documents -> viewModel.saveHandled(saver.save(documents)) }
+        savePending?.let { documents ->
+            val saved = saver.save(documents)
+            // Settings otherwise keeps offering "Choose a folder" for the
+            // rest of the session even after this save silently picked one --
+            // its state is read once at startup, not observed.
+            if (saved) settings.onEvent(SettingsEvent.ExportFolderChosen)
+            viewModel.saveHandled(saved)
+        }
     }
 
     ExportScreen(state = state, onEvent = viewModel::onEvent, modifier = modifier)

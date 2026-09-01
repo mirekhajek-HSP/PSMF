@@ -187,6 +187,14 @@
     <string name="settings_language_note">The app language is for whoever is reading the phone. The report for PSMF is always in Czech.</string>
     <string name="settings_rules">Competition rules</string>
     <string name="settings_rules_note">The league sets these. A referee does not change them.</string>
+    <string name="settings_rule_half_length">Half length</string>
+    <string name="settings_rule_periods">Number of halves</string>
+    <string name="settings_rule_players">Players on the pitch (5+1)</string>
+    <string name="settings_rule_power_play">A player short after a sending-off</string>
+    <string name="settings_export_folder">Saving the report</string>
+    <string name="settings_export_folder_note">Where saved copies of the report go. Asked only the first time.</string>
+    <string name="settings_export_folder_choose">Choose a folder</string>
+    <string name="settings_export_folder_change">Change the folder</string>
     <!-- The shell: four tabs around the report -->
     <string name="tab_fixtures">Fixtures</string>
     <string name="tab_report">Report</string>

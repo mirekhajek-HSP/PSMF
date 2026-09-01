@@ -15,10 +15,23 @@ import cz.hspinovace.psmf.export.ZouDocument
  * builds it once from one [cz.hspinovace.psmf.export.BuildZouReport]
  * value; sending and saving each write it out, and neither derives its
  * own copy. See [ZouDocument.bytes] for the encoding both of them share.
+ *
+ * **A folder is asked for once, not a file every time.** The first
+ * [save] asks where; every one after that writes straight there, with no
+ * dialog at all -- see `AndroidReportSaver`. [changeFolder] is the escape
+ * hatch a referee who wants a different folder reaches from Settings.
  */
 interface ReportSaver {
     /** True once every document has a location written to. */
     suspend fun save(documents: List<ZouDocument>): Boolean
+
+    /**
+     * Asks where to save from now on, replacing whatever was chosen
+     * before. True once a folder has been picked and stored; false if the
+     * referee backs out of the picker, in which case the old folder (if
+     * any) is left in force.
+     */
+    suspend fun changeFolder(): Boolean
 }
 
 /**
@@ -27,6 +40,8 @@ interface ReportSaver {
  */
 class UnavailableReportSaver : ReportSaver {
     override suspend fun save(documents: List<ZouDocument>): Boolean = false
+
+    override suspend fun changeFolder(): Boolean = false
 }
 
 /**

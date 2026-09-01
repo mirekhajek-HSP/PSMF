@@ -32,9 +32,35 @@ data class SettingsUiState(
      * The league's own rules, read from the group definition rather than
      * hardcoded — a competition with a different half length is a data
      * change, not a code change.
+     *
+     * The label is [RuleKind] rather than a string: this is a plain
+     * `ViewModel`, not a `@Composable`, so it cannot resolve a
+     * `stringResource` itself -- the screen does that, the same way it
+     * already turns [cz.hspinovace.psmf.data.settings.ThemeChoice] into a
+     * label. The value alongside it is not translated at all: "30 min",
+     * "2", "6", "10 min" are numbers, not prose.
      */
-    val rules: List<Pair<String, String>> = emptyList(),
+    val rules: List<Pair<RuleKind, String>> = emptyList(),
+    /**
+     * Whether a folder has been picked for saved reports to go into.
+     *
+     * The folder itself is picked and stored by `AndroidReportSaver`, on
+     * the far side of `ReportSaver.changeFolder()` -- this ViewModel does
+     * not own that choice, only whether Settings should offer "Choose a
+     * folder" or "Change the folder". [ExportRoute][cz.hspinovace.psmf.App]
+     * and the settings route report back through
+     * [SettingsEvent.ExportFolderChosen] once the picker returns.
+     */
+    val exportFolderChosen: Boolean = false,
 )
+
+/** Which league rule a row of the panel names. See [SettingsUiState.rules]. */
+enum class RuleKind {
+    HALF_LENGTH,
+    PERIODS,
+    PLAYERS,
+    POWER_PLAY,
+}
 
 sealed interface SettingsEvent {
     data class ThemeSelected(
@@ -44,6 +70,9 @@ sealed interface SettingsEvent {
     data class LanguageSelected(
         val language: AppLanguage,
     ) : SettingsEvent
+
+    /** A folder was picked (or already existed) the last time saving ran. */
+    data object ExportFolderChosen : SettingsEvent
 }
 
 /** Screen 8. Three settings, and the league's rules as information. */
@@ -65,11 +94,12 @@ class SettingsViewModel(
                     language = stored.language,
                     rules =
                         listOfNotNull(
-                            group?.let { HALF_LENGTH to "${it.halfLengthMinutes} min" },
-                            group?.let { PERIODS to it.periods.toString() },
-                            PLAYERS to Lineup.PLAYERS_ON_FIELD.toString(),
-                            POWER_PLAY to "${PowerPlay.LENGTH.inWholeMinutes} min",
+                            group?.let { RuleKind.HALF_LENGTH to "${it.halfLengthMinutes} min" },
+                            group?.let { RuleKind.PERIODS to it.periods.toString() },
+                            RuleKind.PLAYERS to Lineup.PLAYERS_ON_FIELD.toString(),
+                            RuleKind.POWER_PLAY to "${PowerPlay.LENGTH.inWholeMinutes} min",
                         ),
+                    exportFolderChosen = stored.exportFolderUri != null,
                 )
         }
     }
@@ -89,15 +119,13 @@ class SettingsViewModel(
                 _state.update { it.copy(language = event.language) }
                 viewModelScope.launch { settings.setLanguage(event.language) }
             }
-        }
-    }
 
-    private companion object {
-        // Czech labels: these name rules from PSMF's own documents, and the
-        // referee reads them beside the report they will produce.
-        const val HALF_LENGTH = "Délka poločasu"
-        const val PERIODS = "Počet poločasů"
-        const val PLAYERS = "Hráčů na hřišti (5+1)"
-        const val POWER_PLAY = "Oslabení po vyloučení"
+            SettingsEvent.ExportFolderChosen -> {
+                // Already written by AndroidReportSaver by the time this
+                // arrives -- this only catches the state up so the button
+                // reads "Change" rather than "Choose" from here on.
+                _state.update { it.copy(exportFolderChosen = true) }
+            }
+        }
     }
 }

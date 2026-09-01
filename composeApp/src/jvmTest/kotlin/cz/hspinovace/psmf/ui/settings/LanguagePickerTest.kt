@@ -107,6 +107,37 @@ class LanguagePickerTest {
         }
 
     @Test
+    fun theRulesPanelTranslatesButItsNumbersDoNot() =
+        runComposeUiTest {
+            // "Always Czech" is a rule about the ZoU report, not about
+            // app UI the referee reads -- this panel is the latter. The
+            // values are numbers PSMF sets (30 min, 2, 6, 10 min), so they
+            // stay exactly as written in every language.
+            setContent { Picker(rules = sampleRules) }
+
+            onNodeWithText("Délka poločasu").assertIsDisplayed()
+            onNodeWithText("Počet poločasů").assertIsDisplayed()
+            onNodeWithText("Hráčů na hřišti (5+1)").assertIsDisplayed()
+            onNodeWithText("Oslabení po vyloučení").assertIsDisplayed()
+            onNodeWithText("30 min").assertIsDisplayed()
+            onNodeWithText("10 min").assertIsDisplayed()
+
+            onNodeWithText("English").performClick()
+            onNodeWithText("Half length").assertIsDisplayed()
+            onNodeWithText("Number of halves").assertIsDisplayed()
+            onNodeWithText("Players on the pitch (5+1)").assertIsDisplayed()
+            onNodeWithText("A player short after a sending-off").assertIsDisplayed()
+            onNodeWithText("30 min").assertIsDisplayed()
+
+            onNodeWithText("Українська").performClick()
+            onNodeWithText("Тривалість тайму").assertIsDisplayed()
+            onNodeWithText("Кількість таймів").assertIsDisplayed()
+            onNodeWithText("Гравців на полі (5+1)").assertIsDisplayed()
+            onNodeWithText("У меншості після вилучення").assertIsDisplayed()
+            onNodeWithText("30 min").assertIsDisplayed()
+        }
+
+    @Test
     fun switchingLanguageMidMatchKeepsTheMatch() =
         runComposeUiTest {
             // The language change rebuilds the subtree -- that is how the
@@ -143,20 +174,32 @@ class LanguagePickerTest {
     // -----------------------------------------------------------------
 
     @Composable
-    private fun Picker(initial: AppLanguage = AppLanguage.CZECH) {
+    private fun Picker(
+        initial: AppLanguage = AppLanguage.CZECH,
+        rules: List<Pair<RuleKind, String>> = emptyList(),
+    ) {
         var language by remember { mutableStateOf(initial) }
         PsmfTheme {
             AppEnvironment(language) {
                 SettingsScreen(
-                    state = SettingsUiState(loaded = true, language = language),
+                    state = SettingsUiState(loaded = true, language = language, rules = rules),
                     language = language,
                     onEvent = { event ->
                         if (event is SettingsEvent.LanguageSelected) language = event.language
                     },
+                    onChangeExportFolder = {},
                 )
             }
         }
     }
+
+    private val sampleRules =
+        listOf(
+            RuleKind.HALF_LENGTH to "30 min",
+            RuleKind.PERIODS to "2",
+            RuleKind.PLAYERS to "6",
+            RuleKind.POWER_PLAY to "10 min",
+        )
 
     private fun consoleState(): ConsoleUiState =
         ConsoleUiState(

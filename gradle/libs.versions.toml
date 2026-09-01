@@ -37,6 +37,9 @@ composeMultiplatform = "1.12.0"
 androidxActivityCompose = "1.13.0"
 # Resolved transitively at this version already; pinned so it is visible.
 androidxCore = "1.18.0"
+# Stable and effectively unchanged for years -- a thin, well-tested
+# wrapper over SAF tree operations (find-or-create a document by name).
+androidxDocumentfile = "1.0.1"
 
 # --- kotlinx -----------------------------------------------------------
 coroutines = "1.11.0"
@@ -103,6 +106,10 @@ compose-ui-backhandler = { module = "org.jetbrains.compose.ui:ui-backhandler", v
 # FileProvider, for handing the exported files to a mail client without
 # writing anything the user has to clean up or asking for a permission.
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
+# For AndroidReportSaver: find-or-create a file inside the folder tree
+# ACTION_OPEN_DOCUMENT_TREE hands back, without hand-rolling
+# DocumentsContract queries.
+androidx-documentfile = { module = "androidx.documentfile:documentfile", version.ref = "androidxDocumentfile" }
 
 # android ui
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivityCompose" }

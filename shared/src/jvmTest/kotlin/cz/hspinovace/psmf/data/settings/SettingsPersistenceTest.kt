@@ -73,4 +73,29 @@ class SettingsPersistenceTest {
             }
             assertEquals(AppLanguage.CZECH, session { it.load() }.language)
         }
+
+    @Test
+    fun nothingIsStoredForTheExportFolderUntilOneIsChosen() =
+        runTest {
+            // Null, not a folder nobody picked: AndroidReportSaver reads
+            // this to decide whether to ask at all.
+            assertNull(session { it.load() }.exportFolderUri)
+        }
+
+    @Test
+    fun aChosenExportFolderSurvivesTheAppBeingKilled() =
+        runTest {
+            session { it.setExportFolderUri("content://tree/primary%3APSMF") }
+            assertEquals("content://tree/primary%3APSMF", session { it.load() }.exportFolderUri)
+        }
+
+    @Test
+    fun changingTheExportFolderReplacesRatherThanAccumulates() =
+        runTest {
+            session {
+                it.setExportFolderUri("content://tree/primary%3AFirst")
+                it.setExportFolderUri("content://tree/primary%3ASecond")
+            }
+            assertEquals("content://tree/primary%3ASecond", session { it.load() }.exportFolderUri)
+        }
 }

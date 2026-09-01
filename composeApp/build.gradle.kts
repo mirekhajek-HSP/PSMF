@@ -104,6 +104,9 @@ kotlin {
             implementation(libs.koin.android)
             // FileProvider, for the exported files.
             implementation(libs.androidx.core.ktx)
+            // Find-or-create a file inside the folder tree
+            // ACTION_OPEN_DOCUMENT_TREE hands back. See AndroidReportSaver.
+            implementation(libs.androidx.documentfile)
         }
         commonTest.dependencies {
             implementation(kotlin("test"))

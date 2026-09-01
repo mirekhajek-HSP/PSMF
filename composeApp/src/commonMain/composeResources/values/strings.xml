@@ -195,6 +195,14 @@
     <string name="settings_language_note">Jazyk aplikace si volí rozhodčí i kapitáni. Zápis pro PSMF je vždy česky.</string>
     <string name="settings_rules">Pravidla soutěže</string>
     <string name="settings_rules_note">Nastavuje je liga. Rozhodčí je nemění.</string>
+    <string name="settings_rule_half_length">Délka poločasu</string>
+    <string name="settings_rule_periods">Počet poločasů</string>
+    <string name="settings_rule_players">Hráčů na hřišti (5+1)</string>
+    <string name="settings_rule_power_play">Oslabení po vyloučení</string>
+    <string name="settings_export_folder">Ukládání zápisu</string>
+    <string name="settings_export_folder_note">Kam se ukládají uložené kopie zápisu. Zeptá se jen napoprvé.</string>
+    <string name="settings_export_folder_choose">Vybrat složku</string>
+    <string name="settings_export_folder_change">Změnit složku</string>
     <!-- The shell: four tabs around the report -->
     <string name="tab_fixtures">Zápasy</string>
     <string name="tab_report">Zápis</string>

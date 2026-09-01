@@ -66,6 +66,12 @@ data class AppSettings(
      * happened to be in the first time the app opened.
      */
     val language: AppLanguage? = null,
+    /**
+     * Where saved reports go, as an opaque platform URI string -- a SAF
+     * tree URI on Android, meaningless on a platform with no such saver.
+     * Null until the referee has been asked once. See `AndroidReportSaver`.
+     */
+    val exportFolderUri: String? = null,
 )
 
 interface SettingsRepository {
@@ -74,6 +80,8 @@ interface SettingsRepository {
     suspend fun setTheme(theme: ThemeChoice)
 
     suspend fun setLanguage(language: AppLanguage)
+
+    suspend fun setExportFolderUri(uri: String)
 }
 
 /**
@@ -98,6 +106,7 @@ class SqlDelightSettingsRepository(
                     AppLanguage.entries.firstOrNull {
                         it.name == queries.selectPreference(LANGUAGE).executeAsOneOrNull()
                     },
+                exportFolderUri = queries.selectPreference(EXPORT_FOLDER_URI).executeAsOneOrNull(),
             )
         }
 
@@ -111,8 +120,14 @@ class SqlDelightSettingsRepository(
             queries.upsertPreference(LANGUAGE, language.name)
         }
 
+    override suspend fun setExportFolderUri(uri: String): Unit =
+        withContext(dispatcher) {
+            queries.upsertPreference(EXPORT_FOLDER_URI, uri)
+        }
+
     private companion object {
         const val THEME = "theme"
         const val LANGUAGE = "language"
+        const val EXPORT_FOLDER_URI = "export_folder_uri"
     }
 }
