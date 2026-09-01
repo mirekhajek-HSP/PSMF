@@ -62,11 +62,26 @@ Nothing below can start until the relevant answer lands.
 
 ## Decisions still open
 
-- [ ] **`applicationId` / iOS bundle ID.** Permanent at publication. golblok uses
+- [ ] **`applicationId` / iOS bundle ID — decide before the first release build.**
+      Currently `cz.hspinovace.psmf` on both. Permanent at publication. golblok uses
       `cz.hsp.footballmatch`; check the company's second app and match the
       convention. Consider `zapis` over `psmf` in the last segment.
 - [x] **Remote for the repo** — decided: temporary private GitHub repo, then
       transfer to the company org. Promoted to Next; the Mac needs it now.
+
+## Never done, and due
+
+- [ ] **A release build.** Not once, in any session. It is where R8, the shrinker
+      rules and signing all get exercised for the first time, and where the
+      `materialIconsExtended` question gets a real answer rather than an argument.
+      Expect keep-rule work for kotlinx.serialization, SQLDelight and Koin.
+- [ ] **PSMF needs its own upload keystore, and it does not exist.** golblok's
+      `keystore2.jks` / `key_main` is golblok's and must not be reused. Generate
+      one, back it up somewhere that is not this machine, and **never let it near
+      the container** — losing it means never updating the app on Play again.
+      Blocked behind nothing except deciding to do it.
+- [ ] **No date for showing PSMF the demo.** The point of the whole project, and
+      it is not tracked anywhere. It also gates how much polish is worth doing.
 
 ## Queued
 
@@ -102,6 +117,10 @@ None blocking, all from the build reports.
 - [ ] **Ask PSMF whether their logo may appear in the app.**
 
 ## Field research — cheap and high value
+
+**The season's first fixtures are Sunday 6 September 2026.** Until now this was
+hard to arrange because nothing was being played. From Sunday there are matches
+every weekend across sixty groups, which makes all three of these easy.
 
 - [ ] **Show a referee the working demo.** Was cheap and high-value before any
       code existed; is now cheap, high-value *and* answerable against something
