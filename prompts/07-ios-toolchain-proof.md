@@ -1,5 +1,10 @@
 # Prompt — iOS toolchain proof, against the real repository
 
+> **Part 1 executed 2026-09-01 — verdict (b), recorded in `docs/DECISIONS.md`.**
+> Parts 2 and 3 continue in `08-ios-part-2-and-3.md`, which corrects one thing
+> stated here: there is no way to *run* iOS tests on this setup, so do not
+> follow the `iosArm64Test` line below.
+
 **Where:** the MacBook (2018, Intel) · **Model:** Opus
 **Supersedes:** `prompts/02-ios-toolchain-proof.md`, written when this project was
 a bare scaffold and deliberately used a throwaway template. The question has moved
