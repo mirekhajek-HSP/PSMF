@@ -22,19 +22,19 @@ Grouped by what blocks what, not by size. Last updated 2026-08-31.
       iOS has no R8 at all. A morning's work.
 - [ ] **Wait for A1/A2, then import one whole league.** Every group in it, bundled
       on the device. **No scraping.**
-- [ ] **iOS Part 2 — does the code compile?** Blocked on two installs, both yours:
-      - **Xcode 26.3**, from developer.apple.com "More Downloads" — *not* the Mac
-        App Store, which offers 26.4+ that will not run on Sequoia. **Take the
-        Universal build**; Intel machines are sometimes served the arm64-only one.
-        No Xcode is installed at all today, only Command Line Tools 16.4, and it
-        carries **no iOS SDK** — so Kotlin/Native cannot link.
-      - **JDK 17** (Temurin). Installed is Java 15 and 13; Gradle 9.7.1 will not
-        start on those.
-      Then `prompts/07` Part 2 runs: `linkDebugFrameworkIosArm64`, exercising five
-      `actual` files on Kotlin/Native for the first time.
+- [x] **iOS Part 2 — does the code compile?** **Yes, first attempt, no changes.**
+      `linkDebugFrameworkIosArm64` green on the Intel Mac with Xcode 26.3 and
+      JDK 17; the shared iOS test executable links against `libsqlite3`.
+      Verdict (b) confirmed. See `reports/2026-09-01-ios-parts-2-and-3.md`.
 - [ ] **Part 3 needs a physical iPhone.** The Intel simulator does not exist for
       this project. An iPhone already owned, a cable and a free Apple Developer
-      account is €0 and is the whole unblock.
+      account is €0 and is the whole unblock. **Every software prerequisite is
+      now installed**; the phone is the only thing missing.
+      - Can start without it: the unsigned `xcodebuild` in `iosApp/README.md`
+        tests the Linux-generated Xcode project and does the app-level link.
+- [ ] **Bump `kotlin` only with a Mac run in the loop.** Kotlin/Native 2.4.10
+      calls the Intel Mac host deprecated, with no removal version yet. The
+      release that drops it ends iOS compilation on this Mac.
 - [x] **iOS Part 1 — can this Mac ship?** **Yes, and until ~April 2027.** Xcode
       26.3 is the ceiling and clears the current App Store floor. Xcode 27 is
       Apple-silicon-only and macOS 27 drops Intel entirely. A Mac purchase is a
@@ -99,7 +99,8 @@ Nothing below can start until the relevant answer lands.
 
 None blocking, all from the build reports.
 
-- [ ] **iOS has never been compiled.**
+- [ ] **iOS has been compiled but never run.** The Compose half is proven only
+      as a static archive until the app links. See the iOS Part 2 report.
 - [ ] **The minute notation has two loose ends** — `Minute.HALF_LENGTH`/`FULL_LENGTH`
       are hardcoded 30/60 while the clock reads the group file, and `60´+` means
       only the final whistle while `30´+` also covers added time. Neither is wrong

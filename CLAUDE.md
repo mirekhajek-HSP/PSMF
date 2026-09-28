@@ -39,8 +39,13 @@ builds only on the Mac.**
 ./gradlew :shared:jvmTest                # shared tests, JVM only — fastest loop
 ./gradlew :androidApp:assembleDebug      # Android APK
 ./gradlew detekt                         # static analysis, must stay green
-./gradlew :shared:iosSimulatorArm64Test  # macOS only
+./gradlew :shared:iosSimulatorArm64Test  # Apple Silicon only — SKIPPED, and green, on Intel
+./gradlew :composeApp:linkDebugFrameworkIosArm64  # the iOS compile check that works on the Intel Mac
 ```
+
+**On the Intel Mac, a green `iosSimulatorArm64Test` ran nothing.** It links
+the test binary, reports the test task `SKIPPED` and the build successful.
+Same family as the Android host-test trap below.
 
 Single test class: `./gradlew :shared:jvmTest --tests "cz.hspinovace.psmf.SomeTest"`
 

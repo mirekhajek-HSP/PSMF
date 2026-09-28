@@ -5,6 +5,37 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-09-28 · iOS: (b) confirmed — it compiles, unchanged, on the Intel Mac
+
+Part 2 of the toolchain proof. With Xcode 26.3, the iOS 26.2 SDK and JDK 17
+installed, `:composeApp:linkDebugFrameworkIosArm64` succeeded on the **first
+attempt with no source or build change**. `:shared` also links into a full
+arm64 test executable against UIKit, Foundation and `libsqlite3`. None of the
+predicted breaks happened; the SDK headers are nullability-audited, so
+`languageCode` imports as `String`.
+
+**So Part 1's (b) stands, and it is not (c).** One qualification: `ComposeApp`
+is a static framework, so the Compose half is proven only as a complete
+archive until an app links it. That link needs no phone (an unsigned
+`xcodebuild`, see `iosApp/README.md`).
+
+**A third clock, alongside Apple's April floor and macOS 27 dropping Intel:**
+Kotlin/Native 2.4.10 warns that the `macos_x64` *host* is deprecated and
+will be removed in a future Kotlin release. There is no version or date yet,
+and JetBrains' target-support page does not list it yet. The Kotlin release
+that drops it ends iOS compilation on this Mac, whatever Apple's floor does.
+**Consequence: `kotlin` in the catalog is bumped only with a Mac run in the
+loop.**
+
+Part 3 (running it) is blocked only on a physical iPhone.
+
+**Reverses if:** the app-level link or a device run fails in a way that needs
+common code to move, or a Kotlin release drops the Intel host before an
+Apple Silicon Mac arrives. That would be (c) for this machine, not for the
+project.
+
+---
+
 ## 2026-09-01 · The planning documents moved into the app repository
 
 `DECISIONS.md`, `TODO.md`, `QUESTIONS.md` and `DEMO_SCOPE.md` now live in `docs/`;

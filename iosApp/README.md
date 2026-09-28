@@ -26,8 +26,18 @@ calls.
    `composeApp/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)`.
 4. Set a development team for signing. **No signing identity is committed
    here and none should be.**
-5. Then: `./gradlew :composeApp:linkDebugFrameworkIosSimulatorArm64` and
-   run on a simulator.
+5. Then run it on a **physical iPhone over a cable**. There is no simulator
+   for this project on the Intel Mac: see below.
+
+The Kotlin side has been compiled and linked for `iosArm64` on the Mac, with
+no changes needed (2026-09-28, `reports/2026-09-01-ios-parts-2-and-3.md`).
+This Xcode project still has not been opened. The cheapest first test of it
+needs no phone and no signing identity:
+
+```
+xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp \
+  -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO build
+```
 
 `iosX64` is deliberately not a target — Compose Multiplatform no longer
 publishes an `ios_x64` variant. The simulator target is
@@ -47,6 +57,8 @@ before any App Store upload.
 `CFBundleLocalizations` as `cs`, `en`, `uk`. UI strings themselves come
 from Compose resources in `composeApp`, not from iOS `.strings` files.
 
-Cyrillic renders on Android with the platform font and no bundled font;
-that still needs confirming on iOS, though San Francisco covers Cyrillic,
-so no bundled font is expected to be necessary.
+The UI uses **bundled** Oswald and Noto Sans, as Compose resources, on both
+platforms, not San Francisco. Both carry Cyrillic (verified against the font
+files by `BundledFontTest`). So on iOS, a fallback face on Ukrainian text means
+the resource path failed, not the font. That has not been checked on a device
+yet.

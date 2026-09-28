@@ -171,6 +171,12 @@ Multiplatform nor the lifecycle port publishes an `ios_x64` variant, so the
 Intel simulator is gone; the targets are `iosArm64` and
 `iosSimulatorArm64`, and the simulator therefore needs an Apple Silicon Mac.
 
+**The Intel Mac is a deprecated Kotlin/Native host.** It compiles and links
+`iosArm64` today (verified 2026-09-28, no changes needed), but Kotlin 2.4.10
+warns that the `macos_x64` host will be removed in a future release, with no
+version given yet. Bump `kotlin` only with a Mac run in the loop. See
+`docs/DECISIONS.md`, 2026-09-28.
+
 ### PDF and spreadsheet generation do not belong in the app
 JSON, CSV and formatted text are shared code and effectively free. PDF and `.xlsx`
 have no good shared-Kotlin library, so building them in the app means writing each
