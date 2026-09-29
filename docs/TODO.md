@@ -26,6 +26,13 @@ Grouped by what blocks what, not by size. Last updated 2026-08-31.
       `linkDebugFrameworkIosArm64` green on the Intel Mac with Xcode 26.3 and
       JDK 17; the shared iOS test executable links against `libsqlite3`.
       Verdict (b) confirmed. See `reports/2026-09-01-ios-parts-2-and-3.md`.
+- [ ] **Ask the company's Apple account holder, now — two things:**
+      - **Register `cz.hspinovace.psmf` in the company team.** Certificates,
+        Identifiers & Profiles → Identifiers → + → App IDs → App. Once the
+        company owns it, no personal team can ever claim it — the trap closes.
+      - **Admin role for the owner, with "Access to Certificates, Identifiers &
+        Profiles".** Lowest role that covers device runs, distribution signing
+        and TestFlight upload. Developer alone runs on a device but cannot upload.
 - [ ] **Part 3 needs a physical iPhone *and* the company's Apple team.** The
       Intel simulator does not exist for this project. **Not a free personal
       Apple account** — signing with one would permanently claim
