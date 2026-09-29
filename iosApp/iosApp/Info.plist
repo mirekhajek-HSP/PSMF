@@ -18,23 +18,45 @@
     <string>6.0</string>
     <key>CFBundleName</key>
     <string>$(PRODUCT_NAME)</string>
+    <!-- The name under the icon. Czech here, the development region;
+         en and uk come from <lang>.lproj/InfoPlist.strings. The same three
+         names as Android's app_name. -->
+    <key>CFBundleDisplayName</key>
+    <string>Zápis o utkání</string>
     <key>CFBundlePackageType</key>
     <string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
+    <!-- Set in ONE place: MARKETING_VERSION and CURRENT_PROJECT_VERSION in
+         the Xcode project. TestFlight rejects a CFBundleVersion it has
+         already seen for this version. -->
     <key>CFBundleShortVersionString</key>
-    <string>0.1.0</string>
+    <string>$(MARKETING_VERSION)</string>
     <key>CFBundleVersion</key>
-    <string>1</string>
+    <string>$(CURRENT_PROJECT_VERSION)</string>
+    <!-- Export compliance: the app makes no network connection and has no
+         encryption of its own, so it is exempt. Declared here so App Store
+         Connect does not ask on every upload. -->
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
     <key>LSRequiresIPhoneOS</key>
     <true/>
     <key>UILaunchScreen</key>
     <dict/>
     <key>UIRequiredDeviceCapabilities</key>
     <array>
-        <string>armv7</string>
+        <string>arm64</string>
     </array>
     <key>UISupportedInterfaceOrientations</key>
     <array>
         <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <!-- iPad must list all four orientations, or the app must require full
+         screen; otherwise the upload is rejected. -->
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
         <string>UIInterfaceOrientationLandscapeLeft</string>
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>

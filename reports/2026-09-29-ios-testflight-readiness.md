@@ -198,3 +198,104 @@ Release-only phase is an open item.
 | The manifest is in the built `.app`, not just the repository | ✅ `iosApp.app/PrivacyInfo.xcprivacy`, Debug and Release, byte-identical to the repo copy |
 | Every declared category traced to a symbol actually present | ✅ both; and every *undeclared* category shown absent |
 | Committed | ✅ |
+
+---
+
+## 3 · Part 3 — `Info.plist`, for upload
+
+All in `iosApp/`. Verified in the processed `Info.plist` of the built Release
+app, not only in the source file.
+
+| Key | Before | After | Why |
+|---|---|---|---|
+| `ITSAppUsesNonExemptEncryption` | absent | **`false`** | Export compliance, below |
+| `CFBundleShortVersionString` | `0.1.0`, hard-coded | **`$(MARKETING_VERSION)`** → `0.1.0` | One source, below |
+| `CFBundleVersion` | `1`, hard-coded | **`$(CURRENT_PROJECT_VERSION)`** → `1` | One source, below |
+| `CFBundleDisplayName` | absent, so the home screen showed **`iosApp`** | **`Zápis o utkání`**, with `en.lproj` *Match Report* and `uk.lproj` *Протокол матчу* | The same three names as Android's `app_name` |
+| `UIRequiredDeviceCapabilities` | `armv7` | **`arm64`** | The binary is arm64 only. Xcode had been rewriting it silently; the source now says what is true |
+| `UISupportedInterfaceOrientations~ipad` | absent | **all four** | See below |
+
+### Export compliance: exempt, and why
+
+`ITSAppUsesNonExemptEncryption = false` stops App Store Connect asking the
+export-compliance question on every upload. The claim rests on two facts,
+both checked in the linked release binary rather than assumed:
+
+- **No network connections.** No sockets, `NSURLSession`, `CFNetwork`,
+  Network framework or WebKit in the imports or linked libraries, and no
+  networking library applied to any module. So there is no HTTPS and no TLS.
+- **No encryption of its own.** No CommonCrypto (`CC*`), no Security framework
+  (`SecKey`, `SecItem`, `kSec*`), and no OpenSSL-style symbols. The database
+  is plain SQLite. `arc4random_buf` is present; it is random-number
+  generation, not encryption.
+
+What remains is iOS's own data protection, which is the operating system's
+encryption, not the app's. **Reverses if** the app gains a network call, even
+plain HTTPS to a backend, or any encryption of its own. That needs a fresh
+answer, not this line.
+
+### Version and build number: where they come from, and a proposal
+
+**Now:** `MARKETING_VERSION = 0.1.0` and `CURRENT_PROJECT_VERSION = 1` in
+the Xcode project's target settings, Debug and Release, and `Info.plist`
+reads them. The hard-coded duplicate in `Info.plist` is gone. Android sets
+`versionName = "0.1.0"` and `versionCode = 1` in `androidApp/build.gradle.kts`.
+Today they agree by coincidence, and nothing keeps them agreeing.
+
+**The constraints:** TestFlight rejects a `CFBundleVersion` it has already
+seen for a version. Play rejects a `versionCode` that is not higher than every
+previous one. Both want a strictly increasing number.
+
+**Proposed, not built:**
+
+1. **One file, `iosApp/Configuration/Version.xcconfig`:**
+   ```
+   MARKETING_VERSION = 0.1.0
+   CURRENT_PROJECT_VERSION = 1
+   ```
+   The Xcode target uses it as its base configuration. Its `KEY = value` lines
+   are trivially parsed by `androidApp/build.gradle.kts`, so Android's
+   `versionName` and `versionCode` read the **same two lines**. There are
+   no new tools and no Gradle plugin.
+2. **One integer build number** for both platforms, bumped for every upload
+   to either store. The simplest rule that satisfies both stores and cannot
+   collide. Later, CI can set it from its run number and nobody edits it by
+   hand.
+3. **Marketing version bumped by hand**, deliberately, when there is something
+   to call a version.
+
+Not built, because it changes `androidApp/build.gradle.kts`, which this Mac
+cannot build, and the brief said propose. Listed in `docs/TODO.md`.
+
+### iPad: kept, which was a default rather than a decision
+
+The Linux scaffold set `TARGETED_DEVICE_FAMILY = 1,2`: iPhone **and** iPad.
+With iPad included, Apple requires all four orientations or
+`UIRequiresFullScreen`, and the build warned *"All interface orientations must
+be supported unless the app requires full screen"*, which becomes an upload
+rejection. The fix that changes nothing else is
+`UISupportedInterfaceOrientations~ipad` with all four. The iPhone keeps its
+three, and the warning is gone in the rebuilt project.
+
+**The owner's decision, now in `docs/TODO.md`:** keep iPad (store
+screenshots for iPad, App Review on iPad) or go iPhone-only
+(`TARGETED_DEVICE_FAMILY = 1`), which removes both. TestFlight does not care.
+Nothing about referees suggests iPads, and Android has no equivalent
+restriction, so either is defensible.
+
+### Noticed, not changed
+
+- **`Zápis o utkání` is 14 characters.** The home screen truncates labels
+  around 11–13 on most iPhones, so it will likely show as *Zápis o utk…*.
+  Android has the same name. It is a product call.
+- **Still blocking an upload, all owner items:** the app icon (App Store
+  Connect rejects a build without the 1024 × 1024 icon; `AppIcon` stays empty,
+  as instructed), a distribution role on the company team, and signing.
+
+### Gate 3 against its criteria
+
+| Criterion | |
+|---|---|
+| Export compliance declared, with reasoning | ✅ `ITSAppUsesNonExemptEncryption = false`; checked against the binary |
+| Where version and build come from, and a proposal for keeping them in step with Android | ✅ project settings, one source; proposal above, not built |
+| Committed | ✅ |
