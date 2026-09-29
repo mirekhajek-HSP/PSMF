@@ -32,10 +32,16 @@ data class ExportUiState(
      */
     val problems: List<ReportProblem> = emptyList(),
     val selected: ZouFormat = ZouFormat.TEXT,
-    val sendFailed: Boolean = false,
-    val sent: Boolean = false,
-    val saveFailed: Boolean = false,
-    val saved: Boolean = false,
+    /** The last send, if any. Null until the referee presses send. */
+    val sendOutcome: SendOutcome? = null,
+    /** The last save, if any. Null until the referee presses save. */
+    val saveOutcome: SaveOutcome? = null,
+    /**
+     * False when send will open a draft WITHOUT the PSMF address in it
+     * (iOS with no Apple Mail account). Shown before the referee presses
+     * send, while there is still time to act on it.
+     */
+    val recipientPrefilled: Boolean = true,
 ) {
     val ready: Boolean get() = problems.isEmpty() && report != null
 
@@ -97,6 +103,7 @@ class ExportViewModel(
                 report = report,
                 documents = report?.let { exportZou(it) }.orEmpty(),
                 problems = match.reportProblems(),
+                recipientPrefilled = reportSender.prefillsRecipient(),
             )
     }
 
@@ -118,9 +125,9 @@ class ExportViewModel(
     }
 
     /** Called back once the platform save has finished, whichever way. */
-    fun saveHandled(success: Boolean) {
+    fun saveHandled(outcome: SaveOutcome) {
         _savePending.value = null
-        _state.update { it.copy(saved = success, saveFailed = !success) }
+        _state.update { it.copy(saveOutcome = outcome) }
     }
 
     private fun send() {
@@ -129,7 +136,7 @@ class ExportViewModel(
         if (!current.ready) return
 
         viewModelScope.launch {
-            val delivered =
+            val outcome =
                 reportSender.send(
                     ReportDelivery(
                         to = PSMF_REPORT_ADDRESS,
@@ -138,7 +145,11 @@ class ExportViewModel(
                         documents = current.documents,
                     ),
                 )
-            _state.update { it.copy(sent = delivered, sendFailed = !delivered) }
+            // Asked again: an account may have been added since the screen
+            // opened, and the note should match what just happened.
+            _state.update {
+                it.copy(sendOutcome = outcome, recipientPrefilled = reportSender.prefillsRecipient())
+            }
         }
     }
 

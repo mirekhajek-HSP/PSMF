@@ -3,6 +3,21 @@ package cz.hspinovace.psmf.ui.export
 import androidx.compose.runtime.Composable
 import cz.hspinovace.psmf.export.ZouDocument
 
+/** What happened when the referee pressed save. Each is named on screen. */
+sealed interface SaveOutcome {
+    /** Every document was written. */
+    data object Saved : SaveOutcome
+
+    /** The referee backed out of choosing a folder. Nothing was written. */
+    data object Cancelled : SaveOutcome
+
+    /**
+     * A write failed. It stops at the first failure, so some files may be
+     * written and others not; the referee is told it failed either way.
+     */
+    data object Failed : SaveOutcome
+}
+
 /**
  * Writes the report somewhere the referee can open again without the app.
  *
@@ -20,10 +35,10 @@ import cz.hspinovace.psmf.export.ZouDocument
  * [save] asks where; every one after that writes straight there, with no
  * dialog at all -- see `AndroidReportSaver`. [changeFolder] is the escape
  * hatch a referee who wants a different folder reaches from Settings.
+ * iOS does the same with a remembered folder bookmark (`IosReportSaver`).
  */
 interface ReportSaver {
-    /** True once every document has a location written to. */
-    suspend fun save(documents: List<ZouDocument>): Boolean
+    suspend fun save(documents: List<ZouDocument>): SaveOutcome
 
     /**
      * Asks where to save from now on, replacing whatever was chosen
@@ -34,12 +49,9 @@ interface ReportSaver {
     suspend fun changeFolder(): Boolean
 }
 
-/**
- * For targets with no document picker to hand: the JVM test host, and iOS
- * until somebody builds it on a Mac.
- */
+/** For targets with no document picker to hand: the JVM test host. */
 class UnavailableReportSaver : ReportSaver {
-    override suspend fun save(documents: List<ZouDocument>): Boolean = false
+    override suspend fun save(documents: List<ZouDocument>): SaveOutcome = SaveOutcome.Failed
 
     override suspend fun changeFolder(): Boolean = false
 }

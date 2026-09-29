@@ -165,6 +165,13 @@
     <string name="export_send">Send to PSMF</string>
     <string name="export_sent">An email to %1$s is open. Confirm sending in your mail app.</string>
     <string name="export_failed">There is no mail app on this device that can handle it.</string>
+    <string name="export_send_no_recipient_note">There is no Mail account on this device, so the address cannot be filled in for you. After pressing Send, choose your mail app and paste %1$s as the recipient — the address is copied for you.</string>
+    <string name="export_shared_no_recipient">Handed to the app you chose. The address could not be filled in — check the report went to %1$s.</string>
+    <string name="export_handed_to_mail">Handed to Mail for sending to %1$s.</string>
+    <string name="export_draft_saved">Saved as a draft in Mail. Not sent yet.</string>
+    <string name="export_send_cancelled">Sending cancelled. Nothing was sent.</string>
+    <string name="export_send_error">Sending failed. Nothing was sent.</string>
+    <string name="export_save_cancelled">Saving cancelled. Nothing was saved.</string>
     <string name="export_problem_officials">The referee or the delegating team is missing.</string>
     <string name="export_problem_lineup">The lineup is missing (%1$s).</string>
     <string name="export_problem_cards">The personal punishments block has not been filled in. If no cards were issued, confirm that on the recap.</string>
@@ -234,5 +241,5 @@
     <string name="fixtures_filtered_empty">No fixture matches the filter.</string>
     <string name="export_save">Save to device</string>
     <string name="export_saved">Report saved. The files can be reopened without the app.</string>
-    <string name="export_save_failed">Saving failed or was cancelled.</string>
+    <string name="export_save_failed">Saving failed. The files may be incomplete.</string>
 </resources>

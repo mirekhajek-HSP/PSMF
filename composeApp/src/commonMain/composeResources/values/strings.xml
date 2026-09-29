@@ -173,6 +173,13 @@
     <string name="export_send">Odeslat na PSMF</string>
     <string name="export_sent">Otevřen e-mail na %1$s. Odeslání potvrďte v poštovní aplikaci.</string>
     <string name="export_failed">Na tomto zařízení není poštovní aplikace, která by to zvládla.</string>
+    <string name="export_send_no_recipient_note">V tomto zařízení není účet v aplikaci Mail, takže adresu nelze vyplnit za vás. Po stisknutí Odeslat vyberte svou poštovní aplikaci a jako příjemce vložte %1$s — adresa se zkopíruje.</string>
+    <string name="export_shared_no_recipient">Předáno vybrané aplikaci. Adresu nešlo vyplnit — zkontrolujte, že zápis šel na %1$s.</string>
+    <string name="export_handed_to_mail">Předáno aplikaci Mail k odeslání na %1$s.</string>
+    <string name="export_draft_saved">Uloženo jako koncept v aplikaci Mail. Zatím neodesláno.</string>
+    <string name="export_send_cancelled">Odeslání zrušeno. Nic nebylo odesláno.</string>
+    <string name="export_send_error">Odeslání se nezdařilo. Nic nebylo odesláno.</string>
+    <string name="export_save_cancelled">Uložení zrušeno. Nic nebylo uloženo.</string>
     <string name="export_problem_officials">Chybí rozhodčí nebo delegující tým.</string>
     <string name="export_problem_lineup">Chybí sestava (%1$s).</string>
     <string name="export_problem_cards">Není vyplněný oddíl osobních trestů. Pokud nebyly žádné karty, potvrďte to v rekapitulaci.</string>
@@ -242,5 +249,5 @@
     <string name="fixtures_filtered_empty">Filtru neodpovídá žádný zápas.</string>
     <string name="export_save">Uložit do zařízení</string>
     <string name="export_saved">Zápis uložen. K souborům se lze vrátit i bez aplikace.</string>
-    <string name="export_save_failed">Uložení se nezdařilo nebo bylo zrušeno.</string>
+    <string name="export_save_failed">Uložení se nezdařilo. Soubory nemusí být kompletní.</string>
 </resources>

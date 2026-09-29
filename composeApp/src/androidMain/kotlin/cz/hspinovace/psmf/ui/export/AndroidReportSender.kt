@@ -31,7 +31,7 @@ import java.io.File
 class AndroidReportSender(
     private val context: Context,
 ) : ReportSender {
-    override suspend fun send(delivery: ReportDelivery): Boolean =
+    override suspend fun send(delivery: ReportDelivery): SendOutcome =
         withContext(Dispatchers.IO) {
             val directory = reportsDirectory()
             val keep = delivery.documents.map { it.fileName }.toSet()
@@ -58,7 +58,14 @@ class AndroidReportSender(
             // resolveActivity is deprecated for querying, but here it only
             // decides whether to tell the referee nothing can handle it
             // rather than throwing in their face at the pitch.
-            runCatching { context.startActivity(chooser) }.isSuccess
+            //
+            // A chooser reports nothing back, so DraftOpened is all Android
+            // can ever say: not sent, not cancelled, just handed over.
+            if (runCatching { context.startActivity(chooser) }.isSuccess) {
+                SendOutcome.DraftOpened
+            } else {
+                SendOutcome.NoMailApp
+            }
         }
 
     private fun reportsDirectory(): File = File(context.filesDir, REPORTS).apply { mkdirs() }

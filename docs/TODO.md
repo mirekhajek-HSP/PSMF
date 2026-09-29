@@ -75,6 +75,16 @@ Nothing below can start until the relevant answer lands.
       Settled 2026-09-29.
 - [ ] **App icon** — to be provided. Blocks the first upload: App Store Connect
       rejects a build without the 1024 × 1024 icon. Ask PSMF about their logo.
+- [ ] **Merge `ios/export` after the Windows machine builds Android.** Part 4
+      of `prompts/09` changed common export code and **edited Android by hand
+      without compiling it** (no Android SDK on the Mac). Run `./gradlew build`,
+      `:shared:allTests` and `detekt`, then on a phone: save, back out of the
+      folder picker (it now says *cancelled*), and send. Then merge.
+- [ ] **First run on an iPhone** — the numbered checklist at the end of
+      `reports/2026-09-29-ios-testflight-readiness.md`. Needs the company
+      team role first; never a personal team.
+- [ ] **Before every TestFlight upload:** `iosApp/scripts/check-required-reason-apis.sh`
+      on the Release build. Candidate for CI.
 - [x] **iPad stays in.** Owner, 2026-09-29: iPad support is welcome, and may
       be dropped if it ever complicates things. So far it has cost one
       `Info.plist` key (all four iPad orientations). It means iPad screenshots

@@ -37,6 +37,7 @@ import cz.hspinovace.psmf.ui.console.ConsoleScreen
 import cz.hspinovace.psmf.ui.console.ConsoleViewModel
 import cz.hspinovace.psmf.ui.export.ExportScreen
 import cz.hspinovace.psmf.ui.export.ExportViewModel
+import cz.hspinovace.psmf.ui.export.SaveOutcome
 import cz.hspinovace.psmf.ui.export.rememberReportSaver
 import cz.hspinovace.psmf.ui.fixtures.FixturesScreen
 import cz.hspinovace.psmf.ui.fixtures.FixturesViewModel
@@ -493,12 +494,12 @@ private fun ExportRoute(
     val savePending by viewModel.savePending.collectAsStateWithLifecycle()
     LaunchedEffect(savePending) {
         savePending?.let { documents ->
-            val saved = saver.save(documents)
+            val outcome = saver.save(documents)
             // Settings otherwise keeps offering "Choose a folder" for the
             // rest of the session even after this save silently picked one --
             // its state is read once at startup, not observed.
-            if (saved) settings.onEvent(SettingsEvent.ExportFolderChosen)
-            viewModel.saveHandled(saved)
+            if (outcome == SaveOutcome.Saved) settings.onEvent(SettingsEvent.ExportFolderChosen)
+            viewModel.saveHandled(outcome)
         }
     }
 
