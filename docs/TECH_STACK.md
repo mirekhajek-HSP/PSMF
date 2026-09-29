@@ -244,9 +244,11 @@ default.
 
 ## 5. Open
 
+*Settled 2026-09-29 and removed from this table: `applicationId` and iOS bundle ID
+are both **`cz.hspinovace.psmf`**. See `docs/DECISIONS.md`.*
+
 | Question | Blocks | Reference |
 |---|---|---|
-| `applicationId` / iOS bundle ID | Permanent at publication | **`cz.hspinovace.psmf` is in the build files and the Xcode project, and is NOT settled.** golblok uses `cz.hsp.footballmatch`; align with the company's existing convention before any store upload |
 | Does the store hold RP numbers? | Whether a backend is needed at all | A1, A2 |
 | `rodné číslo` vs date of birth | Data-protection weight | A28 — largest legal exposure |
 | Export format | What gets built | A8 |

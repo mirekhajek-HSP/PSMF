@@ -5,6 +5,90 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-09-29 · The bundle ID is `cz.hspinovace.psmf`, on both platforms
+
+Open since August. **Settled by the project owner:** Android `applicationId` and
+iOS `PRODUCT_BUNDLE_IDENTIFIER` are both **`cz.hspinovace.psmf`**, which is what
+was already in the build files and the Xcode project — so nothing changes in code.
+
+It becomes permanent the moment it is registered in App Store Connect or uploaded
+to Play. The alternatives considered earlier (matching golblok's `cz.hsp.…`
+convention, or `zapis` as the last segment) are closed.
+
+Removed from `docs/TECH_STACK.md` §5 and `docs/TODO.md`; `iosApp/README.md` updated.
+
+**Reverses if:** nothing, once registered. Before that, only a company naming rule
+nobody has mentioned yet.
+
+---
+
+## 2026-09-29 · There is no iOS simulator for this project on the Intel Mac — definitively
+
+Checked against Maven Central rather than restated from memory. Compose
+Multiplatform's Intel-simulator artifacts (`runtime-iosx64`, `ui-iosx64`) **end at
+`1.11.0-alpha01`**. This project is on 1.12.0, whose `iosx64` artifact returns 404.
+The Apple-Silicon simulator line (`iossimulatorarm64`) continues to 1.13.0-alpha01.
+
+Getting the Intel simulator back would mean downgrading Compose below 1.11 — and
+with it the chain `BUILD_MATRIX.md` records (Compose 1.12 is what requires
+compileSdk 37). Not viable, and not worth it for a machine with a ~2027 horizon.
+
+**What does work, for seeing the app without an iPhone:**
+
+| | Interactive | Really iOS | Cost |
+|---|---|---|---|
+| **Appetize.io** — an arm64 *simulator* build, run in a browser on Apple-Silicon hosts | yes | yes | free trial, then paid |
+| **Rented Apple-Silicon Mac** — full Xcode and simulator over remote desktop | yes | yes | per day; Apple's licence imposes a 24-hour minimum |
+| **A used iPhone** | yes | yes, real hardware | one-off |
+| **CI on an Apple-Silicon runner** | no — screenshots and tests | yes | limited free minutes on a private repo |
+| **Desktop window of the same Compose UI** | yes | **no** | €0 |
+
+The Appetize route turns on one fact: **an Intel Mac can *build* an arm64
+simulator app, it just cannot run it.** Kotlin/Native already linked
+`iosSimulatorArm64` on this Mac in Part 2 (the test binary, then `SKIPPED`), and
+Appetize recommends ARM simulator builds. End to end it is unproven; `prompts/09`
+tries it.
+
+The desktop window is cheap because every JVM `actual` already exists (DI, saver,
+locale, database driver) and `compose.desktop.currentOs` is already a dependency
+for the UI tests. It shows every screen and runs on the Mac *and* on Windows — but
+nothing iOS-specific runs in it, so it answers layout questions, not platform ones.
+
+**Reverses if:** an Apple-Silicon Mac arrives, which makes the simulator local and
+free.
+
+---
+
+## 2026-09-29 · The privacy manifest must declare Compose's symbols, not just ours
+
+Uploads missing a privacy manifest for "required reason" APIs are rejected
+(`ITMS-91053`). The obvious manifest — declaring this app's own `NSUserDefaults`
+write for the language picker — **would still be rejected.**
+
+JetBrains document that **Compose Multiplatform itself puts `stat`, `fstat` and
+`mach_absolute_time` into the binary**, and Apple's check is symbol-based, so it
+flags them whether or not this app ever calls them. So the manifest needs at least:
+
+| Category | Why | Reason |
+|---|---|---|
+| User defaults | the language picker writes `AppleLanguages` | `CA92.1` |
+| File timestamp | `stat` / `fstat`, from Compose and Kotlin/Native | `0A2A.1` |
+| System boot time | `mach_absolute_time`, from Compose | `35F9.1` |
+
+**In the app target, not the framework.** `ComposeApp` is statically linked into
+the app binary, so the app bundle is what Apple scans. JetBrains'
+`apple-privacy-manifests` plugin is for distributing a Kotlin library separately
+and is not needed here.
+
+**And verified against the built binary, not taken from this table** — the list
+above is JetBrains' for Compose in general, and the only authoritative list is the
+symbols actually present in this app.
+
+**Reverses if:** Apple changes the required-reason list, or Compose stops pulling
+those symbols in.
+
+---
+
 ## 2026-09-28 · iOS: (b) confirmed — it compiles, unchanged, on the Intel Mac
 
 Part 2 of the toolchain proof. With Xcode 26.3, the iOS 26.2 SDK and JDK 17

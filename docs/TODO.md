@@ -62,10 +62,10 @@ Nothing below can start until the relevant answer lands.
 
 ## Decisions still open
 
-- [ ] **`applicationId` / iOS bundle ID — decide before the first release build.**
-      Currently `cz.hspinovace.psmf` on both. Permanent at publication. golblok uses
-      `cz.hsp.footballmatch`; check the company's second app and match the
-      convention. Consider `zapis` over `psmf` in the last segment.
+- [x] **`applicationId` / iOS bundle ID** — **`cz.hspinovace.psmf`**, both platforms.
+      Settled 2026-09-29.
+- [ ] **App icon** — to be provided. Blocks the first upload: App Store Connect
+      rejects a build without the 1024 × 1024 icon. Ask PSMF about their logo.
 - [x] **Remote for the repo** — decided: temporary private GitHub repo, then
       transfer to the company org. Promoted to Next; the Mac needs it now.
 

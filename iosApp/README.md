@@ -46,10 +46,9 @@ publishes an `ios_x64` variant. The simulator target is
 
 ## Bundle identifier
 
-`PRODUCT_BUNDLE_IDENTIFIER` is `cz.hspinovace.psmf`, matching the Android
-`applicationId`. **Neither is final.** `docs/TECH_STACK.md` section 5 still
-lists it as open, and it becomes permanent at first publication. Confirm it
-before any App Store upload.
+`PRODUCT_BUNDLE_IDENTIFIER` is **`cz.hspinovace.psmf`**, matching the Android
+`applicationId`. **Settled 2026-09-29** — see `docs/DECISIONS.md`. It becomes
+permanent the moment it is registered in App Store Connect; do not change it.
 
 ## Localisation
 
