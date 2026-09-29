@@ -75,13 +75,14 @@ Nothing below can start until the relevant answer lands.
       Settled 2026-09-29.
 - [ ] **App icon** — to be provided. Blocks the first upload: App Store Connect
       rejects a build without the 1024 × 1024 icon. Ask PSMF about their logo.
-- [ ] **iPad: keep it, or ship iPhone-only?** The Linux scaffold set
-      `TARGETED_DEVICE_FAMILY = 1,2`, apparently by default rather than by
-      decision. Kept for now, with all four iPad orientations so the upload is
-      not rejected. Keeping iPad means iPad screenshots for the store listing
-      and App Review testing on iPad. iPhone-only (`1`) removes both. Android
-      has no equivalent restriction. Owner's call before the first *store*
-      submission; TestFlight does not care.
+- [x] **iPad stays in.** Owner, 2026-09-29: iPad support is welcome, and may
+      be dropped if it ever complicates things. So far it has cost one
+      `Info.plist` key (all four iPad orientations). It means iPad screenshots
+      and iPad review at *store* submission, not at TestFlight.
+- [ ] **App name — not decided, and it will be shorter** than *Zápis o
+      utkání* (14 characters, which the iOS home screen truncates). Until it
+      is, `CFBundleDisplayName` mirrors Android's `app_name` in all three
+      languages. Change both together.
 - [ ] **One version, both platforms.** Proposed in the TestFlight-readiness
       report, not built: one `Version.xcconfig` holding `MARKETING_VERSION` and
       `CURRENT_PROJECT_VERSION`, which Xcode includes and Gradle parses for

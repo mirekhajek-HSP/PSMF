@@ -5,8 +5,10 @@
 **Repository:** `~/Documents/PSMFApp_Miro/PSMF`, branch `ios/testflight-readiness`
 **Brief:** `prompts/09-ios-testflight-readiness.md`
 
-> *In progress. The opening answer and the "First run on an iPhone" checklist
-> are written when all four parts are done.*
+> **In progress: Parts 1–3 done and merged to `main`; Part 4, the iOS export,
+> not started.** The opening answer and the "First run on an iPhone"
+> checklist are written when Part 4 is done. Merged early at the owner's
+> request, who wants work on `main` rather than on long-lived branches.
 
 ---
 
@@ -277,17 +279,15 @@ rejection. The fix that changes nothing else is
 `UISupportedInterfaceOrientations~ipad` with all four. The iPhone keeps its
 three, and the warning is gone in the rebuilt project.
 
-**The owner's decision, now in `docs/TODO.md`:** keep iPad (store
-screenshots for iPad, App Review on iPad) or go iPhone-only
-(`TARGETED_DEVICE_FAMILY = 1`), which removes both. TestFlight does not care.
-Nothing about referees suggests iPads, and Android has no equivalent
-restriction, so either is defensible.
+**Owner, after Gate 3: iPad stays.** Welcome, and to be dropped only if it
+ever complicates things. So far it has cost this one key.
 
 ### Noticed, not changed
 
-- **`Zápis o utkání` is 14 characters.** The home screen truncates labels
-  around 11–13 on most iPhones, so it will likely show as *Zápis o utk…*.
-  Android has the same name. It is a product call.
+- **`Zápis o utkání` is 14 characters**, which the home screen truncates.
+  **Owner, after Gate 3: the name is not decided yet and will be shorter.**
+  Until then, `CFBundleDisplayName` mirrors Android's `app_name`; change both
+  together.
 - **Still blocking an upload, all owner items:** the app icon (App Store
   Connect rejects a build without the 1024 × 1024 icon; `AppIcon` stays empty,
   as instructed), a distribution role on the company team, and signing.

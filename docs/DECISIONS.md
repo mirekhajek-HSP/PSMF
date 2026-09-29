@@ -5,6 +5,24 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-09-29 · iPad stays; the app name is not decided
+
+**iPad:** the Linux scaffold targeted iPhone *and* iPad by default. Asked,
+the owner welcomes iPad, and it may be dropped if it ever complicates things.
+So far the cost is one `Info.plist` key: all four orientations on iPad, without
+which the upload is rejected. At store submission it will also mean iPad
+screenshots and App Review on iPad.
+
+**App name:** not decided, and it will be shorter than *Zápis o utkání*.
+Until it is, the iOS `CFBundleDisplayName` mirrors Android's `app_name` in cs,
+en and uk (`InfoPlist.strings`), so the two platforms change together.
+
+**Reverses if:** iPad costs real layout or review work (drop it with
+`TARGETED_DEVICE_FAMILY = 1`), or the name is chosen, which changes both
+platforms' resources in one commit.
+
+---
+
 ## 2026-09-29 · Correction: the privacy manifest declares two categories, not three, and not `0A2A.1`
 
 The entry below listed three categories from JetBrains' guidance for Compose
