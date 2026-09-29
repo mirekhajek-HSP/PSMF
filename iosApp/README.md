@@ -3,16 +3,26 @@
 The Xcode wrapper. The entire UI is Compose Multiplatform; these files only
 hand the Compose view controller to SwiftUI.
 
-## This has never been opened by Xcode
+## Xcode has built it, unsigned, and it has never run
 
-It was generated on Linux, where iOS cannot be built. **Treat
-`iosApp.xcodeproj/project.pbxproj` as a starting point, not a verified
-artefact.** If Xcode objects to it, regenerating the project from the
-Kotlin Multiplatform wizard and copying the two Swift files across is a
-perfectly good outcome — the Swift is the part worth keeping.
+It was generated on Linux. On 2026-09-29 Xcode 26.3 built it on the Mac, Debug
+and Release, with `CODE_SIGNING_ALLOWED=NO`. There was no migration prompt and
+no regeneration, and the Swift is unchanged. It has not been opened in the IDE
+yet, and nothing has run it.
 
-The Kotlin side *is* verified: `composeApp` declares `iosArm64` and
-`iosSimulatorArm64` framework targets named `ComposeApp`, and
+**One change was needed: `OTHER_LDFLAGS = -lsqlite3`** on the app target.
+SQLDelight's native driver (SQLiter) declares `-lsqlite3` in its cinterop, but
+Kotlin/Native keeps linker options only for *dynamic* frameworks and
+executables. `ComposeApp` is static, so the app has to link SQLite itself.
+Without the flag, the link fails with about 30 undefined `_sqlite3_*` symbols.
+Do not remove it.
+
+`ComposeApp` itself is **not** listed in *Link Binary With Libraries*; Swift
+auto-links it through `import ComposeApp`. That works; leave it alone unless
+it stops working.
+
+The Kotlin side: `composeApp` declares `iosArm64` and `iosSimulatorArm64`
+framework targets named `ComposeApp`, and
 `MainViewControllerKt.mainViewController()` is what `ContentView.swift`
 calls.
 
@@ -36,10 +46,8 @@ calls.
 5. Then run it on a **physical iPhone over a cable**. There is no simulator
    for this project on the Intel Mac: see below.
 
-The Kotlin side has been compiled and linked for `iosArm64` on the Mac, with
-no changes needed (2026-09-28, `reports/2026-09-01-ios-parts-2-and-3.md`).
-This Xcode project still has not been opened. The cheapest first test of it
-needs no phone and no signing identity:
+The build that needs no phone and no signing identity, and which is the
+compile proof for the whole app:
 
 ```
 xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp \
