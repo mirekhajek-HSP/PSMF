@@ -5,6 +5,41 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-09-29 · Correction: the privacy manifest declares two categories, not three, and not `0A2A.1`
+
+The entry below listed three categories from JetBrains' guidance for Compose
+Multiplatform, and said to verify them against the built binary. Verified, two
+of the three rows were wrong **for this app**:
+
+| | The entry below | The linked release binary | Declared |
+|---|---|---|---|
+| User defaults | `CA92.1` | `NSUserDefaults` imported; `setObject:forKey:` for `AppleLanguages` | **`CA92.1`** ✓ |
+| File timestamp | `0A2A.1` | `stat`, `fstat` imported, from Skia's file I/O and ICU's data-file mapping | **`C617.1`**: files inside the app container |
+| System boot time | `35F9.1` | **absent** | **not declared** |
+
+**`0A2A.1` is not a reason an app can give.** Apple, verbatim: *"This reason may
+only be declared by third-party SDKs."* It is what a library declares in its
+*own* manifest when it wraps `stat` for its host app. This app reads its own
+bundle and its own database, which is exactly `C617.1`.
+
+**`mach_absolute_time` never reaches the app.** It is imported by the
+`ComposeApp.framework` archive, from Adobe's DNG SDK inside Skia
+(`libdng_sdk.dng_utils.o`, the RAW-photo decoder), and the linker dead-strips it
+in both Debug and Release. JetBrains describe the *library*; Apple scans the
+*app*.
+
+**Because dead-stripping decides it, it can change silently** with a Compose
+bump or any UI that happens to reach Skia's image decoders.
+`iosApp/scripts/check-required-reason-apis.sh <app>` compares a built app's
+symbols against the manifest and fails either way: used and not declared, or
+declared and not used. It was proven to fail both ways before it was trusted.
+**Run it on the release build before every upload.**
+
+**Reverses if:** the check script reports a symbol in a category not declared,
+which means add the category, with the reason that honestly applies.
+
+---
+
 ## 2026-09-29 · Device builds are signed by the company team — never a free personal one
 
 **Correcting my own earlier advice.** The 2026-09-01 entry, `prompts/08` and
@@ -121,6 +156,9 @@ symbols actually present in this app.
 
 **Reverses if:** Apple changes the required-reason list, or Compose stops pulling
 those symbols in.
+
+> **Corrected the same day, above:** in the linked app, `0A2A.1` became
+> `C617.1`, and system boot time is absent and not declared.
 
 ---
 

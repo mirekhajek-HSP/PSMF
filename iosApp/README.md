@@ -59,6 +59,25 @@ publishes an `ios_x64` variant. The simulator target is
 `iosSimulatorArm64`, which needs an Apple Silicon Mac. See
 `docs/BUILD_MATRIX.md`.
 
+## Privacy manifest
+
+`iosApp/iosApp/PrivacyInfo.xcprivacy` is in the **app** target's *Copy Bundle
+Resources*, not the framework's: `ComposeApp` is statically linked, so the app
+is what Apple scans. It declares **what the linked release binary actually
+imports**: user defaults (`CA92.1`) and file timestamp (`C617.1`). No tracking,
+no tracking domains, no collected data types.
+
+**Before every upload**, on the release build:
+
+```
+iosApp/scripts/check-required-reason-apis.sh <DerivedData>/Build/Products/Release-iphoneos/iosApp.app
+```
+
+It fails if a required-reason symbol is present and undeclared, or declared
+and absent. Which symbols survive depends on dead-stripping, so a Compose bump
+or a new screen can change the answer. `docs/DECISIONS.md` (2026-09-29) says
+why the manifest is not the one JetBrains' table suggests.
+
 ## Bundle identifier
 
 `PRODUCT_BUNDLE_IDENTIFIER` is **`cz.hspinovace.psmf`**, matching the Android

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  The app's privacy manifest. It belongs to the APP target, not ComposeApp:
+  the framework is statically linked, so the app bundle is what Apple scans.
+
+  Required-reason categories are declared from the symbols in the LINKED
+  RELEASE BINARY, not from a list. Re-check with
+  iosApp/scripts/check-required-reason-apis.sh after any dependency bump or
+  UI change; it fails if the two disagree. See docs/DECISIONS.md.
+
+  Not declared, deliberately:
+    System boot time: mach_absolute_time is referenced only by Skia's DNG
+    (RAW photo) decoder, which the linker dead-strips. The linked app
+    imports no symbol from this category.
+-->
+<plist version="1.0">
+<dict>
+    <!-- No tracking and no network access at all. -->
+    <key>NSPrivacyTracking</key>
+    <false/>
+    <key>NSPrivacyTrackingDomains</key>
+    <array/>
+
+    <!-- Nothing is transmitted to the developer. The ZoU leaves the device
+         only through the referee's own mail or share action. -->
+    <key>NSPrivacyCollectedDataTypes</key>
+    <array/>
+
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array>
+        <!-- The language picker writes AppleLanguages to the app's own
+             defaults domain. NSUserDefaults is imported by the binary. -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>CA92.1</string>
+            </array>
+        </dict>
+        <!-- stat and fstat, imported by Skia's file I/O and ICU's data-file
+             mapping. They touch files in the app container only: bundled
+             resources and the match database. C617.1, not 0A2A.1, which
+             Apple reserves for third-party SDKs. -->
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>C617.1</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>
