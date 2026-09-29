@@ -5,6 +5,41 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-09-29 · Device builds are signed by the company team — never a free personal one
+
+**Correcting my own earlier advice.** The 2026-09-01 entry, `prompts/08` and
+`docs/TODO.md` all said a free Apple Developer account with seven-day provisioning
+was a €0 way onto a device. With the bundle ID now fixed, that would be
+unrecoverable.
+
+Signing registers the bundle ID to whichever team signs first. If a free personal
+team signs `cz.hspinovace.psmf`, the company account can never register it —
+Xcode and the portal both answer "not available". A free account cannot see its
+registered identifiers to delete them, and the company account cannot see them
+at all. Freeing it takes Apple Developer support. Renaming is not an escape: the
+ID was declared permanent the same day.
+
+**So:**
+- Every device run signs with the **company** team. The owner needs a role on it
+  that can — which was already an owner item for TestFlight, and is now also the
+  prerequisite for simply running on a phone.
+- Sessions that only compile (`prompts/09`) use `CODE_SIGNING_ALLOWED=NO` and are
+  told not to select a team in Xcode even to silence an IDE error, since
+  selecting one is enough to register the ID.
+- If a personal team is ever truly unavoidable: a throwaway bundle ID for that
+  run, never committed.
+
+Corrected in `iosApp/README.md`, `prompts/08`, `docs/TODO.md`; the 2026-09-01
+entry carries a pointer here.
+
+**Also decided:** the owner will test on a **real iPhone, later**, rather than
+Appetize. `prompts/09` dropped its optional simulator-build part and instead ends
+its report with a checklist for that first device run.
+
+**Reverses if:** nothing. The registration rule is Apple's.
+
+---
+
 ## 2026-09-29 · The bundle ID is `cz.hspinovace.psmf`, on both platforms
 
 Open since August. **Settled by the project owner:** Android `applicationId` and
@@ -46,8 +81,8 @@ compileSdk 37). Not viable, and not worth it for a machine with a ~2027 horizon.
 The Appetize route turns on one fact: **an Intel Mac can *build* an arm64
 simulator app, it just cannot run it.** Kotlin/Native already linked
 `iosSimulatorArm64` on this Mac in Part 2 (the test binary, then `SKIPPED`), and
-Appetize recommends ARM simulator builds. End to end it is unproven; `prompts/09`
-tries it.
+Appetize recommends ARM simulator builds. End to end it is unproven — and the
+owner chose a real iPhone instead, so nothing tries it for now.
 
 The desktop window is cheap because every JVM `actual` already exists (DI, saver,
 locale, database driver) and `compose.desktop.currentOs` is already a dependency
@@ -186,6 +221,9 @@ machine.** Enough for the demo and a first release. Not enough to plan around.
 **What an Apple Silicon Mac actually buys** is (i) the iOS simulator, and
 (ii) headroom past ~April 2027 — **not** the ability to ship, which exists today.
 So it is a 2027 budget line, not a blocker.
+
+> **CORRECTED 2026-09-29:** the free-account advice below would permanently
+> give the bundle ID away. Sign with the company team. See the 2026-09-29 entry.
 
 **Cheapest thing that unblocks day-to-day iOS work: an iPhone already owned, a
 cable, and a free Apple Developer account** (seven-day provisioning). €0 if a

@@ -26,9 +26,11 @@ Grouped by what blocks what, not by size. Last updated 2026-08-31.
       `linkDebugFrameworkIosArm64` green on the Intel Mac with Xcode 26.3 and
       JDK 17; the shared iOS test executable links against `libsqlite3`.
       Verdict (b) confirmed. See `reports/2026-09-01-ios-parts-2-and-3.md`.
-- [ ] **Part 3 needs a physical iPhone.** The Intel simulator does not exist for
-      this project. An iPhone already owned, a cable and a free Apple Developer
-      account is €0 and is the whole unblock. **Every software prerequisite is
+- [ ] **Part 3 needs a physical iPhone *and* the company's Apple team.** The
+      Intel simulator does not exist for this project. **Not a free personal
+      Apple account** — signing with one would permanently claim
+      `cz.hspinovace.psmf` away from the company (see `docs/DECISIONS.md`,
+      2026-09-29). The owner plans the iPhone run for later. **Every software prerequisite is
       now installed**; the phone is the only thing missing.
       - Can start without it: the unsigned `xcodebuild` in `iosApp/README.md`
         tests the Linux-generated Xcode project and does the app-level link.

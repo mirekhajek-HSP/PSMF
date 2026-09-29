@@ -136,7 +136,12 @@ around it.
 If no iPhone is to hand, STOP after Gate 2 and say Part 3 is blocked on hardware.
 That is a complete and useful answer.
 
-A free Apple Developer account gives seven-day provisioning, which is enough.
+SIGN WITH THE COMPANY'S APPLE DEVELOPER TEAM, NOT A FREE PERSONAL ONE.
+(Corrected 2026-09-29 — this line used to recommend free seven-day
+provisioning.) Signing registers `cz.hspinovace.psmf` to whichever team signs
+first; a free personal team would claim it permanently, invisibly, and beyond
+the company's reach. See docs/DECISIONS.md, 2026-09-29. If the company team is
+not available, STOP and say so — do not work around it with a personal team.
 
 Opening the Xcode project:
 
@@ -149,8 +154,9 @@ Opening the Xcode project:
      `./gradlew :composeApp:embedAndSignAppleFrameworkForXcode`.
   3. Confirm `FRAMEWORK_SEARCH_PATHS` resolves to
      `composeApp/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)`.
-  4. Set a development team for signing. **NO SIGNING IDENTITY, PROVISIONING
-     PROFILE OR TEAM ID IS COMMITTED HERE AND NONE SHOULD BE.**
+  4. Select the COMPANY team for signing — see the warning above. **NO
+     SIGNING IDENTITY, PROVISIONING PROFILE OR TEAM ID IS COMMITTED HERE AND
+     NONE SHOULD BE.**
 
 If it runs, check what only iOS can break:
 

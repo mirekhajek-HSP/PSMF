@@ -16,6 +16,10 @@ physical iPhone.
 
 None of the work below needs a phone. All of it needs the Mac.
 
+**The owner will run it on a real iPhone later**, in a separate session. So this
+one writes the code, proves it builds, and hands that later session a checklist
+of exactly what to verify on the device.
+
 ## Settled since the last prompt
 
 - **Bundle ID is `cz.hspinovace.psmf`**, both platforms, permanent once
@@ -36,10 +40,16 @@ goes there. Before the first git command:
 
 ```
 Make the iOS app uploadable to TestFlight in everything except the icon, and make
-the ZoU export actually work on iOS. Five parts, STOP AND REPORT after each. Part 5
-is optional.
+the ZoU export actually work on iOS. Four parts, STOP AND REPORT after each.
 
 Work on a branch: ios/testflight-readiness. Do not push to main.
+
+DO NOT SIGN ANYTHING, AND DO NOT SELECT A TEAM IN XCODE — not even to silence a
+signing error in the IDE. Selecting a team makes Xcode register the bundle ID to
+it, and `cz.hspinovace.psmf` registered to the wrong team (a free personal one
+especially) is gone for good: docs/DECISIONS.md, 2026-09-29. Every build in this
+prompt runs with CODE_SIGNING_ALLOWED=NO. If something genuinely cannot proceed
+unsigned, STOP and say what.
 
 ## Read first
 
@@ -204,29 +214,11 @@ route applies — where it can be tested somewhere.
     the Android build must be re-checked on the Windows machine before merging.
   - commit
 
-## PART 5 — OPTIONAL: a build that can be clicked in a browser
-
-There is no simulator for this project on Intel. But an Intel Mac can BUILD an
-arm64 simulator app — it just cannot run it — and Appetize.io runs arm64
-simulator builds in a browser on Apple-Silicon hosts. Kotlin/Native already
-linked iosSimulatorArm64 on this Mac last session.
-
-Try:
-
-    xcodebuild -project iosApp/iosApp.xcodeproj -scheme iosApp \
-      -sdk iphonesimulator -configuration Debug \
-      ARCHS=arm64 ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO build
-
-then zip the .app. Report the path, the size and `lipo -info` of the binary.
-
-Do NOT create an Appetize account and do NOT upload anything. That is the owner's.
-
-If this fails for a reason that is not a quick build setting, stop — it is
-optional, and the reason is the finding.
-
 ## Do not
 
 - Create or commit an app icon, a signing identity, a team ID or a profile.
+- Select a development team in Xcode, for any reason.
+- Build for Appetize or any simulator. The owner chose a real iPhone instead.
 - Change the bundle ID.
 - Bump anything in gradle/libs.versions.toml. The Kotlin/Native Intel-host
   deprecation makes Kotlin bumps a Mac-in-the-loop decision now.
@@ -240,4 +232,16 @@ optional, and the reason is the finding.
 branch. Open it with one sentence answering: **could a TestFlight build be
 uploaded today if the icon, the team role and a signing identity existed?** Then
 list exactly what remains, owner's items separated from code items.
+
+End it with a section headed **"First run on an iPhone"** — a numbered checklist
+the later device session can follow without reading anything else. It must cover:
+
+  - signing: select the COMPANY team, never a personal one, and why
+  - Part 3 of prompts/08: Czech, English and Ukrainian including Cyrillic through
+    the bundled fonts; the language picker; the database surviving a kill
+  - every item you listed as UNVERIFIED in Part 4, each as a concrete step with
+    the expected result — send with Apple Mail configured, send without it,
+    save, reopen the saved files without the app, and the bytes: open the saved
+    CSV and confirm it starts EF BB BF
+  - what a failure of each looks like, so it is recognised rather than rationalised
 ```

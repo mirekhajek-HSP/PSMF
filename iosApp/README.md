@@ -24,8 +24,15 @@ calls.
    `./gradlew :composeApp:embedAndSignAppleFrameworkForXcode`.
 3. Confirm `FRAMEWORK_SEARCH_PATHS` resolves to
    `composeApp/build/xcode-frameworks/$(CONFIGURATION)/$(SDK_NAME)`.
-4. Set a development team for signing. **No signing identity is committed
-   here and none should be.**
+4. **Sign with the COMPANY's Apple Developer team — never a free personal
+   team.** Signing registers the bundle ID to whichever team signs first, and
+   an ID claimed by a free personal team can never be registered by the
+   company: it cannot be seen or deleted from a free account, and freeing it
+   takes Apple support. `cz.hspinovace.psmf` is permanent, so this is not
+   recoverable by renaming. If a personal team is ever unavoidable, change the
+   bundle ID to a throwaway one for that run and **do not commit the change**.
+   **No signing identity, profile or team ID is committed here, and none
+   should be.**
 5. Then run it on a **physical iPhone over a cable**. There is no simulator
    for this project on the Intel Mac: see below.
 
