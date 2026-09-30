@@ -39,6 +39,12 @@
     <false/>
     <key>LSRequiresIPhoneOS</key>
     <true/>
+    <!-- Required by Compose Multiplatform: it lets rendering run at 120 Hz
+         on ProMotion iPhones. Without it Compose throws at launch, on
+         purpose (PlistSanityCheck), and the app dies with SIGABRT: found on
+         the first device run, 2026-09-30. -->
+    <key>CADisableMinimumFrameDurationOnPhone</key>
+    <true/>
     <key>UILaunchScreen</key>
     <dict/>
     <key>UIRequiredDeviceCapabilities</key>
