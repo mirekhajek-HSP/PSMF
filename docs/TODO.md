@@ -73,8 +73,9 @@ Nothing below can start until the relevant answer lands.
 
 - [x] **`applicationId` / iOS bundle ID** — **`cz.hspinovace.psmf`**, both platforms.
       Settled 2026-09-29.
-- [ ] **App icon** — to be provided. Blocks the first upload: App Store Connect
-      rejects a build without the 1024 × 1024 icon. Ask PSMF about their logo.
+- [ ] **App icon** — to be provided. A temporary **TEST** icon is in place so
+      internal TestFlight can run (DECISIONS, 2026-09-30). **Replace it before
+      external testing or any store submission.** Ask PSMF about their logo.
 - [ ] **Merge `ios/export` after the Windows machine builds Android.** Part 4
       of `prompts/09` changed common export code and **edited Android by hand
       without compiling it** (no Android SDK on the Mac). Run `./gradlew build`,

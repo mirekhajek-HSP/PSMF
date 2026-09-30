@@ -5,6 +5,25 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-09-30 · A temporary TEST icon, so internal TestFlight can start
+
+**Owner's decision, reversing `prompts/09`**, which said to leave `AppIcon`
+empty rather than risk a placeholder being uploaded by mistake. App Store
+Connect rejects any build without the 1024 × 1024 icon, even for TestFlight,
+so waiting for the real one would have blocked testing entirely.
+
+The icon, `AppIcon-test-1024.png`, is **obviously temporary** by design: PSMF
+yellow, "ZoU" in the app's own Oswald Bold, and a red **TEST** band across it.
+It cannot be mistaken for a finished icon by anyone who sees it.
+
+**It must be replaced before external TestFlight testing or any App Store
+submission.** Internal testers see it; the public never does.
+
+**Reverses if:** the real icon arrives. Replace the PNG, update the
+`filename` in `AppIcon.appiconset/Contents.json`, and delete this one.
+
+---
+
 ## 2026-09-29 · iOS export: the composer or the share sheet to send; a remembered folder to save
 
 **Send.** Where Apple Mail has an account, the mail composer: recipient,
