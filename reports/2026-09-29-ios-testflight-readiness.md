@@ -1,9 +1,13 @@
 # iOS TestFlight readiness, and an export that works
 
-**Session date:** 2026-09-29
+**Session date:** 2026-09-29 – 2026-09-30
 **Machine:** MacBook Pro 15-inch 2018, Intel i7, macOS 15.7.9 · Xcode 26.3 (17C529) · iOS SDK 26.2 · JDK 17
 **Repository:** `~/Documents/PSMFApp_Miro/PSMF`, branch `ios/testflight-readiness`
 **Brief:** `prompts/09-ios-testflight-readiness.md`
+
+> **Update, 2026-09-30: it has been.** Build **0.1.0 (1)** ran on an iPhone
+> 15 after one `Info.plist` fix, passed Apple's validation, and is uploaded
+> to App Store Connect with a temporary TEST icon. See §8.
 
 **Could a TestFlight build be uploaded today if the icon, the team role and
 a signing identity existed? Yes, as far as anything short of an upload can
@@ -604,7 +608,113 @@ minutes. A Debug app build from warm is about a minute.
 | `5b58bcb` | Privacy manifest from the linked binary's symbols, with a check |
 | `0b8ea8a` | `Info.plist` for upload: export compliance, one version source, iPad |
 | `e8be70b` | iPad kept, app name open; Parts 1–3 marked done · **merged to `main`** |
-| `ios/export` | Part 4: send and save on iOS, outcome types, this report · **not merged** |
+| `8b44480` | Part 4: send and save on iOS, outcome types · on `ios/export`, **not merged** |
+| `fa515f0` | `CADisableMinimumFrameDurationOnPhone`, or Compose aborts at launch · on `ios/export`, and on `main` as `42c9b24` |
+| `179ce80` | Temporary TEST icon · on `ios/export` · **the commit build 0.1.0 (1) was archived from** |
+
+---
+
+## 8 · 2026-09-30 — the first device run, and the first TestFlight upload
+
+### Getting onto the company team
+
+| Step | What happened |
+|---|---|
+| The invite | Sent by the company's account holder to the owner's email. The Apple Account's email was no longer reachable, so it was **changed to a current address** at account.apple.com (sign-in still worked), and the invite was accepted. |
+| Role | First **Developer**, with *Certificates, Identifiers & Profiles*. That covers device runs (development certificate, device and App ID registration) but not distribution certificates, uploads or app records. The account holder then raised it to **App Manager**. |
+| App record | Created by the account holder in App Store Connect, bundle ID `cz.hspinovace.psmf`. |
+| "Membership expires in 17 days" | Shown on developer.apple.com. **Not yet confirmed whose.** The company's cloud distribution certificate runs to **24 July 2027**, which suggests a personal membership. Open item. |
+
+### The device
+
+iPhone 15 (`iPhone15,4`), **iOS 26.5.2**, wired. Two things worth knowing:
+
+- **Developer Mode is not in Settings until Xcode has asked for it.** The
+  toggle appeared only after the phone was selected in *Devices and
+  Simulators*. It sits at the very bottom of Privacy & Security.
+- **Do not update this phone to iOS 27** while this Mac builds the app. Xcode
+  26.3 is the Mac's ceiling and most likely cannot deploy to iOS 27. That is
+  a fourth deadline on this Mac, after Apple's submission floor, Kotlin/Native's
+  Intel-host deprecation and Homebrew.
+
+**Signing:** the owner selected the company team in Xcode. Xcode registered
+`cz.hspinovace.psmf` to it, which closes the personal-team trap for good. It
+also rewrote `project.pbxproj`: `DEVELOPMENT_TEAM` in both configurations,
+`objectVersion` 54 → 56, and entries re-sorted. **That change is left
+uncommitted on the Mac, on purpose**; no team ID is in the repository. Xcode
+opened the Linux-generated project with no migration prompt.
+
+### One defect, found only on a device
+
+**The app launched, drew its first frame and then froze**, with SIGABRT in the
+debugger. The console:
+
+```
+Uncaught Kotlin exception: kotlin.IllegalStateException: Error: `Info.plist`
+doesn't have a valid `CADisableMinimumFrameDurationOnPhone` entry, or has it
+set to `false`.
+  … androidx.compose.ui.uikit.PlistSanityCheck …
+```
+
+Compose Multiplatform checks at launch that the app allows 120 Hz frame
+pacing, and throws on purpose if not. The KMP template carries the key; the
+`Info.plist` generated on Linux did not. **Fixed** with the key set to `true`:
+`fa515f0` on `ios/export`, and `42c9b24` on `main`, since `main` had the same
+crash. `Info.plist` only.
+
+Nothing that ran on this Mac could have caught it: the check runs only when
+the app does. It is the first device-only defect on iOS, the same
+pattern as the device-only defects every Android report has recorded.
+
+Also in the console, recorded rather than chased:
+- `empty dSYM file detected`: the static Kotlin framework carries no separate
+  debug-symbol file. Kotlin stack traces were still readable.
+- `fopen failed for data file: errno = 2`, twice: **not identified.** Most
+  likely Skia's text engine looking for an optional data file, which is common
+  in Compose on iOS. Watch Czech diacritics, Cyrillic and line breaking; if any
+  looks wrong, start here.
+- `Failed to send CA Event for app launch measurements`: iOS's own telemetry.
+
+**After the fix, the owner's verdict: "now it works, seems fine."** The
+itemised checklist below was not recorded step by step, so it stays an open
+item. That includes the three languages through the bundled fonts, picker
+persistence, the database surviving a kill, and every send and save case.
+
+### The first TestFlight build
+
+| Step | Result |
+|---|---|
+| Icon | Temporary **TEST** icon, the owner's decision (DECISIONS, 2026-09-30): PSMF yellow, "ZoU" in Oswald Bold, a red TEST band, 1024 × 1024, no alpha. Must be replaced before external testing or the store. |
+| Archive | `xcodebuild archive`, Release, from `179ce80` on `ios/export`: **258 s**. 0.1.0 (1), 34 MB app after stripping, icon compiled (`CFBundleIconName = AppIcon`), manifest check green on the archived app |
+| Export | `app-store-connect`, automatic signing: **Cloud Managed Apple Distribution** certificate and *iOS Team Store Provisioning Profile: cz.hspinovace.psmf*, both to 24 July 2027. `beta-reports-active` on, `get-task-allow` off, symbols included. **21 MB `.ipa`** |
+| Validate | In Xcode's Organizer by the owner: **passed** |
+| Upload | By the owner, with Xcode's **App Store Connect** option |
+
+**Uploaded with *App Store Connect*, not *TestFlight Internal Only*.** Uploading
+does not make an app public: that takes a listing, *Submit for Review*,
+approval and *Release*, and App Review would refuse a TEST icon anyway. So the
+build was not re-uploaded; build number 1 is spent either way. **Future builds
+that carry the TEST icon should use *TestFlight Internal Only***, which makes a
+store submission impossible rather than merely unlikely.
+
+**Kept, outside the repository:** the archive in Xcode's Organizer as
+*iosApp 0.1.0 (1)*, whose dSYMs symbolicate TestFlight crash reports, and the
+`.ipa` at `~/Documents/PSMFApp_Miro/testflight/PSMF-0.1.0-1.ipa`.
+
+### Open, from today
+
+1. **Once Apple has processed build 1:** an internal testing group, testers,
+   the build added, and installed through TestFlight.
+2. **The checklist below, recorded step by step.**
+3. **The next upload is build 2**, with *TestFlight Internal Only* while the
+   TEST icon stands.
+4. **Whose membership expires in 17 days.**
+5. **Android on Windows, then merge `ios/export`.** It is still unmerged, so the
+   uploaded build comes from a branch; `main` has the launch fix but not the
+   export.
+6. **The team ID in a git-ignored local `.xcconfig`**, so `project.pbxproj`
+   stops showing as modified.
+7. **The real icon and the real name.**
 
 ---
 
@@ -634,6 +744,9 @@ failure looks like**, so a failure is recognised rather than explained away.
    then trust the developer, if iOS asks.
 5. **Run.** It should open on the tab shell. **Failure:** a crash at launch
    with `sqlite3` or `dyld` in the log means a missing library; see §6, the first finding.
+   A freeze at launch with *SIGABRT* and `PlistSanityCheck` in the console means
+   `CADisableMinimumFrameDurationOnPhone` is missing from `Info.plist`; fixed
+   2026-09-30, see §8.
 
 ### The app itself (Part 3 of `prompts/08`)
 

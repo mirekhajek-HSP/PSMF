@@ -1,6 +1,6 @@
 # TODO
 
-Grouped by what blocks what, not by size. Last updated 2026-08-31.
+Grouped by what blocks what, not by size. Last updated 2026-09-30.
 
 ---
 
@@ -26,21 +26,30 @@ Grouped by what blocks what, not by size. Last updated 2026-08-31.
       `linkDebugFrameworkIosArm64` green on the Intel Mac with Xcode 26.3 and
       JDK 17; the shared iOS test executable links against `libsqlite3`.
       Verdict (b) confirmed. See `reports/2026-09-01-ios-parts-2-and-3.md`.
-- [ ] **Ask the company's Apple account holder, now — two things:**
-      - **Register `cz.hspinovace.psmf` in the company team.** Certificates,
-        Identifiers & Profiles → Identifiers → + → App IDs → App. Once the
-        company owns it, no personal team can ever claim it — the trap closes.
-      - **Admin role for the owner, with "Access to Certificates, Identifiers &
-        Profiles".** Lowest role that covers device runs, distribution signing
-        and TestFlight upload. Developer alone runs on a device but cannot upload.
-- [ ] **Part 3 needs a physical iPhone *and* the company's Apple team.** The
-      Intel simulator does not exist for this project. **Not a free personal
-      Apple account** — signing with one would permanently claim
-      `cz.hspinovace.psmf` away from the company (see `docs/DECISIONS.md`,
-      2026-09-29). The owner plans the iPhone run for later. **Every software prerequisite is
-      now installed**; the phone is the only thing missing.
-      - Can start without it: the unsigned `xcodebuild` in `iosApp/README.md`
-        tests the Linux-generated Xcode project and does the app-level link.
+- [x] **First TestFlight upload — done 2026-09-30.** Build **0.1.0 (1)**, from
+      `ios/export` at `179ce80`, validated and uploaded. Owner's role is App
+      Manager; the app record was created by the account holder; the first
+      device run on an iPhone 15 worked after one `Info.plist` fix. See
+      `reports/2026-09-29-ios-testflight-readiness.md` §8.
+- [ ] **TestFlight: once Apple has processed build 1**, create an internal group,
+      add testers and the build, and install through the TestFlight app.
+- [ ] **Run the "First run on an iPhone" checklist properly**, step by step. On
+      2026-09-30 the app launched and "seemed fine"; the itemised checks (fonts in
+      three languages, picker persistence, database survives a kill, every send
+      and save case, the CSV's `EF BB BF`) have not been recorded one by one.
+- [ ] **Next upload is build 2.** Bump `CURRENT_PROJECT_VERSION`. While the TEST
+      icon is in place, upload with *TestFlight Internal Only*.
+- [ ] **Check whose membership "expires in 17 days"** (developer.apple.com, team
+      menu). The company's distribution certificate runs to 24 July 2027, which
+      suggests it is a personal membership, not the company's. If it is the
+      company's, only the account holder can renew, and TestFlight stops if it
+      lapses.
+- [ ] **Keep the team ID out of the repository.** Selecting the team made Xcode
+      write `DEVELOPMENT_TEAM` into `project.pbxproj`, which is left modified and
+      uncommitted on the Mac. Moving it into a git-ignored local `.xcconfig` would
+      stop that file showing as changed.
+- [ ] **Do not update the test iPhone to iOS 27** while this Mac is the build
+      machine. Xcode 26.3 is its ceiling and most likely cannot deploy to iOS 27.
 - [ ] **Bump `kotlin` only with a Mac run in the loop.** Kotlin/Native 2.4.10
       calls the Intel Mac host deprecated, with no removal version yet. The
       release that drops it ends iOS compilation on this Mac.
