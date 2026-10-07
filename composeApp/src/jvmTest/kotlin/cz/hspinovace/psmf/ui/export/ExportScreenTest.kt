@@ -101,18 +101,18 @@ class ExportScreenTest {
     private fun state(
         problems: List<ReportProblem> = emptyList(),
         selected: ZouFormat = ZouFormat.TEXT,
-        sent: Boolean = false,
-        saved: Boolean = false,
-        saveFailed: Boolean = false,
+        sendOutcome: SendOutcome? = null,
+        saveOutcome: SaveOutcome? = null,
+        recipientPrefilled: Boolean = true,
     ) = ExportUiState(
         loading = false,
         report = report,
         documents = ExportZou()(report),
         problems = problems,
         selected = selected,
-        sent = sent,
-        saved = saved,
-        saveFailed = saveFailed,
+        sendOutcome = sendOutcome,
+        saveOutcome = saveOutcome,
+        recipientPrefilled = recipientPrefilled,
     )
 
     // ------------------------------------------------------------------
@@ -331,7 +331,7 @@ class ExportScreenTest {
     fun aSuccessfulSaveIsConfirmedRatherThanAssumed() =
         runComposeUiTest {
             withLanguage("cs") {
-                setContent { PsmfTheme { ExportScreen(state = state(saved = true), onEvent = {}) } }
+                setContent { PsmfTheme { ExportScreen(state = state(saveOutcome = SaveOutcome.Saved), onEvent = {}) } }
             }
 
             page().performScrollToNode(hasText("Zápis uložen", substring = true))
@@ -339,17 +339,33 @@ class ExportScreenTest {
         }
 
     @Test
-    fun aFailedOrCancelledSaveIsNamedRatherThanSilent() =
+    fun aFailedSaveIsNamedRatherThanSilent() =
         runComposeUiTest {
-            // "Failed" and "the referee backed out of the picker" are the
-            // same outcome from here on: `ReportSaver.save` cannot tell
-            // them apart, and a demo should not pretend it can.
             withLanguage("cs") {
-                setContent { PsmfTheme { ExportScreen(state = state(saveFailed = true), onEvent = {}) } }
+                setContent {
+                    PsmfTheme { ExportScreen(state = state(saveOutcome = SaveOutcome.Failed), onEvent = {}) }
+                }
             }
 
             page().performScrollToNode(hasText("Uložení se nezdařilo", substring = true))
-            onNodeWithText("Uložení se nezdařilo nebo bylo zrušeno.").assertIsDisplayed()
+            onNodeWithText("Uložení se nezdařilo. Soubory nemusí být kompletní.").assertIsDisplayed()
+        }
+
+    @Test
+    fun aCancelledSaveIsNamedAsCancelledNotAsAFailure() =
+        runComposeUiTest {
+            // Until 2026-09-29 the saver returned a bare Boolean and the
+            // screen had to say "failed or cancelled". Backing out of the
+            // folder picker is now its own outcome, with its own words.
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme { ExportScreen(state = state(saveOutcome = SaveOutcome.Cancelled), onEvent = {}) }
+                }
+            }
+
+            page().performScrollToNode(hasText("Uložení zrušeno", substring = true))
+            onNodeWithText("Uložení zrušeno. Nic nebylo uloženo.").assertIsDisplayed()
+            onNodeWithText("Uložení se nezdařilo", substring = true).assertDoesNotExist()
         }
 
     @Test
@@ -358,11 +374,102 @@ class ExportScreenTest {
             // The referee presses send in their own mail app: the last word
             // stays with the person whose name is on the report.
             withLanguage("cs") {
-                setContent { PsmfTheme { ExportScreen(state = state(sent = true), onEvent = {}) } }
+                setContent {
+                    PsmfTheme { ExportScreen(state = state(sendOutcome = SendOutcome.DraftOpened), onEvent = {}) }
+                }
             }
 
             page().performScrollToNode(hasText("Otevřen e-mail", substring = true))
             onNodeWithText("Otevřen e-mail na psmf@psmf.cz. Odeslání potvrďte v poštovní aplikaci.")
                 .assertIsDisplayed()
+        }
+
+    // ------------------------------------------------------------------
+    // Every send outcome has its own words. iOS reports more of them than
+    // Android can; each is still named on screen, never silent.
+    // ------------------------------------------------------------------
+
+    private fun ComposeUiTest.sendOutcomeReads(
+        outcome: SendOutcome,
+        expected: String,
+    ) {
+        withLanguage("cs") {
+            setContent { PsmfTheme { ExportScreen(state = state(sendOutcome = outcome), onEvent = {}) } }
+        }
+        page().performScrollToNode(hasText(expected))
+        onNodeWithText(expected).assertIsDisplayed()
+    }
+
+    @Test
+    fun mailAcceptingItForSendingIsSaidAsHandedOverNotAsDelivered() =
+        runComposeUiTest {
+            sendOutcomeReads(SendOutcome.HandedToMail, "Předáno aplikaci Mail k odeslání na psmf@psmf.cz.")
+        }
+
+    @Test
+    fun aDraftKeptInMailSaysItIsNotSent() =
+        runComposeUiTest {
+            sendOutcomeReads(SendOutcome.DraftSaved, "Uloženo jako koncept v aplikaci Mail. Zatím neodesláno.")
+        }
+
+    @Test
+    fun aCancelledSendIsNamed() =
+        runComposeUiTest {
+            sendOutcomeReads(SendOutcome.Cancelled, "Odeslání zrušeno. Nic nebylo odesláno.")
+        }
+
+    @Test
+    fun aFailedSendIsNamedAndIsNotTheNoMailAppMessage() =
+        runComposeUiTest {
+            sendOutcomeReads(SendOutcome.Failed, "Odeslání se nezdařilo. Nic nebylo odesláno.")
+            onNodeWithText("Na tomto zařízení není poštovní aplikace", substring = true).assertDoesNotExist()
+        }
+
+    @Test
+    fun noMailAppKeepsItsOwnMessage() =
+        runComposeUiTest {
+            sendOutcomeReads(SendOutcome.NoMailApp, "Na tomto zařízení není poštovní aplikace, která by to zvládla.")
+        }
+
+    @Test
+    fun theShareSheetRouteIsNotPresentedAsConfirmedDelivery() =
+        runComposeUiTest {
+            // The share sheet cannot fill in a recipient. "Handed over" is
+            // true; "sent to PSMF" would not be, so the screen asks the
+            // referee to check where it went.
+            sendOutcomeReads(
+                SendOutcome.SharedWithoutRecipient,
+                "Předáno vybrané aplikaci. Adresu nešlo vyplnit — zkontrolujte, že zápis šel na psmf@psmf.cz.",
+            )
+            onNodeWithText("Otevřen e-mail", substring = true).assertDoesNotExist()
+        }
+
+    @Test
+    fun whenTheAddressCannotBePrefilledTheRefereeIsToldBeforeSending() =
+        runComposeUiTest {
+            withLanguage("en") {
+                setContent { PsmfTheme { ExportScreen(state = state(recipientPrefilled = false), onEvent = {}) } }
+            }
+
+            val note =
+                "There is no Mail account on this device, so the address cannot be filled in for you. " +
+                    "After pressing Send, choose your mail app and paste psmf@psmf.cz as the recipient " +
+                    "— the address is copied for you."
+            page().performScrollToNode(hasText(note))
+            onNodeWithText(note).assertIsDisplayed()
+            // Before, not after: nothing has been pressed yet, and the
+            // button it is about is right there.
+            page().performScrollToNode(hasText("Send to PSMF"))
+            onNodeWithText("Send to PSMF").assertIsDisplayed()
+        }
+
+    @Test
+    fun whenTheAddressIsPrefilledThereIsNoWarningAboutIt() =
+        runComposeUiTest {
+            withLanguage("cs") {
+                setContent { PsmfTheme { ExportScreen(state = state(), onEvent = {}) } }
+            }
+
+            onNodeWithText("není účet v aplikaci Mail", substring = true).assertDoesNotExist()
         }
 }

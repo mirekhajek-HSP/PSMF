@@ -28,7 +28,8 @@ import kotlin.coroutines.resume
  * A save stops as soon as one document fails or the referee backs out of
  * the folder picker -- a partial save (the text file landed, the
  * spreadsheet did not) is worse than none, because it looks complete from
- * the file list alone.
+ * the file list alone. Backing out is [SaveOutcome.Cancelled]; a write
+ * that fails is [SaveOutcome.Failed], and the screen says which.
  *
  * # Overwrite, not accumulate
  *
@@ -67,12 +68,12 @@ class AndroidReportSaver(
     private val activity: ComponentActivity,
     private val settings: SettingsRepository,
 ) : ReportSaver {
-    override suspend fun save(documents: List<ZouDocument>): Boolean {
-        val folder = existingFolder() ?: pickAndStoreFolder() ?: return false
+    override suspend fun save(documents: List<ZouDocument>): SaveOutcome {
+        val folder = existingFolder() ?: pickAndStoreFolder() ?: return SaveOutcome.Cancelled
         for (document in documents) {
-            if (!write(folder, document)) return false
+            if (!write(folder, document)) return SaveOutcome.Failed
         }
-        return true
+        return SaveOutcome.Saved
     }
 
     override suspend fun changeFolder(): Boolean = pickAndStoreFolder() != null

@@ -27,7 +27,9 @@ import cz.hspinovace.psmf.export.ZouFormat
 import cz.hspinovace.psmf.resources.Res
 import cz.hspinovace.psmf.resources.export_blocked
 import cz.hspinovace.psmf.resources.export_czech_note
+import cz.hspinovace.psmf.resources.export_draft_saved
 import cz.hspinovace.psmf.resources.export_failed
+import cz.hspinovace.psmf.resources.export_handed_to_mail
 import cz.hspinovace.psmf.resources.export_loading
 import cz.hspinovace.psmf.resources.export_preview
 import cz.hspinovace.psmf.resources.export_problem_assessment
@@ -43,10 +45,15 @@ import cz.hspinovace.psmf.resources.export_problem_result
 import cz.hspinovace.psmf.resources.export_problem_score_mismatch
 import cz.hspinovace.psmf.resources.export_ready
 import cz.hspinovace.psmf.resources.export_save
+import cz.hspinovace.psmf.resources.export_save_cancelled
 import cz.hspinovace.psmf.resources.export_save_failed
 import cz.hspinovace.psmf.resources.export_saved
 import cz.hspinovace.psmf.resources.export_send
+import cz.hspinovace.psmf.resources.export_send_cancelled
+import cz.hspinovace.psmf.resources.export_send_error
+import cz.hspinovace.psmf.resources.export_send_no_recipient_note
 import cz.hspinovace.psmf.resources.export_sent
+import cz.hspinovace.psmf.resources.export_shared_no_recipient
 import cz.hspinovace.psmf.ui.common.ActionRow
 import cz.hspinovace.psmf.ui.common.PrimaryAction
 import cz.hspinovace.psmf.ui.common.Section
@@ -119,6 +126,15 @@ fun ExportScreen(
             Outcomes(state)
 
             if (state.ready) {
+                // Said BEFORE send, while there is still time to act on it:
+                // after the share sheet it is too late to tell the referee
+                // the address was theirs to fill in.
+                if (!state.recipientPrefilled) {
+                    Text(
+                        text = stringResource(Res.string.export_send_no_recipient_note, PSMF_REPORT_ADDRESS),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                }
                 // Save first, send second: a copy on the device the
                 // referee can get back to on their own, then the mail
                 // draft that still needs their own tap to actually go.
@@ -142,41 +158,63 @@ fun ExportScreen(
 /**
  * What happened the last time the referee pressed save or send.
  *
- * Both outcomes stay on screen at once where they can -- a referee who
- * saved and then sent should see both confirmations, not have the first
- * one replaced. Only one of a pair (saved/save-failed, sent/send-failed)
- * is ever true at a time, which `ExportViewModel.saveHandled` enforces.
+ * Both stay on screen at once -- a referee who saved and then sent should
+ * see both, not have the first replaced. Every outcome has its own words,
+ * cancellation included: a send or save that did not happen is never
+ * silent, and nothing claims a report went out that did not.
  */
 @Composable
 private fun Outcomes(state: ExportUiState) {
-    if (state.saved) {
-        Text(
-            text = stringResource(Res.string.export_saved),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.primary,
-        )
+    state.saveOutcome?.let { outcome ->
+        when (outcome) {
+            SaveOutcome.Saved -> Confirmation(stringResource(Res.string.export_saved))
+            SaveOutcome.Cancelled -> Warning(stringResource(Res.string.export_save_cancelled))
+            SaveOutcome.Failed -> Warning(stringResource(Res.string.export_save_failed))
+        }
     }
-    if (state.saveFailed) {
-        Text(
-            text = stringResource(Res.string.export_save_failed),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
-        )
+    state.sendOutcome?.let { outcome ->
+        when (outcome) {
+            SendOutcome.DraftOpened -> {
+                Confirmation(stringResource(Res.string.export_sent, PSMF_REPORT_ADDRESS))
+            }
+
+            SendOutcome.HandedToMail -> {
+                Confirmation(stringResource(Res.string.export_handed_to_mail, PSMF_REPORT_ADDRESS))
+            }
+
+            // Not a confirmation: whether it reached PSMF is up to what the
+            // referee typed as the recipient.
+            SendOutcome.SharedWithoutRecipient -> {
+                Warning(stringResource(Res.string.export_shared_no_recipient, PSMF_REPORT_ADDRESS))
+            }
+
+            SendOutcome.DraftSaved -> {
+                Warning(stringResource(Res.string.export_draft_saved))
+            }
+
+            SendOutcome.Cancelled -> {
+                Warning(stringResource(Res.string.export_send_cancelled))
+            }
+
+            SendOutcome.NoMailApp -> {
+                Warning(stringResource(Res.string.export_failed))
+            }
+
+            SendOutcome.Failed -> {
+                Warning(stringResource(Res.string.export_send_error))
+            }
+        }
     }
-    if (state.sent) {
-        Text(
-            text = stringResource(Res.string.export_sent, PSMF_REPORT_ADDRESS),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.primary,
-        )
-    }
-    if (state.sendFailed) {
-        Text(
-            text = stringResource(Res.string.export_failed),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
-        )
-    }
+}
+
+@Composable
+private fun Confirmation(text: String) {
+    Text(text = text, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.primary)
+}
+
+@Composable
+private fun Warning(text: String) {
+    Text(text = text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
 }
 
 @Composable

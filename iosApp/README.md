@@ -78,6 +78,19 @@ and absent. Which symbols survive depends on dead-stripping, so a Compose bump
 or a new screen can change the answer. `docs/DECISIONS.md` (2026-09-29) says
 why the manifest is not the one JetBrains' table suggests.
 
+## Export
+
+`composeApp/src/iosMain/.../ui/export/`: `IosReportSender` (the Mail
+composer if Apple Mail has an account, otherwise the share sheet with the
+address copied) and `IosReportSaver` (a folder picked once, remembered as a
+bookmark). The decisions behind both are in `commonMain`'s
+`ExportRouting.kt`, tested on the JVM. **None of it has run yet.** The
+device checklist is at the end of
+`reports/2026-09-29-ios-testflight-readiness.md`.
+
+The share sheet on iPad is a popover and **needs an anchor**, or UIKit
+throws. `IosReportSender` sets one; keep it if that code moves.
+
 ## Bundle identifier
 
 `PRODUCT_BUNDLE_IDENTIFIER` is **`cz.hspinovace.psmf`**, matching the Android

@@ -169,6 +169,13 @@
     <string name="export_send">Надіслати до PSMF</string>
     <string name="export_sent">Відкрито лист на %1$s. Підтвердьте надсилання у поштовому застосунку.</string>
     <string name="export_failed">На цьому пристрої немає поштового застосунку, який це впорає.</string>
+    <string name="export_send_no_recipient_note">На цьому пристрої немає облікового запису Mail, тож адресу не можна заповнити за вас. Після натискання «Надіслати» оберіть свій поштовий застосунок і вставте %1$s як одержувача — адресу буде скопійовано.</string>
+    <string name="export_shared_no_recipient">Передано обраному застосунку. Адресу не вдалося заповнити — перевірте, що протокол пішов на %1$s.</string>
+    <string name="export_handed_to_mail">Передано в Mail для надсилання на %1$s.</string>
+    <string name="export_draft_saved">Збережено як чернетку в Mail. Ще не надіслано.</string>
+    <string name="export_send_cancelled">Надсилання скасовано. Нічого не надіслано.</string>
+    <string name="export_send_error">Надсилання не вдалося. Нічого не надіслано.</string>
+    <string name="export_save_cancelled">Збереження скасовано. Нічого не збережено.</string>
     <string name="export_problem_officials">Бракує судді або команди, що делегує.</string>
     <string name="export_problem_lineup">Бракує складу (%1$s).</string>
     <string name="export_problem_cards">Розділ особистих покарань не заповнено. Якщо карток не було, підтвердьте це в підсумку.</string>
@@ -238,5 +245,5 @@
     <string name="fixtures_filtered_empty">Жоден матч не відповідає фільтру.</string>
     <string name="export_save">Зберегти на пристрій</string>
     <string name="export_saved">Протокол збережено. До файлів можна повернутися і без застосунку.</string>
-    <string name="export_save_failed">Збереження не вдалося або було скасовано.</string>
+    <string name="export_save_failed">Збереження не вдалося. Файли можуть бути неповними.</string>
 </resources>

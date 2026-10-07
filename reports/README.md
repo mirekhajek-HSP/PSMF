@@ -19,7 +19,7 @@ this repository, which describe intent:
 
 | Date | Report | Covers | Outcome |
 |---|---|---|---|
-| 2026-09-29 | [iOS TestFlight readiness](2026-09-29-ios-testflight-readiness.md) | Whole-app link, release build, privacy manifest from the binary, `Info.plist` for upload | **In progress** · Gates 1–3 met · one link fix (`-lsqlite3`) · manifest corrected against the binary · Part 4 (export) not started |
+| 2026-09-29 – 30 | [iOS TestFlight readiness](2026-09-29-ios-testflight-readiness.md) | Whole-app link, privacy manifest from the binary, `Info.plist` for upload, send and save on iOS, **first device run, first TestFlight upload** | Four gates met · **build 0.1.0 (1) uploaded** · one device-only defect (launch abort, fixed) · export on `ios/export` until Android is checked · 388 + 182 tests |
 | 2026-09-28 | [iOS Parts 2 and 3](2026-09-01-ios-parts-2-and-3.md) | Mac prerequisites, `iosArm64` compile and link, Part 1 verdict | Gate 2 met with zero source changes · Gate 3 blocked on hardware · verdict (b) confirmed · new clock: K/N Intel host deprecated |
 | 2026-09-01 | [Six fixes from a physical phone](2026-09-01-six-fixes-from-a-physical-phone.md) | Half-time domain fix, console action icons, follow star, cascading filters, translated rules panel, save-folder-once | Four gates met · 4 commits · 388 + 162 tests · four owner-spec corrections · one device-found bug |
 | 2026-08-31 | [The shell rework and the Týmy tab](2026-08-31-the-shell-rework-and-tymy-tab.md) | SQLDelight migrations, the four-tab shell, language and PSMF's identity, the Týmy tab, save-to-device | Four gates met · 5 commits · 364 + 151 tests · three device-only defects |

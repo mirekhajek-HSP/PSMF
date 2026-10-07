@@ -5,6 +5,60 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-09-30 · A temporary TEST icon, so internal TestFlight can start
+
+**Owner's decision, reversing `prompts/09`**, which said to leave `AppIcon`
+empty rather than risk a placeholder being uploaded by mistake. App Store
+Connect rejects any build without the 1024 × 1024 icon, even for TestFlight,
+so waiting for the real one would have blocked testing entirely.
+
+The icon, `AppIcon-test-1024.png`, is **obviously temporary** by design: PSMF
+yellow, "ZoU" in the app's own Oswald Bold, and a red **TEST** band across it.
+It cannot be mistaken for a finished icon by anyone who sees it.
+
+**It must be replaced before external TestFlight testing or any App Store
+submission.** Internal testers see it; the public never does.
+
+**Reverses if:** the real icon arrives. Replace the PNG, update the
+`filename` in `AppIcon.appiconset/Contents.json`, and delete this one.
+
+---
+
+## 2026-09-29 · iOS export: the composer or the share sheet to send; a remembered folder to save
+
+**Send.** Where Apple Mail has an account, the mail composer: recipient,
+subject, body and all three files filled in, and the referee sends. Where it
+has none (Gmail, Outlook), the share sheet, which **cannot fill in a
+recipient**. So the export screen says so *before* send, and the address is
+copied to the clipboard. Afterwards the screen says the report was handed
+over and asks the referee to check where it went; it never claims it reached
+PSMF. Neither route alone serves every referee.
+
+**Save.** A folder picked once and remembered with a bookmark, which is
+Android parity. The document picker in export mode costs a dialog on every
+save, the mistake Android already corrected once. The app's own Documents
+folder costs none, but the files go when the app is deleted, which is the one
+thing saving exists to prevent.
+
+**The interface changed, and the owner was asked first.** `ReportSender.send`
+and `ReportSaver.save` return `SendOutcome` / `SaveOutcome` instead of
+`Boolean`, so a cancelled draft is not reported as "no mail app", and a
+cancelled folder pick is no longer lumped in with a failure, on Android too.
+Plus `ReportSender.prefillsRecipient()` for the pre-send warning. The
+decisions that can be plain functions are in `ExportRouting.kt` and tested
+on the JVM, because no iOS code can run in this project's loop.
+
+**Unverified until an iPhone:** all of it runs only on a device. See the
+checklist at the end of `reports/2026-09-29-ios-testflight-readiness.md`.
+**Android was edited without being compiled**, so the branch `ios/export`
+is not merged until the Windows machine has built it.
+
+**Reverses if:** a device shows the share sheet's completion is meaningless
+for the common mail apps (then say less after it), or a provider will not
+honour folder bookmarks (then fall back to the export picker for that case).
+
+---
+
 ## 2026-09-29 · iPad stays; the app name is not decided
 
 **iPad:** the Linux scaffold targeted iPhone *and* iPad by default. Asked,
