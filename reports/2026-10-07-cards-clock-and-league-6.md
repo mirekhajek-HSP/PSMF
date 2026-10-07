@@ -9,7 +9,7 @@
 `docker exec … ./gradlew`). Same image, same Gradle cache volume as the usual
 in-container session; commits made from WSL with the owner's git identity.
 Nothing pushed.
-**Outcome:** Gate 1 met. Gates 2–4 pending.
+**Outcome:** Gates 1 and 2 met. Gates 3–4 pending.
 
 > **What a referee will notice in 0.2.0:** *to be written when the last gate
 > closes.*
@@ -18,7 +18,7 @@ Nothing pushed.
 
 ## 1 · Status at a glance
 
-| | Before (`8bd3c11`) | After Gate 1 |
+| | Before (`8bd3c11`) | After |
 |---|---|---|
 | Second yellow | saved a plain yellow; player stayed on, no power play, report showed two yellows and no red | **one action records ŽK + ČK (2. ŽK)** at the same minute, row shows *Vyloučen*, power play starts, one Undo takes both back |
 | Red → 2. ŽK on the sheet | offered for anyone; for a booked player recorded yellow + red, season count 1 | offered **only for a booked player** (and for a named person); records the second yellow too, season count 0 |
@@ -27,8 +27,9 @@ Nothing pushed.
 | Second-half minute | continued from the first half's added time (32´ after a 32-minute half) | **restarts at 30´** |
 | `30´+` ordering | after 30´ | **after 29´, before the second half's 30´** — timeline, log, report |
 | Undo | last by minute (a card typed late was safe; a same-minute goal was not) | **last recorded**, persisted |
-| Schema | version 4 | **version 5** (`4.sqm`, three nullable columns) |
-| Tests (shared JVM · Android host · composeApp) | 388 · 349 · 182 | **415 · 374 · 187** |
+| League player with no RP, no date of birth | could not exist: the league file would not load | **in the squad**; the referee types the date of birth **in their lineup row**, the app writes YYMMDD, the date is remembered and offered next time |
+| Schema | version 4 | **version 6** (`4.sqm` three nullable columns; `5.sqm` one new table) |
+| Tests (shared JVM · Android host · composeApp) | 388 · 349 · 182 | Gate 1: 415 · 374 · 187 · Gate 2: **428 · 383 · 193** |
 
 ---
 
@@ -284,7 +285,115 @@ restructuring, not by baseline. The baseline is still empty.
 
 ## 4 · Gate 2 — a league player with no identification
 
-*Pending.*
+### The failing test
+
+| Test (failed on `0da6638`) | What it said there |
+|---|---|
+| `LeaguePlayerWithoutIdentificationTest.aSquadPlayerWithNoIdentificationIsOnTheListButNotYetWithAnEmptyRpColumn` | `IllegalArgumentException: Bílek Ondřej has no RP number, date of birth or birth number. A player who cannot be identified at all cannot be put on a report.` |
+| `LineupScreenTest.aPlayerWithNoIdentificationIsGivenADateOfBirthInTheirOwnRow` | the same exception, from building the player |
+
+Both compile against `0da6638` and fail there for the reason the decision
+names: such a player cannot be built, so a league file of them cannot
+load and nobody can be fielded. The other 17 `LineupScreenTest` tests
+passed in the same run. (A first draft built the player as a class property,
+which made every test in the class fail; moved into a function so the red
+run says which test is about this.)
+
+### What changed
+
+- **`Player`** may be a `LEAGUE_RECORD` with none of the three. An
+  `ADDED_AT_PITCH` player still requires a date of birth (in the
+  constructor and in the seed loader); `addedAtThePitch()` still takes no RP
+  parameter, and nothing typed can become an `RpNumber`.
+- **`SquadMemberEntry`** carries `dateOfBirthTyped` (the field's text) and
+  `writtenAtThePitch` (what it puts in the column). `identification` is the
+  league record's value where it has one, otherwise the date the referee
+  typed. `withDateOfBirthTyped` parses with `parseDateOfBirth` — the
+  existing `DateOfBirthEntry` reader the add-a-player form uses — and renders
+  YYMMDD with the existing `ReportedIdentification.of(LocalDate)`. Half a
+  date writes nothing. `needsDateOfBirth` is true whenever the league record
+  cannot fill the column, which also covers the old dead end: an RP number
+  on file, no card, no date of birth. The "bez RP" toggle is now offered for
+  any player with an RP number, since without a date on file it no longer
+  leads nowhere.
+- **`Appearance.reportedIdentification` is still non-null**, and
+  `TeamLineupEntry.problems()` is unchanged: a present player with nothing
+  for Číslo RP is still `NoIdentification`, and the block is not written.
+- **Remembered on the device**: new table `remembered_date_of_birth`
+  (`player_id`, ISO date) beside `jersey_override`, a
+  `RememberedDateOfBirthRepository`, and a `RememberDateOfBirth` use case the
+  lineup calls whenever a whole, real date is typed. `BuildLineupEntry`
+  pre-fills every row from it. A row already saved keeps what it wrote: if
+  the remembered date has changed since (at another match), reopening the
+  old lineup shows the saved YYMMDD and an empty field, never the new date.
+- **The Týmy tab note.** With no RP numbers *and* no dates of birth on file
+  — every psmf.cz team — "Do zápisu se pak píše datum narození" implied the
+  app had one. It now reads *"PSMF čísla RP ani data narození zatím
+  nedodala. Do zápisu se místo čísla RP píše datum narození — rozhodčí ho
+  zadá u soupisky."* The old sentence stays for a team that does have dates
+  on file.
+
+### What the referee sees, step by step
+
+1. **Soupiska**, a team read from psmf.cz. Each player's row reads
+   *Číslo RP: —*, and directly under the name there is a **Datum narození**
+   field with the hint *např. 18.5.1992 nebo 18051992*. Players with a date
+   on file have no field.
+2. They tap the field and type the date as they would write it,
+   `18.5.1992` or `18051992`. Under the field the app echoes **18. 5. 1992**
+   to check against the player; the line above changes to
+   **Číslo RP: 920518**. The referee never types the six digits.
+3. A player marked absent (tap the name) loses the field: nobody needs a
+   date to not play.
+4. *Pokračovat* with a present player still without one: the field turns
+   red and the list below says **"Bílek Ondřej: chybí údaj do sloupce Číslo
+   RP. Zadejte datum narození v řádku hráče."** The block is not written.
+5. The next match with that player: the field already holds `18.5.1992` and
+   the column `920518`. They can change it; whatever whole date they type
+   becomes the one offered next time. Nothing requires it to match.
+6. Reopening an earlier match's lineup shows what was written that day.
+
+Rendered and looked at before committing (an empty row, a typed row, a
+half-typed row in error, and a player with a date on file).
+
+### Schema change
+
+**Version 5 → 6**, `5.sqm`: `CREATE TABLE remembered_date_of_birth`. New and
+empty; nothing before version 6 could have written into it. `5.db` was
+re-recorded before `TeamRecord.sq` was edited (byte-identical), `6.db`
+recorded after. `SchemaMigrationTest.aReportWrittenBeforeDatesOfBirthWereRememberedIsIntactAfterItsMigration`
+starts from `5.db`; `RememberedDateOfBirthTest` proves the date survives a
+restart, the latest one wins, and remembering one does not touch a stored
+report.
+
+### Assertions of the old rule, changed
+
+- `PlayerIdentificationTest.aPlayerWhoCannotBeIdentifiedAtAllCannotBeBuilt`
+  → `aLeaguePlayerWithNothingOnFileCanBeBuiltButWritesNothingYet`, plus
+  `aPlayerAddedAtThePitchCannotBeBuiltWithoutADateOfBirth`.
+- `SeedLeagueCatalogTest.aPlayerWithNoIdentificationAtAllIsReported` →
+  `aLeaguePlayerWithNoIdentificationAtAllLoads`, plus
+  `aPitchAddedPlayerWithNoDateOfBirthIsReported`.
+- `BuildLineupEntry` takes the remembered dates as a required argument; the
+  eight test call sites pass a `FakeRememberedDateOfBirthRepository`.
+
+`ShippedSeedDataTest` still asserts every *shipped* player can be
+identified — true of the invented 6-K until Part 3 replaces it.
+
+### Gate 2 against its criteria
+
+| Criterion | |
+|---|---|
+| A test that fails on HEAD: a squad player with no identification cannot be fielded at all | ✅ above, two |
+| What the referee sees, step by step | ✅ above |
+| Schema change, with its migration | ✅ 5 → 6, `5.sqm`, `6.db` |
+| Green | ✅ clean uncached run: **428 · 383 · 193** (+13 · +9 · +6 on Gate 1) |
+| Commit | ✅ one commit |
+
+Detekt's first verdict: `LineupViewModel.onEvent` at complexity 15 and the
+class at 11 functions, both from one added event. Split the row events out
+(`handleRowEvent`, the same split `ConsoleViewModel` made) rather than
+raising thresholds.
 
 ## 5 · Gate 3 — league 6 from psmf.cz
 
@@ -306,6 +415,11 @@ restructuring, not by baseline. The baseline is still empty.
 | Old rows get `NULL`, read as "before 0.2.0, by the timeline" | This session |
 | JSON spells a straight red `přímá ČK` | This session |
 | A named person keeps both red kinds (no automatic second yellow, but the referee can still record one) | This session, reading "leave them as they are" |
+| A league player may arrive with none of the three; the referee writes the date of birth | Owner, `DECISIONS.md` 2026-10-07 |
+| The date field sits under the name in the row, outside the tap that marks absence | This session |
+| A remembered date is replaced by the latest whole date typed; clearing the field forgets nothing | This session |
+| A saved row keeps its written value even when the remembered date changes later | This session |
+| The "no card" toggle is offered for any player with an RP number | This session |
 
 ---
 
@@ -314,7 +428,10 @@ restructuring, not by baseline. The baseline is still empty.
 1. **`withLanguage("cs")` in the UI tests restores the default locale when
    its block returns.** A test that clicks *after* the block recomposes in
    English, and `onNodeWithText("Přímá ČK")` finds nothing. Clicks that
-   recompose belong inside the block.
+   recompose belong inside the block. *Already written down* in the KDoc of
+   `withLanguage` in `UiTestData.kt` ("Wrap the whole test, not just
+   `setContent`") — this session rediscovered it anyway, which is the
+   argument for listing it here too.
 2. **A migration that adds a column breaks "write old rows with today's
    code".** `SchemaMigrationTest` now transplants only the old table's
    columns; see above.
@@ -343,4 +460,5 @@ restructuring, not by baseline. The baseline is still empty.
 
 | Gate | Commit |
 |---|---|
-| 1 | *this commit* — Fix the five card and clock defects; schema 5 |
+| 1 | `0da6638` — Fix the five card and clock defects; schema 5 records the order things were recorded in |
+| 2 | *this commit* — Let a league player arrive with no identification; schema 6 |

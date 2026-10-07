@@ -177,6 +177,25 @@ class TeamRosterScreenTest {
         }
 
     @Test
+    fun withNoDatesOfBirthEitherTheNoteSaysWhereTheDateComesFrom() =
+        runComposeUiTest {
+            // A team read from psmf.cz: no RP numbers, no dates of birth.
+            // "The report then takes the date of birth" would imply the app
+            // has one; it does not, the referee enters it at the lineup.
+            val bare =
+                roster().let { r -> r.copy(rows = r.rows.map { it.copy(player = it.player.copy(dateOfBirth = null)) }) }
+            withLanguage("cs") {
+                setContent { Screen(state = TeamRosterUiState(loading = false, roster = bare)) }
+
+                onNodeWithText("PSMF čísla RP ani data narození zatím nedodala.", substring = true)
+                    .performScrollTo()
+                    .assertIsDisplayed()
+                onNodeWithText("rozhodčí ho zadá u soupisky", substring = true).assertIsDisplayed()
+                onNodeWithText("Do zápisu se pak píše datum narození.", substring = true).assertDoesNotExist()
+            }
+        }
+
+    @Test
     fun anRpNumberIsShownWhereTheLeagueHasIssuedOne() =
         runComposeUiTest {
             withLanguage("cs") {

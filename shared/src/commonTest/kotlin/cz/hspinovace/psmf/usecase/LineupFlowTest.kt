@@ -28,7 +28,7 @@ class BuildLineupEntryTest {
     private var minted = 0
 
     private fun build(added: FakeAddedPlayerRepository = FakeAddedPlayerRepository()) =
-        BuildLineupEntry(TestLeague.repository(), added) { "id-${++minted}" }
+        BuildLineupEntry(TestLeague.repository(), added, FakeRememberedDateOfBirthRepository()) { "id-${++minted}" }
 
     @Test
     fun aFreshMatchStartsWithEverybodyPresent() =
@@ -257,7 +257,13 @@ class SaveLineupTest {
 
     private suspend fun entryFor(match: Match) =
         assertNotNull(
-            BuildLineupEntry(TestLeague.repository(), FakeAddedPlayerRepository()) { "id-${++minted}" }(match),
+            BuildLineupEntry(
+                TestLeague.repository(),
+                FakeAddedPlayerRepository(),
+                FakeRememberedDateOfBirthRepository(),
+            ) {
+                "id-${++minted}"
+            }(match),
         )
 
     @Test
@@ -324,14 +330,18 @@ class AddPlayerToLineupTest {
         added: FakeAddedPlayerRepository,
     ): AddPlayerToLineup {
         val newId = NewId { "id-${++minted}" }
-        val build = BuildLineupEntry(TestLeague.repository(), added, newId)
+        val build = BuildLineupEntry(TestLeague.repository(), added, FakeRememberedDateOfBirthRepository(), newId)
         return AddPlayerToLineup(AddPlayerAtThePitch(added, newId), build, SaveLineup(matches))
     }
 
     private suspend fun matchWithAnAbsence(matches: FakeMatchRepository): Match {
         val added = FakeAddedPlayerRepository()
         val entry =
-            assertNotNull(BuildLineupEntry(TestLeague.repository(), added) { "seed-${++minted}" }(match()))
+            assertNotNull(
+                BuildLineupEntry(TestLeague.repository(), added, FakeRememberedDateOfBirthRepository()) {
+                    "seed-${++minted}"
+                }(match()),
+            )
         val withAbsence =
             entry.home.withMember(TestLeague.homeSquad.first().id) { it.copy(absent = true) }
         return SaveLineup(matches)(match(), withAbsence)
@@ -349,7 +359,14 @@ class AddPlayerToLineupTest {
             val updated = assertNotNull(useCase(matches, added)(started, request()))
 
             val player = added.forMatch(MatchId("m1")).single()
-            val entry = assertNotNull(BuildLineupEntry(TestLeague.repository(), added) { "x" }(updated))
+            val entry =
+                assertNotNull(
+                    BuildLineupEntry(
+                        TestLeague.repository(),
+                        added,
+                        FakeRememberedDateOfBirthRepository(),
+                    ) { "x" }(updated),
+                )
             val member = entry.home.members.single { it.player.id == player.id }
             assertFalse(member.absent, "A player added at the pitch came back marked absent")
             assertTrue(member.addedAtThePitch)
@@ -365,7 +382,14 @@ class AddPlayerToLineupTest {
 
             val updated = assertNotNull(useCase(matches, added)(started, request()))
 
-            val entry = assertNotNull(BuildLineupEntry(TestLeague.repository(), added) { "x" }(updated))
+            val entry =
+                assertNotNull(
+                    BuildLineupEntry(
+                        TestLeague.repository(),
+                        added,
+                        FakeRememberedDateOfBirthRepository(),
+                    ) { "x" }(updated),
+                )
             assertTrue(
                 entry.home.members
                     .single { it.player.id == absentee.id }
@@ -399,7 +423,13 @@ class SaveBothLineupsTest {
 
     private suspend fun entryFor(match: Match) =
         assertNotNull(
-            BuildLineupEntry(TestLeague.repository(), FakeAddedPlayerRepository()) { "id-${++minted}" }(match),
+            BuildLineupEntry(
+                TestLeague.repository(),
+                FakeAddedPlayerRepository(),
+                FakeRememberedDateOfBirthRepository(),
+            ) {
+                "id-${++minted}"
+            }(match),
         )
 
     @Test

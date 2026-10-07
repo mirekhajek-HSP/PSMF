@@ -21,21 +21,42 @@ import kotlin.test.assertTrue
  */
 class PlayerIdentificationTest {
     @Test
-    fun aPlayerWhoCannotBeIdentifiedAtAllCannotBeBuilt() {
-        // The invariant, enforced at construction: at least one of the three.
+    fun aLeaguePlayerWithNothingOnFileCanBeBuiltButWritesNothingYet() {
+        // Until 2026-10-07 this asserted the opposite: at least one of the
+        // three, enforced at construction. Every psmf.cz player has none,
+        // so the rule moved to the appearance -- the referee writes the
+        // date of birth at the pitch (DECISIONS 2026-10-07).
+        val fromPsmfCz =
+            Player(
+                id = PlayerId("p1"),
+                ref = "novak-jan",
+                teamId = Fixtures.homeTeamId,
+                name = PlayerName(PersonName.of("Novak"), PersonName.of("Jan")),
+                rpNumber = null,
+                dateOfBirth = null,
+                birthNumber = null,
+            )
+
+        assertNull(fromPsmfCz.identificationFor(registrationCardPresent = true))
+        assertNull(fromPsmfCz.identificationFor(registrationCardPresent = false))
+    }
+
+    @Test
+    fun aPlayerAddedAtThePitchCannotBeBuiltWithoutADateOfBirth() {
         val failure =
             assertFailsWith<IllegalArgumentException> {
                 Player(
                     id = PlayerId("p1"),
-                    ref = "novak-jan",
+                    ref = "pitch-1",
                     teamId = Fixtures.homeTeamId,
                     name = PlayerName(PersonName.of("Novak"), PersonName.of("Jan")),
                     rpNumber = null,
                     dateOfBirth = null,
                     birthNumber = null,
+                    origin = PlayerOrigin.ADDED_AT_PITCH,
                 )
             }
-        assertTrue(failure.message!!.contains("cannot be identified"))
+        assertTrue(failure.message!!.contains("no date of birth"))
     }
 
     @Test

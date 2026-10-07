@@ -99,8 +99,12 @@ A blank `label` fails the build. The report cannot be generated without it.
 "birthNumber": null
 ```
 
-**At least one must be present.** A player who cannot be identified at all
-cannot be put on a report, and the model refuses to build one.
+**A league player may have none of the three** (DECISIONS 2026-10-07): every
+player read from psmf.cz has none. The referee then types the date of birth
+in the lineup row, the app writes it YYMMDD, and remembers it on the device
+for next time. Something must still be written in Číslo RP before a lineup
+can be confirmed -- that rule lives on the appearance now, not here. A
+player with `"origin": "ADDED_AT_PITCH"` must have a `dateOfBirth`.
 
 - `rpNumber` is **issued by PSMF** and immutable. It arrives from their
   database. **It must never be typed by a user** — not in the app, and not

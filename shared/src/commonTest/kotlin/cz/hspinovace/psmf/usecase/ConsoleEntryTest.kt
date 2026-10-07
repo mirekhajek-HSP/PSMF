@@ -35,7 +35,8 @@ class ConsoleEntryTest {
     private var minted = 0
 
     private suspend fun matchWithLineups(added: FakeAddedPlayerRepository = FakeAddedPlayerRepository()): Match {
-        val build = BuildLineupEntry(TestLeague.repository(), added) { "id-${++minted}" }
+        val build =
+            BuildLineupEntry(TestLeague.repository(), added, FakeRememberedDateOfBirthRepository()) { "id-${++minted}" }
         val plain = Match(MatchId("m1"), Fixtures.fixtureId, Fixtures.groupId)
         val entry = assertNotNull(build(plain))
         return plain.copy(

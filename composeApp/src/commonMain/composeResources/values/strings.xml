@@ -81,7 +81,7 @@
     <string name="lineup_saved">Sestavy jsou uložené. Zápis přijde v další fázi.</string>
     <string name="lineup_error_nobody">Není označen nikdo přítomný.</string>
     <string name="lineup_error_duplicate_number">Dres č. %1$d nosí víc hráčů.</string>
-    <string name="lineup_error_no_identification">Chybí údaj do sloupce Číslo RP.</string>
+    <string name="lineup_error_no_identification">%1$s: chybí údaj do sloupce Číslo RP. Zadejte datum narození v řádku hráče.</string>
 
     <!-- Screen 4: the live console, page 2 of the ZoU -->
     <string name="console_title">Zápis utkání</string>
@@ -239,6 +239,7 @@
     <string name="teams_absence_note">Neúčast se zadává u zápisu, ne tady: platí pro jeden zápas, ne pro hráče.</string>
     <string name="teams_rp_number">Číslo RP: %1$s</string>
     <string name="teams_rp_missing">PSMF čísla RP zatím nedodala. Do zápisu se pak píše datum narození.</string>
+    <string name="teams_rp_and_dob_missing">PSMF čísla RP ani data narození zatím nedodala. Do zápisu se místo čísla RP píše datum narození — rozhodčí ho zadá u soupisky.</string>
     <string name="teams_cards_season">ŽK v sezoně: %1$d</string>
     <string name="teams_jersey_range">0–99</string>
     <string name="teams_jersey_restore">Vrátit číslo z ligy</string>

@@ -4,6 +4,7 @@ import cz.hspinovace.psmf.data.league.LeagueRepository
 import cz.hspinovace.psmf.data.league.LoadedFixture
 import cz.hspinovace.psmf.data.match.MatchRepository
 import cz.hspinovace.psmf.data.player.AddedPlayerRepository
+import cz.hspinovace.psmf.data.player.RememberedDateOfBirthRepository
 import cz.hspinovace.psmf.domain.Appearance
 import cz.hspinovace.psmf.domain.AppearanceId
 import cz.hspinovace.psmf.domain.IdentificationSource
@@ -56,15 +57,17 @@ data class LineupEntry(
 class BuildLineupEntry(
     private val league: LeagueRepository,
     private val addedPlayers: AddedPlayerRepository,
+    private val rememberedDatesOfBirth: RememberedDateOfBirthRepository,
     private val newId: NewId,
 ) {
     suspend operator fun invoke(match: Match): LineupEntry? {
         val fixture = league.fixture(match.fixtureId) ?: return null
         val added = addedPlayers.forMatch(match.id)
+        val remembered = rememberedDatesOfBirth.all()
 
         return LineupEntry(
-            home = build(match, TeamSide.HOME, fixture, added),
-            away = build(match, TeamSide.AWAY, fixture, added),
+            home = build(match, TeamSide.HOME, fixture, added, remembered),
+            away = build(match, TeamSide.AWAY, fixture, added, remembered),
         )
     }
 
@@ -73,6 +76,7 @@ class BuildLineupEntry(
         side: TeamSide,
         fixture: LoadedFixture,
         added: List<Player>,
+        remembered: Map<PlayerId, LocalDate>,
     ): TeamLineupEntry {
         val team: Team = if (side == TeamSide.HOME) fixture.homeTeam else fixture.awayTeam
         val saved = match.lineup(side)
@@ -93,7 +97,8 @@ class BuildLineupEntry(
                         absent = saved != null && appearance == null,
                         jerseyNumber = appearance?.jerseyNumber ?: player.defaultJerseyNumber,
                         registrationCardPresent = appearance?.usedTheRegistrationCard() ?: true,
-                    )
+                    ).withDateOfBirthTyped(remembered[player.id]?.asTypedDateOfBirth().orEmpty())
+                        .keepingWhatWasWritten(appearance)
                 },
             kitId = saved?.kitId ?: team.primaryKit.id,
         )
@@ -102,6 +107,34 @@ class BuildLineupEntry(
 
 /** True when the row was written from an RP number rather than a fallback. */
 private fun Appearance.usedTheRegistrationCard(): Boolean = reportedIdentification.source == IdentificationSource.RP
+
+/**
+ * A row already written keeps what it wrote in `Číslo RP`.
+ *
+ * The remembered date is a pre-fill and may have been changed since, at
+ * another match. A lineup reopened later must not quietly rewrite an old
+ * row with it -- the same principle as a kit rename -- so when the league
+ * record cannot fill the column, the saved value stands, and the field is
+ * left empty rather than showing a date that is not the one written.
+ */
+private fun SquadMemberEntry.keepingWhatWasWritten(appearance: Appearance?): SquadMemberEntry {
+    val written = appearance?.reportedIdentification ?: return this
+    if (!needsDateOfBirth || written == writtenAtThePitch) return this
+    return copy(dateOfBirthTyped = "", writtenAtThePitch = written)
+}
+
+/**
+ * Remembers a date of birth the referee wrote at the pitch, so the next
+ * match offers it. A pre-fill only; see [RememberedDateOfBirthRepository].
+ */
+class RememberDateOfBirth(
+    private val remembered: RememberedDateOfBirthRepository,
+) {
+    suspend operator fun invoke(
+        playerId: PlayerId,
+        dateOfBirth: LocalDate,
+    ) = remembered.remember(playerId, dateOfBirth)
+}
 
 /**
  * Writes a team's block through.

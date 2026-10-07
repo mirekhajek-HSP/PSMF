@@ -73,7 +73,7 @@
     <string name="lineup_saved">The lineups are saved. The match console arrives in the next phase.</string>
     <string name="lineup_error_nobody">Nobody is marked present.</string>
     <string name="lineup_error_duplicate_number">Shirt number %1$d is worn by more than one player.</string>
-    <string name="lineup_error_no_identification">Nothing to write in the RP number column.</string>
+    <string name="lineup_error_no_identification">%1$s: nothing to write in the RP number column. Enter the date of birth in their row.</string>
 
     <!-- Screen 4: the live console, page 2 of the ZoU -->
     <string name="console_title">Match console</string>
@@ -231,6 +231,7 @@
     <string name="teams_absence_note">Absence is set in the report, not here: it is about one match, not about a player.</string>
     <string name="teams_rp_number">RP number: %1$s</string>
     <string name="teams_rp_missing">PSMF have not supplied RP numbers yet. The report then takes the date of birth.</string>
+    <string name="teams_rp_and_dob_missing">PSMF have not supplied RP numbers or dates of birth yet. The report takes the date of birth instead, which the referee enters on the lineup.</string>
     <string name="teams_cards_season">Yellows this season: %1$d</string>
     <string name="teams_jersey_range">0–99</string>
     <string name="teams_jersey_restore">Restore the league’s number</string>

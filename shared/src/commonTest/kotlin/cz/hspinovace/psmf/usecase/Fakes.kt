@@ -4,6 +4,7 @@ import cz.hspinovace.psmf.data.league.LeagueRepository
 import cz.hspinovace.psmf.data.league.LoadedFixture
 import cz.hspinovace.psmf.data.match.MatchRepository
 import cz.hspinovace.psmf.data.match.MatchSummary
+import cz.hspinovace.psmf.data.player.RememberedDateOfBirthRepository
 import cz.hspinovace.psmf.data.seed.LeagueGroup
 import cz.hspinovace.psmf.data.team.FollowedTeamRepository
 import cz.hspinovace.psmf.data.team.JerseyOverrideRepository
@@ -111,6 +112,22 @@ class FakeJerseyOverrideRepository(
     ) {
         numbers.value =
             if (number == null) numbers.value - playerId else numbers.value + (playerId to number)
+    }
+}
+
+/** Dates of birth written at the pitch, remembered in memory. */
+class FakeRememberedDateOfBirthRepository(
+    initial: Map<PlayerId, LocalDate> = emptyMap(),
+) : RememberedDateOfBirthRepository {
+    private val dates = initial.toMutableMap()
+
+    override suspend fun all(): Map<PlayerId, LocalDate> = dates.toMap()
+
+    override suspend fun remember(
+        playerId: PlayerId,
+        dateOfBirth: LocalDate,
+    ) {
+        dates[playerId] = dateOfBirth
     }
 }
 

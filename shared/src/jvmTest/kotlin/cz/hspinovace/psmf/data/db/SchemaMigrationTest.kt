@@ -279,6 +279,27 @@ class SchemaMigrationTest {
         }
 
     @Test
+    fun aReportWrittenBeforeDatesOfBirthWereRememberedIsIntactAfterItsMigration() =
+        runTest {
+            // The step Part 2 of prompts/10 adds, on its own: 5.sqm creates
+            // the table and nothing else. Nothing before version 6 could have
+            // written into it, so it arrives empty.
+            val database = databaseAtVersion(5)
+            val report = finishedReport()
+
+            beforeTheUpdate(database) { it.save(report) }
+
+            assertEquals(5, userVersion(database))
+            assertFalse("remembered_date_of_birth" in tableNames(database), "5.db already had the new table")
+
+            val restored = afterTheUpdate(database) { it.load(report.id) }
+
+            assertEquals(current, userVersion(database), "5.sqm did not run")
+            assertContains(tableNames(database), "remembered_date_of_birth")
+            assertEquals(report, assertNotNull(restored, "the report did not survive 5.sqm"))
+        }
+
+    @Test
     fun theSnapshottedColumnsSurviveAndAreNotRederived() =
         runTest {
             // These are stored rather than derived precisely so that a later
@@ -330,6 +351,7 @@ class SchemaMigrationTest {
             // Present from the CREATE statements, not from a migration.
             assertContains(tableNames(database), "followed_team")
             assertContains(tableNames(database), "jersey_override")
+            assertContains(tableNames(database), "remembered_date_of_birth")
         }
 
     /**

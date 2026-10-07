@@ -101,6 +101,95 @@ class LineupScreenTest {
     }
 
     // ------------------------------------------------------------------
+    // A league player with no identification
+    // ------------------------------------------------------------------
+
+    /** What psmf.cz gives us: a name and a team, nothing for Číslo RP. */
+    private fun bilek() =
+        Player(
+            id = PlayerId("bilek"),
+            ref = "bilek-ondrej",
+            teamId = UiTestData.homeTeamId,
+            name = PlayerName(PersonName.of("Bílek"), PersonName.of("Ondřej")),
+            rpNumber = null,
+            dateOfBirth = null,
+            birthNumber = null,
+            defaultJerseyNumber = null,
+        )
+
+    @Test
+    fun aPlayerWithNoIdentificationIsGivenADateOfBirthInTheirOwnRow() =
+        runComposeUiTest {
+            // On 8bd3c11 such a player could not exist; the nearest case, a
+            // registered player without their card and no date of birth,
+            // got "Chybí údaj do sloupce Číslo RP" and nowhere to fix it.
+            withLanguage("cs") {
+                setContent { PsmfTheme { LineupScreen(state = state(listOf(member(bilek()))), onEvent = {}) } }
+
+                onNodeWithText("Bílek Ondřej").assertIsDisplayed()
+                onNodeWithText("Datum narození").assertIsDisplayed()
+            }
+        }
+
+    @Test
+    fun typingADateOfBirthInTheRowReportsTheWholeFieldForThatPlayer() =
+        runComposeUiTest {
+            val events = mutableListOf<LineupEvent>()
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme { LineupScreen(state = state(listOf(member(bilek()))), onEvent = events::add) }
+                }
+                onNodeWithText("Datum narození").performTextInput("18.5.1992")
+            }
+
+            assertEquals(LineupEvent.DateOfBirthTyped(PlayerId("bilek"), "18.5.1992"), events.last())
+        }
+
+    @Test
+    fun aTypedDateIsEchoedAndTheAppWritesTheRpColumnFromIt() =
+        runComposeUiTest {
+            // The referee types a date as people write one; YYMMDD is the
+            // app's job, shown on the line above so it can be checked.
+            val typed = member(bilek()).withDateOfBirthTyped("18.5.1992")
+            withLanguage("cs") {
+                setContent { PsmfTheme { LineupScreen(state = state(listOf(typed)), onEvent = {}) } }
+
+                onNodeWithText("18. 5. 1992").assertIsDisplayed()
+                onNodeWithText("Číslo RP: 920518").assertIsDisplayed()
+            }
+        }
+
+    @Test
+    fun aPlayerWithADateOfBirthOnFileIsNotAskedForOne() =
+        runComposeUiTest {
+            withLanguage("cs") {
+                setContent { PsmfTheme { LineupScreen(state = state(listOf(member(novak))), onEvent = {}) } }
+
+                onNodeWithText("Číslo RP: 900615").assertIsDisplayed()
+                onNodeWithText("Datum narození").assertDoesNotExist()
+            }
+        }
+
+    @Test
+    fun theProblemNamesThePlayerAndSaysWhatToType() =
+        runComposeUiTest {
+            val missing = state(listOf(member(bilek())))
+            val shown =
+                missing.copy(
+                    showProblems = true,
+                    problems = missing.entry!!.problems(),
+                )
+            withLanguage("cs") {
+                setContent { PsmfTheme { LineupScreen(state = shown, onEvent = {}) } }
+
+                onNode(hasScrollAction()).performScrollToNode(hasText("Bílek Ondřej:", substring = true))
+                onNodeWithText(
+                    "Bílek Ondřej: chybí údaj do sloupce Číslo RP. Zadejte datum narození v řádku hráče.",
+                ).assertIsDisplayed()
+            }
+        }
+
+    // ------------------------------------------------------------------
     // Marking absentees
     // ------------------------------------------------------------------
 

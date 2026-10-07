@@ -1,6 +1,7 @@
 package cz.hspinovace.psmf.usecase
 
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.number
 
 /**
  * Reads a date of birth the way a referee would type one at a pitch.
@@ -39,6 +40,13 @@ fun parseDateOfBirth(raw: String): LocalDate? {
         }
     }
 }
+
+/**
+ * A date as the referee would type it, `18.5.1992`, for pre-filling a field
+ * [parseDateOfBirth] reads back. The `Číslo RP` column's YYMMDD is the app's
+ * job and never what the referee types or sees in the field.
+ */
+fun LocalDate.asTypedDateOfBirth(): String = "$day.${month.number}.$year"
 
 private fun fromSeparatedParts(trimmed: String): LocalDate? {
     val parts = trimmed.split('.', '/').map { it.trim() }.filter { it.isNotEmpty() }

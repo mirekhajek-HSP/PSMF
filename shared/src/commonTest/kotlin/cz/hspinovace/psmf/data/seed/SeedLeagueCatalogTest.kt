@@ -431,10 +431,38 @@ class SeedLeagueCatalogTest {
         }
 
     @Test
-    fun aPlayerWithNoIdentificationAtAllIsReported() =
+    fun aLeaguePlayerWithNoIdentificationAtAllLoads() =
         runTest {
-            // At least one of rpNumber, dateOfBirth or birthNumber. A player
-            // who cannot be identified cannot be put on a report.
+            // Until 2026-10-07 this was reported as an error. Every player
+            // read from psmf.cz is exactly this row: a name and a team. The
+            // referee writes the date of birth at the pitch instead.
+            val group =
+                catalogOf(
+                    "index.json" to indexJson(indexEntry("6k", "6k.json")),
+                    "6k.json" to
+                        groupJson(
+                            "6k",
+                            teams =
+                                """
+                                {
+                                  "id": "$ID_A", "ref": "t-a", "name": "Team A", "kits": [ $KIT ],
+                                  "players": [ { "id": "$ID_P1", "ref": "novak-jan",
+                                    "surname": "Novak", "firstName": "Jan" } ]
+                                },
+                                { "id": "$ID_B", "ref": "t-b", "name": "Team B", "kits": [ $KIT ], "players": [] }
+                                """.trimIndent(),
+                        ),
+                ).loadAll().single()
+
+            val player = group.players.single()
+            assertNull(player.identificationFor(registrationCardPresent = true))
+        }
+
+    @Test
+    fun aPitchAddedPlayerWithNoDateOfBirthIsReported() =
+        runTest {
+            // The referee is the only source of one, and it is all such a
+            // player has.
             val problem =
                 problemFrom(
                     teams =
@@ -442,7 +470,7 @@ class SeedLeagueCatalogTest {
                         {
                           "id": "$ID_A", "ref": "t-a", "name": "Team A", "kits": [ $KIT ],
                           "players": [ { "id": "$ID_P1", "ref": "novak-jan",
-                            "surname": "Novak", "firstName": "Jan" } ]
+                            "surname": "Novak", "firstName": "Jan", "origin": "ADDED_AT_PITCH" } ]
                         },
                         { "id": "$ID_B", "ref": "t-b", "name": "Team B", "kits": [ $KIT ], "players": [] }
                         """.trimIndent(),

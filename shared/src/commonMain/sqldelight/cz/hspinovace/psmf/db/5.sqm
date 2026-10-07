@@ -1,0 +1,15 @@
+-- Version 5 to version 6: the dates of birth a referee has written at the
+-- pitch, remembered per player so the lineup can offer them next time.
+--
+-- New and empty, so there is nothing to move and nothing to backfill: a
+-- referee updating into this version has written no such date yet. Before
+-- this version a league player could not arrive without identification at
+-- all (DECISIONS 2026-10-07), so no match on any phone needed one.
+--
+-- Device state beside followed_team and jersey_override, not part of any
+-- report: what a report wrote in Číslo RP stays on appearance_record.
+
+CREATE TABLE remembered_date_of_birth (
+    player_id     TEXT NOT NULL PRIMARY KEY,
+    date_of_birth TEXT NOT NULL
+);

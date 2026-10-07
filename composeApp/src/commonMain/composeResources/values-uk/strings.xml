@@ -77,7 +77,7 @@
     <string name="lineup_saved">Склади збережено. Консоль матчу зʼявиться в наступній фазі.</string>
     <string name="lineup_error_nobody">Нікого не позначено присутнім.</string>
     <string name="lineup_error_duplicate_number">Номер %1$d носить більше ніж один гравець.</string>
-    <string name="lineup_error_no_identification">Немає що записати в колонку «Номер RP».</string>
+    <string name="lineup_error_no_identification">%1$s: немає що записати в колонку «Номер RP». Введіть дату народження в рядку гравця.</string>
 
     <!-- Screen 4: the live console, page 2 of the ZoU -->
     <string name="console_title">Протокол матчу</string>
@@ -235,6 +235,7 @@
     <string name="teams_absence_note">Відсутність зазначають у протоколі, не тут: вона стосується одного матчу, а не гравця.</string>
     <string name="teams_rp_number">Номер RP: %1$s</string>
     <string name="teams_rp_missing">PSMF ще не надала номери RP. Тоді у протокол пишуть дату народження.</string>
+    <string name="teams_rp_and_dob_missing">PSMF ще не надала ні номери RP, ні дати народження. Замість номера RP у протокол пишуть дату народження — суддя вводить її у складі.</string>
     <string name="teams_cards_season">ЖК за сезон: %1$d</string>
     <string name="teams_jersey_range">0–99</string>
     <string name="teams_jersey_restore">Повернути номер ліги</string>

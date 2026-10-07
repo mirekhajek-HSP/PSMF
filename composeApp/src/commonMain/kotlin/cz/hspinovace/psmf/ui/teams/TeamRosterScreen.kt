@@ -37,6 +37,7 @@ import cz.hspinovace.psmf.resources.teams_kits
 import cz.hspinovace.psmf.resources.teams_kits_note
 import cz.hspinovace.psmf.resources.teams_read_only_note
 import cz.hspinovace.psmf.resources.teams_roster
+import cz.hspinovace.psmf.resources.teams_rp_and_dob_missing
 import cz.hspinovace.psmf.resources.teams_rp_missing
 import cz.hspinovace.psmf.resources.teams_rp_number
 import cz.hspinovace.psmf.resources.teams_unfollow
@@ -128,7 +129,11 @@ fun TeamRosterScreen(
 
         item(key = "absence") { Note(stringResource(Res.string.teams_absence_note)) }
         if (roster.rows.none { it.rpNumber != null }) {
-            item(key = "rp") { Note(stringResource(Res.string.teams_rp_missing)) }
+            // A team read from psmf.cz has neither, and "the report takes the date of
+            // birth" would then imply the app has one: say where it comes from.
+            val note =
+                if (roster.datesOfBirthOnFile) Res.string.teams_rp_missing else Res.string.teams_rp_and_dob_missing
+            item(key = "rp") { Note(stringResource(note)) }
         }
     }
 }

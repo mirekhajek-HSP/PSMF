@@ -49,6 +49,13 @@ data class TeamRoster(
     val rows: List<RosterRow>,
 ) {
     val kits: List<Kit> get() = team.kits
+
+    /**
+     * Whether the league record holds a date of birth for anyone here.
+     * None does for a team read from psmf.cz; the screen then says the
+     * referee enters it at the lineup, rather than implying it is on file.
+     */
+    val datesOfBirthOnFile: Boolean get() = rows.any { it.player.dateOfBirth != null }
 }
 
 /**

@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import cz.hspinovace.psmf.resources.Res
 import cz.hspinovace.psmf.resources.lineup_absent
 import cz.hspinovace.psmf.resources.lineup_added_at_pitch
+import cz.hspinovace.psmf.resources.lineup_date_of_birth
+import cz.hspinovace.psmf.resources.lineup_date_of_birth_hint
 import cz.hspinovace.psmf.resources.lineup_jersey
 import cz.hspinovace.psmf.resources.lineup_no_card
 import cz.hspinovace.psmf.resources.lineup_rp_column
@@ -52,6 +54,7 @@ fun SquadRow(
     member: SquadMemberEntry,
     duplicateNumber: Boolean,
     onEvent: (LineupEvent) -> Unit,
+    missingIdentification: Boolean = false,
 ) {
     Column {
         Row(
@@ -72,8 +75,51 @@ fun SquadRow(
                 JerseyNumberField(member, duplicateNumber, onEvent)
             }
         }
+        // Below the name rather than inside it: the name is the tap that
+        // marks absence, and typing a date must not toggle anyone.
+        if (!member.absent && member.needsDateOfBirth) {
+            DateOfBirthField(member, missingIdentification, onEvent)
+        }
         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
     }
+}
+
+/**
+ * The date of birth, for a player the league record cannot identify.
+ *
+ * **On this screen, in this row**, because this is where the referee marks
+ * them present and the captain is standing beside them. The referee types
+ * the date as people write it -- the same reader and hint as the
+ * add-a-player form -- and the app renders the `Číslo RP` column's YYMMDD,
+ * shown on the line above. The parsed date is echoed back, so `18.5.1929`
+ * is visible as 1929 before it reaches the report.
+ *
+ * Offered from the date remembered on this device, if there is one;
+ * editable, and never required to match it.
+ */
+@Composable
+private fun DateOfBirthField(
+    member: SquadMemberEntry,
+    missingIdentification: Boolean,
+    onEvent: (LineupEvent) -> Unit,
+) {
+    val parsed = member.typedDateOfBirth
+    OutlinedTextField(
+        value = member.dateOfBirthTyped,
+        onValueChange = { onEvent(LineupEvent.DateOfBirthTyped(member.player.id, it)) },
+        label = { Text(stringResource(Res.string.lineup_date_of_birth)) },
+        supportingText = {
+            Text(parsed?.asFullDate() ?: stringResource(Res.string.lineup_date_of_birth_hint))
+        },
+        singleLine = true,
+        isError = missingIdentification || (member.dateOfBirthTyped.isNotBlank() && parsed == null),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(min = PsmfDimens.minTouchTarget)
+                .padding(bottom = PsmfDimens.labelGap),
+    )
 }
 
 @Composable

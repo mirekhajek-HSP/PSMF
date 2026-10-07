@@ -7,7 +7,9 @@ import cz.hspinovace.psmf.data.league.SeedLeagueRepository
 import cz.hspinovace.psmf.data.match.MatchRepository
 import cz.hspinovace.psmf.data.match.SqlDelightMatchRepository
 import cz.hspinovace.psmf.data.player.AddedPlayerRepository
+import cz.hspinovace.psmf.data.player.RememberedDateOfBirthRepository
 import cz.hspinovace.psmf.data.player.SqlDelightAddedPlayerRepository
+import cz.hspinovace.psmf.data.player.SqlDelightRememberedDateOfBirthRepository
 import cz.hspinovace.psmf.data.seed.ComposeResourceSeedFileReader
 import cz.hspinovace.psmf.data.seed.SeedFileReader
 import cz.hspinovace.psmf.data.seed.SeedLeagueCatalog
@@ -50,6 +52,7 @@ import cz.hspinovace.psmf.usecase.LogGoal
 import cz.hspinovace.psmf.usecase.NewId
 import cz.hspinovace.psmf.usecase.ObserveReportInProgress
 import cz.hspinovace.psmf.usecase.RecordResult
+import cz.hspinovace.psmf.usecase.RememberDateOfBirth
 import cz.hspinovace.psmf.usecase.SaveAssessment
 import cz.hspinovace.psmf.usecase.SaveLineup
 import cz.hspinovace.psmf.usecase.SaveMatchHeader
@@ -84,6 +87,7 @@ val appModule: Module =
         single<SettingsRepository> { SqlDelightSettingsRepository(get()) }
         single<FollowedTeamRepository> { SqlDelightFollowedTeamRepository(get()) }
         single<JerseyOverrideRepository> { SqlDelightJerseyOverrideRepository(get()) }
+        single<RememberedDateOfBirthRepository> { SqlDelightRememberedDateOfBirthRepository(get()) }
 
         // Seed data. The reader lives in this module because Compose
         // resources are generated here and `shared` cannot see them.
@@ -115,7 +119,7 @@ val appModule: Module =
 
         viewModel { FixturesViewModel(get(), get()) }
         viewModel { (matchId: MatchId) -> MatchHeaderViewModel(matchId, get(), get(), get()) }
-        viewModel { (matchId: MatchId) -> LineupViewModel(matchId, get(), get(), get(), get()) }
+        viewModel { (matchId: MatchId) -> LineupViewModel(matchId, get(), get(), get(), get(), get()) }
         viewModel { (matchId: MatchId) ->
             ConsoleViewModel(matchId, get(), get(), get(), get(), get(), get(), get(), get(), get())
         }
@@ -141,7 +145,8 @@ private fun Module.factoryOfUseCases() {
     factory { ToggleFollowedTeam(get()) }
     factory { StartOrResumeMatch(get(), get(), get()) }
     factory { SaveMatchHeader(get()) }
-    factory { BuildLineupEntry(get(), get(), get()) }
+    factory { BuildLineupEntry(get(), get(), get(), get()) }
+    factory { RememberDateOfBirth(get()) }
     factory { SaveLineup(get()) }
     factory { AddPlayerAtThePitch(get(), get()) }
     factory { AddPlayerToLineup(get(), get(), get()) }

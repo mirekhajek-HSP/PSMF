@@ -124,10 +124,12 @@ private fun SquadColumn(
             team.members[it]
                 .player.id.value
         }) { index ->
+            val member = team.members[index]
             SquadRow(
-                member = team.members[index],
-                duplicateNumber = team.members[index].jerseyNumber in team.duplicateJerseyNumbers,
+                member = member,
+                duplicateNumber = member.jerseyNumber in team.duplicateJerseyNumbers,
                 onEvent = onEvent,
+                missingIdentification = state.problem(LineupProblem.NoIdentification(team.side, member.player.id)),
             )
         }
 
@@ -239,7 +241,7 @@ private fun Problems(state: LineupUiState) {
     Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) {
         state.problems.forEach { problem ->
             Text(
-                text = problem.describe(),
+                text = problem.describe(state),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.error,
             )
@@ -248,7 +250,7 @@ private fun Problems(state: LineupUiState) {
 }
 
 @Composable
-private fun LineupProblem.describe(): String =
+private fun LineupProblem.describe(state: LineupUiState): String =
     when (this) {
         is LineupProblem.NobodyPresent -> {
             stringResource(Res.string.lineup_error_nobody)
@@ -259,7 +261,8 @@ private fun LineupProblem.describe(): String =
         }
 
         is LineupProblem.NoIdentification -> {
-            stringResource(Res.string.lineup_error_no_identification)
+            // Named, and with the fix: the field is in that player's row.
+            stringResource(Res.string.lineup_error_no_identification, state.nameOf(side, playerId))
         }
     }
 

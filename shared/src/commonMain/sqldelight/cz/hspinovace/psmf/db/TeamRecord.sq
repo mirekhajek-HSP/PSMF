@@ -1,9 +1,10 @@
 -- What the referee changed on top of league data.
 --
 -- Seed data is a bundled resource and is replaced wholesale on every app
--- update, so nothing a person does may be written back into it. These two
+-- update, so nothing a person does may be written back into it. These three
 -- tables are the whole of the device-side layer over it: which teams the
--- referee follows, and which default jersey numbers they have corrected.
+-- referee follows, which default jersey numbers they have corrected, and
+-- which dates of birth they have written at the pitch.
 --
 -- Both are keyed by the opaque ids from the seed files rather than by refs
 -- or names, for the reason `Catalogue.kt` gives: a ref is allowed to go
@@ -43,6 +44,19 @@ CREATE TABLE jersey_override (
     jersey_number INTEGER NOT NULL
 );
 
+-- A date of birth the referee wrote at the pitch for a league player who
+-- arrived with nothing for the Číslo RP column -- every player read from
+-- psmf.cz (DECISIONS 2026-10-07).
+--
+-- Remembered so it is OFFERED next time, exactly as a corrected jersey
+-- number is: a pre-fill, editable, never required to match. What a report
+-- says is on appearance_record.identification_value, written on the day,
+-- and nothing here touches it. ISO-8601 date.
+CREATE TABLE remembered_date_of_birth (
+    player_id     TEXT NOT NULL PRIMARY KEY,
+    date_of_birth TEXT NOT NULL
+);
+
 -- ---------------------------------------------------------------------------
 
 selectFollowedTeams:
@@ -62,3 +76,9 @@ INSERT OR REPLACE INTO jersey_override (player_id, jersey_number) VALUES (?, ?);
 
 clearJerseyOverride:
 DELETE FROM jersey_override WHERE player_id = ?;
+
+selectRememberedDatesOfBirth:
+SELECT player_id, date_of_birth FROM remembered_date_of_birth;
+
+rememberDateOfBirth:
+INSERT OR REPLACE INTO remembered_date_of_birth (player_id, date_of_birth) VALUES (?, ?);

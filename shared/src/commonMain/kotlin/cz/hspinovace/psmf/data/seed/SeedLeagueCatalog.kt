@@ -230,13 +230,16 @@ private fun SeedPlayerDto.toDomain(
                     PlayerOrigin.entries.joinToString { it.name },
             )
 
-    // The invariant is enforced by Player itself; catching it here turns a
-    // crash into a message naming the row that is wrong.
-    if (rpNumber == null && dateOfBirth == null && birthNumber == null) {
+    // The invariants are enforced by Player itself; catching them here turns
+    // a crash into a message naming the row that is wrong. A league record
+    // may carry none of rpNumber, dateOfBirth and birthNumber -- psmf.cz
+    // publishes none of them, and the referee writes the date of birth at
+    // the pitch (DECISIONS 2026-10-07) -- but a pitch-added one may not.
+    if (playerOrigin == PlayerOrigin.ADDED_AT_PITCH && dateOfBirth == null) {
         inconsistent(
             fileName,
-            "Player '$ref' has no rpNumber, dateOfBirth or birthNumber. At least one is required: " +
-                "a player who cannot be identified cannot be put on a report.",
+            "Player '$ref' is ADDED_AT_PITCH with no dateOfBirth. The referee is the only " +
+                "source of one, and it is all such a player has.",
         )
     }
     if (playerOrigin == PlayerOrigin.ADDED_AT_PITCH && rpNumber != null) {

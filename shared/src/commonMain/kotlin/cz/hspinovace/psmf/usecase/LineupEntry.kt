@@ -14,6 +14,7 @@ import cz.hspinovace.psmf.domain.SuspensionWarning
 import cz.hspinovace.psmf.domain.Team
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.suspensionWarning
+import kotlinx.datetime.LocalDate
 
 /**
  * One row of a team's block on page 1, while it is still being edited.
@@ -50,19 +51,62 @@ data class SquadMemberEntry(
      * exception, which is why it is not prominent on the screen.
      */
     val registrationCardPresent: Boolean = true,
+    /**
+     * The date of birth as the referee typed it into this row, for a player
+     * the league record cannot identify -- the field's text, allowed to be
+     * half-typed. Pre-filled from the date remembered on this device, if
+     * any. See [withDateOfBirthTyped].
+     */
+    val dateOfBirthTyped: String = "",
+    /**
+     * What that date puts in the `Číslo RP` column: the form's own rule,
+     * *"uvedou místo čísla RP jejich datum narození"*, rendered YYMMDD by
+     * the app. Null until a whole, real date has been typed. Used only when
+     * the league record cannot fill the column itself.
+     */
+    val writtenAtThePitch: ReportedIdentification? = null,
 ) {
-    /** What will be written in the `Číslo RP` column for this row. */
-    val identification: ReportedIdentification? get() = player.identificationFor(registrationCardPresent)
+    /**
+     * What will be written in the `Číslo RP` column for this row: from the
+     * league record where it can say, otherwise the date of birth the
+     * referee wrote here. Null means the row cannot be fielded yet.
+     */
+    val identification: ReportedIdentification?
+        get() = player.identificationFor(registrationCardPresent) ?: writtenAtThePitch
+
+    /**
+     * The league record has nothing for `Číslo RP` here -- every psmf.cz
+     * player, or a registered one without their card and no date of birth
+     * on file -- so the referee writes the date of birth, in this row.
+     */
+    val needsDateOfBirth: Boolean get() = player.identificationFor(registrationCardPresent) == null
+
+    /** The typed date, parsed, echoed back so a mistyped one is visible. */
+    val typedDateOfBirth: LocalDate? get() = parseDateOfBirth(dateOfBirthTyped)
+
+    /**
+     * The referee typed into this row's date-of-birth field.
+     *
+     * Read by [parseDateOfBirth], the same reader the add-a-player form
+     * uses; a whole, real date becomes the YYMMDD the column takes, and
+     * anything else leaves the column empty until it is one.
+     */
+    fun withDateOfBirthTyped(raw: String): SquadMemberEntry =
+        copy(
+            dateOfBirthTyped = raw,
+            writtenAtThePitch = parseDateOfBirth(raw)?.let { ReportedIdentification.of(it) },
+        )
 
     /**
      * True when saying "no card" would actually change anything.
      *
      * A player with no RP number on file writes their date of birth
      * whatever happens, so offering the toggle would be offering a control
-     * that does nothing. In the demo data that is every player.
+     * that does nothing. With an RP number it always matters: the date of
+     * birth comes from the league record if it has one, and from the
+     * referee if it does not.
      */
-    val cardMakesADifference: Boolean
-        get() = player.rpNumber != null && (player.dateOfBirth != null || player.birthNumber != null)
+    val cardMakesADifference: Boolean get() = player.rpNumber != null
 
     /**
      * Advisory only, and stale by construction.
@@ -164,8 +208,9 @@ sealed interface LineupProblem {
     ) : LineupProblem
 
     /**
-     * Nothing can go in the `Číslo RP` column: a player with an RP number
-     * on file, no card with them, and no date of birth known.
+     * Nothing can go in the `Číslo RP` column yet: the league record cannot
+     * fill it, and no date of birth has been written in the row. Fixed on
+     * the same screen, by typing one.
      */
     data class NoIdentification(
         override val side: TeamSide,

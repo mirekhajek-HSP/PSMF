@@ -203,8 +203,10 @@ default.
   collapsing them into one polymorphic field was a modelling error, corrected
   2026-08-30. An `RpNumber` is *issued by PSMF*, immutable and **never
   user-editable**; a date of birth or `BirthNumber` is *entered by a person* when
-  there is no RP number to use. `Player` carries all three, with an invariant that
-  at least one is present. `BirthNumber` exists only because A28 is unresolved.
+  there is no RP number to use. `Player` carries all three; a league record may have
+  none (psmf.cz publishes none), a pitch-added player must have a date of birth,
+  and the referee writes one in the lineup when the record has nothing (2026-10-07).
+  `BirthNumber` exists only because A28 is unresolved.
 - **What was written in the `Číslo RP` column is a per-match fact**, not a player
   attribute. Three situations produce a value (card present → RP; card not to
   hand → date of birth, the form's own rule; not yet registered → the fallback),

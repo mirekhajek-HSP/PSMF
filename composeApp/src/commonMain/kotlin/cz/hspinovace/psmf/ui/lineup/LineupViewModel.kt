@@ -17,8 +17,10 @@ import cz.hspinovace.psmf.usecase.BuildLineupEntry
 import cz.hspinovace.psmf.usecase.LineupEntry
 import cz.hspinovace.psmf.usecase.LineupProblem
 import cz.hspinovace.psmf.usecase.NewPlayerRequest
+import cz.hspinovace.psmf.usecase.RememberDateOfBirth
 import cz.hspinovace.psmf.usecase.SaveLineup
 import cz.hspinovace.psmf.usecase.TeamLineupEntry
+import cz.hspinovace.psmf.usecase.parseDateOfBirth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -50,6 +52,20 @@ data class LineupUiState(
     fun confirmed(side: TeamSide): Boolean = side.captain() in confirmedParties
 
     fun problem(kind: LineupProblem): Boolean = showProblems && kind in problems
+
+    /** A squad member's name as the report writes it, for naming them in a problem. */
+    fun nameOf(
+        side: TeamSide,
+        playerId: PlayerId,
+    ): String =
+        entry
+            ?.side(side)
+            ?.members
+            ?.firstOrNull { it.player.id == playerId }
+            ?.player
+            ?.name
+            ?.asWrittenOnReport
+            .orEmpty()
 }
 
 /** Which confirmation belongs to which side of the report. */
@@ -82,6 +98,16 @@ sealed interface LineupEvent {
     /** The player did not bring their registration card. */
     data class RegistrationCardToggled(
         val playerId: PlayerId,
+    ) : LineupEvent
+
+    /**
+     * The referee typed into a row's date-of-birth field: a player the
+     * league record cannot identify is fielded by writing it, on this
+     * screen. The whole field, not a keystroke.
+     */
+    data class DateOfBirthTyped(
+        val playerId: PlayerId,
+        val raw: String,
     ) : LineupEvent
 
     data class KitSelected(
@@ -127,6 +153,7 @@ class LineupViewModel(
     private val buildLineupEntry: BuildLineupEntry,
     private val saveLineup: SaveLineup,
     private val addPlayerToLineup: AddPlayerToLineup,
+    private val rememberDateOfBirth: RememberDateOfBirth,
     private val clock: Clock = Clock.System,
 ) : ViewModel() {
     private val _state = MutableStateFlow(LineupUiState())
@@ -157,29 +184,10 @@ class LineupViewModel(
     }
 
     fun onEvent(event: LineupEvent) {
+        if (handleRowEvent(event)) return
         when (event) {
             is LineupEvent.SideSelected -> {
                 _state.update { it.copy(selectedSide = event.side) }
-            }
-
-            is LineupEvent.AbsenceToggled -> {
-                editTeam { team -> team.withMember(event.playerId) { it.copy(absent = !it.absent) } }
-            }
-
-            is LineupEvent.JerseyNumberChanged -> {
-                editTeam { team ->
-                    team.withMember(event.playerId) {
-                        it.copy(jerseyNumber = JerseyNumber.orNull(event.raw.trim().toIntOrNull()))
-                    }
-                }
-            }
-
-            is LineupEvent.RegistrationCardToggled -> {
-                editTeam { team ->
-                    team.withMember(event.playerId) {
-                        it.copy(registrationCardPresent = !it.registrationCardPresent)
-                    }
-                }
             }
 
             is LineupEvent.KitSelected -> {
@@ -217,7 +225,53 @@ class LineupViewModel(
             LineupEvent.ContinuePressed -> {
                 commitBothLineups()
             }
+
+            // Handled by handleRowEvent, which already returned.
+            else -> {}
         }
+    }
+
+    /**
+     * The four things done to one squad member's row. Split from [onEvent]
+     * once the number of event types alone pushed it over detekt's
+     * complexity limit, the same split the console made.
+     */
+    private fun handleRowEvent(event: LineupEvent): Boolean {
+        when (event) {
+            is LineupEvent.AbsenceToggled -> {
+                editTeam { team -> team.withMember(event.playerId) { it.copy(absent = !it.absent) } }
+            }
+
+            is LineupEvent.JerseyNumberChanged -> {
+                editTeam { team ->
+                    team.withMember(event.playerId) {
+                        it.copy(jerseyNumber = JerseyNumber.orNull(event.raw.trim().toIntOrNull()))
+                    }
+                }
+            }
+
+            is LineupEvent.RegistrationCardToggled -> {
+                editTeam { team ->
+                    team.withMember(event.playerId) {
+                        it.copy(registrationCardPresent = !it.registrationCardPresent)
+                    }
+                }
+            }
+
+            is LineupEvent.DateOfBirthTyped -> {
+                editTeam { team -> team.withMember(event.playerId) { it.withDateOfBirthTyped(event.raw) } }
+                // Once it is a whole, real date, remembered on this device so
+                // the next match offers it.
+                parseDateOfBirth(event.raw)?.let { date ->
+                    viewModelScope.launch { rememberDateOfBirth(event.playerId, date) }
+                }
+            }
+
+            else -> {
+                return false
+            }
+        }
+        return true
     }
 
     private fun openAddPlayer() {

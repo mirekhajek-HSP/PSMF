@@ -182,6 +182,15 @@ enum class PlayerOrigin {
  * [RpNumber] for why. What was actually written on the report is a
  * different thing again and lives on the appearance as
  * [ReportedIdentification].
+ *
+ * **A league record may carry none of the three** (DECISIONS 2026-10-07).
+ * Every player read from psmf.cz arrives with a name and a team and nothing
+ * for `Číslo RP`, so the rule "something must be written there" lives on
+ * the appearance, which is where the form puts it: the referee writes the
+ * date of birth at the pitch, the form's own printed rule, and
+ * `Appearance.reportedIdentification` still cannot be empty. A player
+ * **added at the pitch** still needs a date of birth, because the referee
+ * is the only source of one.
  */
 @Serializable
 data class Player(
@@ -212,9 +221,9 @@ data class Player(
     val discipline: DisciplinaryRecord? = null,
 ) {
     init {
-        require(rpNumber != null || dateOfBirth != null || birthNumber != null) {
-            "${name.asWrittenOnReport} has no RP number, date of birth or birth number. " +
-                "A player who cannot be identified at all cannot be put on a report."
+        require(origin != PlayerOrigin.ADDED_AT_PITCH || dateOfBirth != null) {
+            "${name.asWrittenOnReport} was added at the pitch with no date of birth. " +
+                "The referee is the only source of one, and it is all such a player has."
         }
         require(origin != PlayerOrigin.ADDED_AT_PITCH || rpNumber == null) {
             "${name.asWrittenOnReport} was added at the pitch and carries an RP number. " +
@@ -231,10 +240,12 @@ data class Player(
      *    form's own printed rule
      * 3. not yet registered → whichever fallback exists
      *
-     * Null when nothing can be written — a player with an RP number on file
-     * who did not bring their card and whose date of birth is unknown. The
-     * referee has to supply a value, which is why [Appearance] requires one
-     * rather than accepting null.
+     * Null when the league record cannot fill the column — a player with
+     * none of the three on file, as every psmf.cz player is, or one with an
+     * RP number who did not bring their card and whose date of birth is
+     * unknown. The referee then writes the date of birth at the pitch (see
+     * `SquadMemberEntry.withDateOfBirthTyped`), which is why [Appearance]
+     * requires a value rather than accepting null.
      */
     fun identificationFor(registrationCardPresent: Boolean): ReportedIdentification? =
         when {

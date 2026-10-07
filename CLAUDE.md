@@ -116,8 +116,10 @@ Full list and sources in `docs/TECH_STACK.md` §4. The ones that bite:
 - **An RP number and a fallback identification are two different things.** An
   `RpNumber` is issued by PSMF, immutable, and **never user-editable** — there is
   no UI path to typing one, and `Player.addedAtThePitch()` takes no RP parameter.
-  A date of birth or birth number is what a person enters instead. At least one
-  of the three must be present or the player cannot be built.
+  A date of birth or birth number is what a person enters instead. A league player
+  may carry none of the three — every psmf.cz player does — and is fielded by the
+  referee typing the date of birth in the lineup row; a player added at the pitch
+  must have one. The rule "something in Číslo RP" lives on the appearance.
 - **What was written in the `Číslo RP` column is a per-match fact.** It lives on
   the appearance as `reportedIdentification`, is non-null, and is **stored, never
   derived at export time** — a player registered later must not retroactively
