@@ -41,6 +41,7 @@ builds only on the Mac.**
 ./gradlew detekt                         # static analysis, must stay green
 ./gradlew :shared:iosSimulatorArm64Test  # Apple Silicon only — SKIPPED, and green, on Intel
 ./gradlew :composeApp:linkDebugFrameworkIosArm64  # the iOS compile check that works on the Intel Mac
+./gradlew :league-import:importLeague    # league 6 from psmf.cz into the seed files; see tools/league-import
 ```
 
 **On the Intel Mac, a green `iosSimulatorArm64Test` ran nothing.** It links
@@ -62,6 +63,9 @@ androidApp/   Android entry point ONLY — MainActivity, PsmfApplication,
                 androidMain/. Put nothing here that could live in
                 composeApp; AGP 9 forces the split, it is not a design.
 iosApp/       Xcode wrapper. Touched rarely; changes here need the Mac.
+tools/league-import/  JVM-only importer, psmf.cz to the seed files. The ONLY
+                place jsoup or a network call is allowed; never a
+                dependency of the app.
 docs/         TECH_STACK.md, LEAGUE_APP_ANALYSIS.md, DECISIONS.md,
                 DEMO_SCOPE.md, TODO.md, QUESTIONS.md, BUILD_MATRIX.md
 prompts/      Session briefs. See prompts/README.md for which are live.

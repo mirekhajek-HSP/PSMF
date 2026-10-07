@@ -295,11 +295,10 @@ data class Player(
 @Serializable
 data class Venue(
     val code: VenueCode,
-    /**
-     * Null for now. PSMF publishes the short codes; the long names are not
-     * in the analysis and are not worth inventing.
-     */
+    /** As psmf.cz's `/hriste/` lists it; null where it is not known rather than invented. */
     val name: String? = null,
+    /** The street address, from the same page. Reference only; the report carries the code. */
+    val address: String? = null,
 )
 
 /**

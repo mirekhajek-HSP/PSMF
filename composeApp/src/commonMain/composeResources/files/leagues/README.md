@@ -6,10 +6,24 @@ line to `index.json`. No Kotlin changes, ever. `SeedLeagueCatalogTest`
 exists to keep that true.
 
 ```
-index.json    the only filename the app knows
-venues.json   pitch codes, LEAGUE-WIDE
-6k.json       one group: teams, squads, fixtures
+index.json            the only filename the app knows
+venues.json           pitch codes, LEAGUE-WIDE, with names and addresses
+6a.json … 6l.json     league 6, one group each: teams, squads, fixtures
 ```
+
+**These files are generated** from psmf.cz by `tools/league-import`
+(DECISIONS 2026-10-07, "Scrape psmf.cz after all"), for internal testing.
+Re-run it after more rounds; never regenerate by hand. A hand edit to a
+name or a kit is overwritten by the next run; an id is never touched.
+
+```
+./gradlew :league-import:importLeague                       # fetches what is not cached
+./gradlew :league-import:importLeague -PimportArgs=--offline # cache only, no requests
+```
+
+The run reads these files first and **keeps every id whose ref it has
+seen**. Its own account of what it could not reconcile is
+`tools/league-import/last-run.md`.
 
 ---
 
@@ -22,10 +36,12 @@ saved on a referee's phone stores those UUIDs.** So:
 
 > **A regenerated UUID orphans every persisted match that referenced it.**
 
-When real psmf.cz data replaces this placeholder set, the importer must
-**preserve existing ids by matching on the natural key** and mint new ids
-only for genuinely new entities. Regenerating the file from scratch is what
-a scraper does by default, and it is the failure this rule guards against.
+The importer **preserves existing ids by matching on the natural key** and
+mints new ids only for genuinely new entities. Regenerating the files from
+scratch is what a scraper does by default, and it is the failure this rule
+guards against. A ref that leaves the site — a withdrawn team, a renamed
+player — is **carried over unchanged and reported**, never dropped: a match
+may already point at it.
 
 The natural key is the **`ref`**. See `SeedIdentity.kt`, which is that rule
 written as code, and its tests.
@@ -56,10 +72,35 @@ Every entity has both, and they do different jobs.
 Files point at each other by `ref`, because 66 fixtures full of UUIDs would
 be unmaintainable by hand. The app resolves refs to ids at load time.
 
-Player refs are **not team-scoped** — `ruzicka-radek`, never
-`kominici-01`. The analysis permits one transfer per season, and a
+Player refs are **not team-scoped** — `belohlavek-jan`, never
+`krabice-01`. The analysis permits one transfer per season, and a
 team-scoped ref would change on transfer, mint a new UUID, and orphan every
 match the player already appeared in.
+
+### The refs the importer writes
+
+| Entity | Ref | Why |
+|---|---|---|
+| Team | PSMF's own slug, `krabice` | It is in every psmf.cz URL for the team. Unique within a group. |
+| Fixture | `6k-krabice-vs-hustec` | Upcoming fixtures carry no PSMF id. A pairing meets once a half-season, so the pair is the natural key, and it survives the reschedules PSMF actually makes. |
+| Player | the name, `belohlavek-jan` | Not team-scoped, league-wide; see above. |
+| Kit | none; matched by label within its team | A relabelled kit gets a new id. Harmless: a lineup snapshots the label. |
+
+### Two players with the same name
+
+They happen. On 2026-10-07, 18 players in league 6 shared a name with
+someone imported before them, and two of those names were shared *within*
+one team: two Tomáš Hrubý at Sváteční mančaft, two Miroslav Láník at
+Hattrick Prosek FC. **The rule:** the first in import order — groups `a` to `l`,
+teams by slug, squads in *Statistiky* order — keeps the plain slug; every
+later one gets `-<team slug>` appended (`kasparek-jakub-krabice`), and
+`-<group>-<team slug>` if that is taken too. A re-run never re-decides: it
+finds an existing player by group, team and name first and keeps the ref
+they have. A transfer is recognised only when exactly one player of that
+name has left the site where they were.
+
+Cards and lineups are matched to a squad by name, and a name that fits two
+rows of one team cannot be attributed: those are reported, never guessed.
 
 ---
 
@@ -80,7 +121,9 @@ match.
 ```
 
 **Order is meaningful: the first is the primary**, and is what a lineup
-defaults to.
+defaults to. psmf.cz's `/dresy/` lists a team's kits comma-separated, and
+**some teams list only one** — 55 of 144 on 2026-10-07. Such a team has one
+kit here. Nothing is invented to make two.
 
 Both fields are needed. `label` is **verbatim from PSMF and authoritative
 for the report** — it is what gets written, and it is never derived.
@@ -108,9 +151,9 @@ player with `"origin": "ADDED_AT_PITCH"` must have a `dateOfBirth`.
 
 - `rpNumber` is **issued by PSMF** and immutable. It arrives from their
   database. **It must never be typed by a user** — not in the app, and not
-  into this file except from real PSMF data. All 144 placeholder players
-  have `null`, because RP numbers are the one roster dependency that cannot
-  be met from public data (analysis §2.9, blocked on A2).
+  into this file except from real PSMF data. Every player has `null`,
+  because RP numbers are the one roster dependency that cannot be met from
+  public data (analysis §2.9, blocked on A2).
 - `dateOfBirth` is the fallback the form itself prescribes: *"U hráčů,
   kteří nemají k dispozici svůj registrační průkaz (RP), uvedou místo čísla
   RP jejich datum narození."*
@@ -137,15 +180,20 @@ Fielding an ineligible player is a technical forfeit. If the app showed
 deliberately not modelled here at all — a red carries suspension until STDK
 decides, with no fixed ban, so there is nothing to count.
 
+The importer counts yellows from psmf.cz's match details, with the app's own
+rule (`yellowsAccumulatedBy`): two in one match count zero, a yellow and a
+straight red count one. `asOf` is the date the data was fetched. **The
+details lag the results**: on 2026-10-07, 315 matches had a result and 262
+had details, so cards from the other 53 are not in any count yet. The site
+marks a second yellow as two yellow cards and a red, with nothing to tell
+that red from a straight one.
+
 ### `venues.json` — league-wide
 
-Pitch codes are shared across the whole league; the analysis lists roughly
-35 across Prague (§2.2). They are **not** duplicated into group files,
-which would guarantee they drift.
-
-Only the codes the analysis actually names are here. `name` is omitted
-rather than invented — PSMF publishes the codes, and the long names are not
-in the analysis.
+Pitch codes are shared across the whole league. They are **not** duplicated
+into group files, which would guarantee they drift. Every pitch psmf.cz's
+`/hriste/` lists is here — 43 on 2026-10-07 — with its `name` and the first
+line of its description as `address`.
 
 A fixture referring to a code that is not in this file fails the build.
 
@@ -163,12 +211,19 @@ UI may edit them.
 
 ---
 
-## The placeholder data
+## The placeholder data, retired
 
-`6k.json` is invented. The team names, player names, dates of birth and
-yellow-card counts are all made up; the *shape* is real, and the fixture
-list matches what analysis §2.3 says a group looks like — 12 teams, 11
-rounds, 66 matches, kickoffs 19:00–20:45 on 15-minute steps.
+Until 0.2.0 this directory held one invented group, `6k.json` — Kominíci,
+`ruzicka-radek` and 142 other made-up players with made-up dates of birth.
+Real 6-K replaced it. The set lives on, frozen, as a test fixture in
+`shared/src/jvmTest/resources/placeholder-league/`, because **tests must not
+depend on scraped data**, which changes every run.
 
-Player names are kept stable across edits on purpose: they are throwaway,
-but a stable set keeps diffs readable.
+Its ids are **retired, never reused**: the importer did not read it, and
+mints every id fresh. A match saved against it on a phone stays in the
+database untouched and is simply not offered anywhere — its fixture is not
+in league data — which `PlaceholderMatchAfterTheUpgradeTest` proves.
+
+One thing it got wrong that real data shows: kickoffs are not only 19:00 to
+20:45 on weekdays. League 6 kicks off from 17:30 on weekday evenings and
+from 10:00 on Sundays (133 of its 792 fixtures), still on 15-minute steps.

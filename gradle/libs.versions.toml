@@ -56,6 +56,10 @@ sqldelight = "2.3.2"
 # See docs/TECH_STACK.md section 6: no backend exists and the demo makes no
 # network call, so wiring it into a module would be aspiration, not fact.
 ktor = "3.5.2"
+# HTML parsing for tools/league-import ONLY, which reads psmf.cz into the
+# seed files. Never a dependency of shared, composeApp or androidApp: the app
+# makes no network call and parses no HTML (DECISIONS 2026-10-07).
+jsoup = "1.23.2"
 
 # --- testing -----------------------------------------------------------
 turbine = "1.2.1"
@@ -113,6 +117,9 @@ androidx-documentfile = { module = "androidx.documentfile:documentfile", version
 
 # android ui
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidxActivityCompose" }
+
+# html -- tools/league-import only, see the version comment above
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
 
 # testing
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }

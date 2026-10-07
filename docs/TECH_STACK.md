@@ -54,6 +54,7 @@ polish. Platform code is confined to what genuinely differs.
 | Async | Coroutines + Flow | as golblok |
 | DI | **Koin** | Hilt is Android-only and does not work in shared code |
 | Serialization | kotlinx.serialization | replaces golblok's hand-written `org.json` |
+| HTML parsing | jsoup | **`tools/league-import` only** (2026-10-07). Never in shared, composeApp or androidApp: the app makes no network call |
 | HTTP | Ktor client | **Versioned in the catalog, applied to no module.** Settled 2026-08-29: no network calls for now. The report leaves by platform email intent, which is not an HTTP call |
 | Local storage | SQLDelight | KMP-native; offline is a hard requirement. **Versioned from 2026-08-31** — schema 1 is what the demo shipped, `.sqm` migrations carry a database forward, and `check` verifies them |
 | ViewModels | `androidx.lifecycle` multiplatform | |

@@ -29,3 +29,10 @@ rootProject.name = "psmf-app"
 include(":shared")
 include(":composeApp")
 include(":androidApp")
+
+// Reads league data from psmf.cz into the seed files. A JVM-only tool, not
+// part of the app: it is the one place jsoup and a network call are allowed
+// (DECISIONS 2026-10-07). Kept under tools/ so nobody mistakes it for a
+// module the app ships.
+include(":league-import")
+project(":league-import").projectDir = file("tools/league-import")

@@ -397,7 +397,40 @@ raising thresholds.
 
 ## 5 · Gate 3 — league 6 from psmf.cz
 
-*Pending.*
+*Written short at a usage limit; to be filled out at Gate 4.* The run's own
+account is `tools/league-import/last-run.md`; the rules are in the seed
+README and `tools/league-import/README.md`.
+
+- **Importer:** `:league-import` at `tools/league-import`, KMP with one
+  `jvm()` target (the only catalogue line added is jsoup 1.23.2), depending
+  on `:shared`, writing through its seed DTOs and `SeedIdentity`, loading its
+  own output through `SeedLeagueCatalog` before writing. 22 tests against
+  five pages saved on 2026-10-07.
+- **Counts:** 12 groups × 12 teams, **66 fixtures each** (792), 1,601
+  players, 315 played, 262 in detail, 43 pitches, 55 teams with one kit and
+  89 with two. Per group in `last-run.md`.
+- **Requests:** 170 from an empty cache (5 by hand while reading the
+  markup, 165 by the importer), 4 min 43 s; an offline re-run made 0 and
+  rewrote all 14 files byte-identical — every id kept.
+- **Name matching:** 0 unmatched; 6 ambiguous (two Tomáš Hrubý at Sváteční
+  mančaft, two Miroslav Láník at Hattrick Prosek FC). **Ref collisions:** 18,
+  listed in `last-run.md`; rule in the seed README. **Kit and fixture
+  oddities:** none.
+- **Discipline:** 66 players carry a yellow. The site has no marker for a
+  second yellow — it shows two `is-yellow` and one `is-red` (3 cases).
+  Details lag results by 53 matches, so `asOf` overstates freshness.
+- **Placeholder retired:** moved to `shared/src/jvmTest/resources/placeholder-league/`.
+  17 tests read the bundled files, **15 on the placeholder's content**: the
+  15 of `ShippedSeedDataTest` became `PlaceholderSeedDataTest` on the frozen
+  copy, 2 in `ComposeResourceSeedTest` became structural. A new
+  `ShippedSeedDataTest` (7) and `ComposeResourceSeedTest` load all twelve
+  groups through the real catalogue.
+- **A 0.1.0 match against a placeholder fixture:** `ObserveReportInProgress`
+  now ignores a match whose fixture is not in league data, so the referee
+  sees nothing of it — no badge, no row — and it stays in the database.
+  `PlaceholderMatchAfterTheUpgradeTest` proves that with a followed
+  placeholder team and a jersey override too; nothing throws.
+- **Tests:** 436 · 383 · 193 · 22.
 
 ## 6 · Gate 4 — the icon, the version, the build
 

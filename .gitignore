@@ -28,3 +28,6 @@ Thumbs.db
 # Per-machine agent settings. The committed .claude/settings.json is shared;
 # this one is not.
 .claude/settings.local.json
+
+# league importer: raw psmf.cz pages, so development re-runs do not hit the site
+tools/league-import/cache/

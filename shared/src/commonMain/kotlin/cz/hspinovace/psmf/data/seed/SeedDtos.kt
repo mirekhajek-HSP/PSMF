@@ -59,10 +59,12 @@ data class SeedVenueDto(
     /** Short pitch code, e.g. "ZAKOS". This is what the ZoU header carries. */
     val code: String,
     /**
-     * Optional. PSMF publishes the codes; the long names are not in the
-     * analysis and are not worth inventing.
+     * Optional. The pitch's name as psmf.cz's `/hriste/` lists it, e.g.
+     * "Sokol Stodůlky"; absent rather than invented where it is not known.
      */
     val name: String? = null,
+    /** Optional. The street address, the first line of `/hriste/`'s description. */
+    val address: String? = null,
 )
 
 /** One group file, e.g. `6k.json`. */
@@ -164,7 +166,7 @@ data class SeedFixtureDto(
     val round: Int,
     /** ISO date, e.g. "2026-08-31". */
     val date: LocalDate,
-    /** 24-hour time, e.g. "19:00". Kickoffs run 19:00 to 20:45 in 15-minute steps. */
+    /** 24-hour time, e.g. "19:00", on 15-minute steps: weekday evenings from 17:30, Sundays from 10:00. */
     val time: LocalTime,
     /** Short pitch code. Must exist in `venues.json`. */
     val venue: String,

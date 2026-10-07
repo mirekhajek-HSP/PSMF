@@ -138,7 +138,7 @@ val appModule: Module =
  */
 private fun Module.factoryOfUseCases() {
     factory { ListFixtures(get(), get()) }
-    factory { ObserveReportInProgress(get()) }
+    factory { ObserveReportInProgress(get(), get()) }
     factory { BrowseTeams(get(), get()) }
     factory { LoadTeamRoster(get(), get(), get()) }
     factory { SetDefaultJerseyNumber(get()) }

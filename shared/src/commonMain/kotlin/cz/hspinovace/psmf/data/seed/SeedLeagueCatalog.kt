@@ -61,7 +61,7 @@ class SeedLeagueCatalog(
 
     /** Every pitch in the league. */
     suspend fun loadVenues(): List<Venue> =
-        decode<SeedVenuesDto>(VENUES_FILE).venues.map { Venue(VenueCode(it.code), it.name) }
+        decode<SeedVenuesDto>(VENUES_FILE).venues.map { Venue(VenueCode(it.code), it.name, it.address) }
 
     /** Loads every group named in the index. */
     suspend fun loadAll(): List<LeagueGroup> {
