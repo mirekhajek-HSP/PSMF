@@ -18,7 +18,8 @@ thing was built the way it was; do not re-run them.
 | 06 | Half-time and five phone fixes | WSL container | executed 2026-09-01 |
 | 07 | iOS toolchain proof, against this repo | Mac | Part 1 executed 2026-09-01; Parts 2–3 moved to 08 |
 | 08 | iOS Parts 2 and 3 — compile, then run | Mac | Part 2 executed 2026-09-28; **Part 3 live, blocked on an iPhone** |
-| 09 | iOS TestFlight readiness and a working export | Mac | executed 2026-09-29; Parts 1–3 on `main`, Part 4 on `ios/export` pending the Android check |
+| 09 | iOS TestFlight readiness and a working export | Mac | executed 2026-09-29/30; all on `main` since 2026-10-07; build 0.1.0 (1) uploaded |
+| 10 | Red cards, the clock, league 6 from psmf.cz, build 0.2.0 | WSL container | **live** |
 | 99 | golblok maintenance | separate repo | live, unrelated to this app |
 
 ## Known staleness in the executed ones

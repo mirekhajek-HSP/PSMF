@@ -1,15 +1,37 @@
 # TODO
 
-Grouped by what blocks what, not by size. Last updated 2026-09-30.
+Grouped by what blocks what, not by size. Last updated 2026-10-07.
 
 ---
 
 ## Next
 
+- [ ] **Prompt 10: red cards, the clock, league 6, build 0.2.0 (2).**
+      `prompts/10-cards-clock-and-league-6.md`, four gates in the container.
+      The five card and clock defects and the scraping terms are in
+      `DECISIONS.md`, 2026-10-07.
+- [ ] **Ask the tester what exactly went wrong with red cards.** The review
+      found five defects; their account says which one they hit, and whether
+      there is a sixth the code does not show.
+- [ ] **Whose Apple membership "expires in 17 days"? Due about 17 October.**
+      Shown on developer.apple.com on 30 September. The company's distribution
+      certificate runs to 24 July 2027, which suggests a personal membership.
+      If it is the company's, only the account holder can renew, and TestFlight
+      stops when it lapses. **Ask the account holder this week.**
+- [ ] **On the phone: 0.2.0**, the "On the phone" checklist that prompt 10's
+      report ends with. Supersedes the `d9f16ab` phone test below. Install
+      over the old build; that is the upgrade test.
+- [ ] **TestFlight build 2 (0.2.0) from `main` once prompt 10 lands.** On the
+      Mac, *TestFlight Internal Only* while the TEST icon stands. Then the
+      "First run on an iPhone" checklist, recorded step by step.
+- [x] **`ios/export` merged**, 2026-10-07 (`152f637`), after `./gradlew build
+      :shared:allTests detekt` went green in the container: 388 + 349 + 182
+      tests. The hand-edited Android sources compiled first time.
 - [x] **Half-time, and five fixes from the phone** — done. All four gates, tree
       clean, verified independently at `d9f16ab`: build and suite green, 388 shared
       tests, 162 UI tests.
-- [ ] **Run the whole app on the phone again** — `builds/psmf-debug-d9f16ab.apk`.
+- [ ] ~~**Run the whole app on the phone again** — `builds/psmf-debug-d9f16ab.apk`.~~
+      Superseded by 0.2.0 above; the points below still apply to it.
       Six things changed that only a real device can judge: the half-time control
       in the flow of a match, the icon targets, the chip cascade under a thumb, the
       star, the folder pick, and the translated rules panel.
@@ -20,8 +42,10 @@ Grouped by what blocks what, not by size. Last updated 2026-09-30.
       APK went 38 → 70 MB and is 64 MB of DEX. Copy the five vectors locally.
       Mostly a debug-build artifact, but this project has never built a release and
       iOS has no R8 at all. A morning's work.
-- [ ] **Wait for A1/A2, then import one whole league.** Every group in it, bundled
-      on the device. **No scraping.**
+- [x] ~~**Wait for A1/A2, then import one whole league. No scraping.**~~
+      Reversed 2026-10-07: league 6 is scraped from psmf.cz (prompt 10).
+      A1/A2 are still wanted, for RP numbers and dates of birth, which the
+      site does not publish.
 - [x] **iOS Part 2 — does the code compile?** **Yes, first attempt, no changes.**
       `linkDebugFrameworkIosArm64` green on the Intel Mac with Xcode 26.3 and
       JDK 17; the shared iOS test executable links against `libsqlite3`.
@@ -37,13 +61,6 @@ Grouped by what blocks what, not by size. Last updated 2026-09-30.
       2026-09-30 the app launched and "seemed fine"; the itemised checks (fonts in
       three languages, picker persistence, database survives a kill, every send
       and save case, the CSV's `EF BB BF`) have not been recorded one by one.
-- [ ] **Next upload is build 2.** Bump `CURRENT_PROJECT_VERSION`. While the TEST
-      icon is in place, upload with *TestFlight Internal Only*.
-- [ ] **Check whose membership "expires in 17 days"** (developer.apple.com, team
-      menu). The company's distribution certificate runs to 24 July 2027, which
-      suggests it is a personal membership, not the company's. If it is the
-      company's, only the account holder can renew, and TestFlight stops if it
-      lapses.
 - [ ] **Keep the team ID out of the repository.** Selecting the team made Xcode
       write `DEVELOPMENT_TEAM` into `project.pbxproj`, which is left modified and
       uncommitted on the Mac. Moving it into a git-ignored local `.xcconfig` would
@@ -85,7 +102,8 @@ Nothing below can start until the relevant answer lands.
 - [ ] **App icon** — to be provided. A temporary **TEST** icon is in place so
       internal TestFlight can run (DECISIONS, 2026-09-30). **Replace it before
       external testing or any store submission.** Ask PSMF about their logo.
-- [ ] **Merge `ios/export` after the Windows machine builds Android.** Part 4
+- [x] **Merge `ios/export` after the Windows machine builds Android.** Done
+      2026-10-07; the phone half rides on 0.2.0. Part 4
       of `prompts/09` changed common export code and **edited Android by hand
       without compiling it** (no Android SDK on the Mac). Run `./gradlew build`,
       `:shared:allTests` and `detekt`, then on a phone: save, back out of the
@@ -112,6 +130,13 @@ Nothing below can start until the relevant answer lands.
       transfer to the company org. Promoted to Next; the Mac needs it now.
 
 ## Never done, and due
+
+- [ ] **Google Play internal testing**, Android's TestFlight. Needs the
+      company's Play Console with a role for the owner, the app record, the
+      upload keystore below, and the first release build (an AAB). A public
+      release also needs a privacy policy URL and the Data safety form, which
+      wait on A10/A26; check whether the internal track asks for them sooner.
+      Until then, sideloaded APKs.
 
 - [ ] **A release build.** Not once, in any session. It is where R8, the shrinker
       rules and signing all get exercised for the first time, and where the
@@ -141,8 +166,9 @@ Nothing below can start until the relevant answer lands.
 
 None blocking, all from the build reports.
 
-- [ ] **iOS has been compiled but never run.** The Compose half is proven only
-      as a static archive until the app links. See the iOS Part 2 report.
+- [x] **iOS has run**, on an iPhone 15, 2026-09-30, after one `Info.plist`
+      fix (`CADisableMinimumFrameDurationOnPhone`). The itemised checklist is
+      still open, under Next.
 - [ ] **The minute notation has two loose ends** — `Minute.HALF_LENGTH`/`FULL_LENGTH`
       are hardcoded 30/60 while the clock reads the group file, and `60´+` means
       only the final whistle while `30´+` also covers added time. Neither is wrong

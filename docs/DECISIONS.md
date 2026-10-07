@@ -5,6 +5,135 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-07 · Scrape psmf.cz after all: league 6, all twelve groups, for internal testing
+
+**Owner's decision, reversing 2026-08-31.** That entry said wait for PSMF's
+own data, because an importer built against a guess gets built twice. A
+month and four rounds later the guess is no longer a guess. Each team page
+on psmf.cz now carries:
+
+- the **squad**, as a statistics table of everyone who has appeared
+  (`Bělohlávek Jan · 3 · 0`: surname first, matches, goals)
+- **all eleven fixtures** with round, date, time and pitch code
+- **every played match in detail**: both lineups (goalkeeper first), goals
+  with minutes, cards marked `is-yellow` / `is-red` in the markup, the
+  half-time score, and the referees
+
+Plus `/dresy/` per group (each team's kit colours, verbatim) and `/hriste/`
+(every pitch code with its name and address). `robots.txt` disallows only
+`/cms/`.
+
+**What it still cannot give us:** RP numbers, dates of birth, jersey numbers,
+and anyone who has not yet played. So it does not answer A1/A2, it works
+round them.
+
+**The scope is the one already decided: one whole league, every group in
+it.** League 6 is twelve groups, 6-A to 6-L, about 144 teams. Bundled on the
+device, no network, unchanged.
+
+**Conditions:**
+
+- **Polite.** Sequential, at least a second between requests, a
+  user-agent naming the project, raw pages cached so development re-runs do
+  not hit the site again. About 170 requests per full run.
+- **An importer, not a one-off.** It must preserve every existing id by
+  natural key (`SeedIdentity`), because the next run, after round six, must
+  not orphan the matches recorded since this one.
+- **The invented placeholder group retires.** `6k.json` was made up. Real
+  6-K replaces it, and a match saved against a placeholder team must not
+  crash any screen.
+- **Internal testing only.** The names are public on psmf.cz, but putting
+  them in a store build is a different act and waits for A10 and A26.
+  TestFlight internal testers and sideloaded APKs are fine.
+
+**Reverses if:** PSMF supply the export A1/A2 ask for. That becomes the
+source and the scraper stops. Also if PSMF object to the scraping, which
+the PM should mention to them before anyone else does.
+
+---
+
+## 2026-10-07 · A league player may arrive with no identification; the referee writes the date of birth
+
+`Player` refuses to exist without an RP number, a date of birth or a birth
+number. Every scraped player has none of the three. The invented seed data
+hid this by giving all 144 placeholder players a made-up date of birth.
+
+**The rule moves from the player to the appearance**, which is where the
+form puts it anyway. A league player with no identification can be in the
+squad. To *field* them, the referee enters the date of birth at the pitch,
+which is exactly the form's printed rule (*"uvedou místo čísla RP jejich
+datum narození"*). `Appearance.reportedIdentification` stays non-null, so a
+report still cannot be produced with an empty `Číslo RP` column.
+
+Today a squad player without identification gets *"Chybí údaj do sloupce
+Číslo RP"* with no way to fix it. That path has never been reachable,
+because the invented data never produced one.
+
+**Reverses if:** PSMF supply RP numbers or dates of birth (A1/A2).
+
+---
+
+## 2026-10-07 · The card and clock review: five defects, four of them about red cards
+
+The tester mentioned problems with red cards without saying what. Reading
+the code found these, in order of harm:
+
+1. **A second yellow does not send the player off.** A yellow for a
+   player who already has one saves a plain yellow: no dismissal, no power
+   play, the row stays live, and the report shows two yellows and no red.
+   Choosing red and then *2. ŽK* instead does dismiss, but then the season
+   count gets 1 where the rule says 0. The model expects three entries
+   (yellow, yellow, red 2. ŽK) for what is one action on the pitch, and no
+   referee will make three entries. **Decided: a second yellow is one
+   action that records both, and one undo takes both back.**
+2. **`2. ŽK` can vanish from the report.** The kind is stored, but the
+   export prints only the free-text reason. *2. ŽK* is pre-filled only into
+   an empty reason, so a referee who typed the reason first exports a
+   second-yellow red indistinguishable from a straight one. Switching back
+   to straight keeps "2. ŽK" as the reason of a straight red. **Decided: the
+   report writes the kind from the stored field, never from free text.**
+3. **The power play runs on the wall clock.** A red at 25´ with a
+   five-minute half-time expires during the break, and the second half
+   starts at full strength. A red at `60´+` starts a ten-minute power play
+   after the match has ended. **Decided: ten minutes of play**, not
+   counting the interval; none after the final whistle; none for a card
+   shown to someone not in the lineup (`NamedPerson`), who is not on the
+   pitch to be replaced.
+4. **Second-half minutes inherit the first half's added time.** End the
+   first period at 32 minutes and the second starts at `32´`, not `30´`.
+   This was built and tested on purpose ("continues the same sixty
+   minutes"), and I think the intent was wrong. `30´+` already absorbs
+   first-half added time, which only makes sense if the second half
+   restarts at 30. psmf.cz agrees: Krabice–Hustec, 1:1 (0:0), has a goal at
+   `32.`. **Decided: period *k* starts at (*k*−1) × half length.**
+   Consequence: `30´+` must sort before the second half's `30´`, and the
+   half-time score must count exactly the first period's goals.
+5. **Undo removes the wrong event** when two share a minute, or when the
+   referee typed an earlier minute. A card at 20´ then a goal at 20´: Undo
+   takes the card. **Decided: undo goes by recording order, not by minute.**
+
+Also stale: `CLAUDE.md`, `MatchClock.kt` and `Match.kickoffAt` still say
+the clock has no accumulated time and nothing but kickoff. Since half-time
+that is false. The rule that survives is *no stoppage during play*.
+
+**Reverses if:** a referee says the second half's minutes really do
+continue from the first half's added time (4), or that a team official's
+red does reduce a side (3).
+
+---
+
+## 2026-10-07 · Android gets the same TEST icon
+
+**Owner's decision.** Android has had no launcher icon at all, only the
+system default. It takes the iOS TEST icon (2026-09-30) on the same terms:
+obviously temporary, and replaced on both platforms in one commit when the
+real icon arrives. Android masks icons to a circle or squircle, so the
+artwork is fitted inside the adaptive icon's safe zone, not just copied.
+
+**Reverses if:** the real icon arrives.
+
+---
+
 ## 2026-09-30 · A temporary TEST icon, so internal TestFlight can start
 
 **Owner's decision, reversing `prompts/09`**, which said to leave `AppIcon`
