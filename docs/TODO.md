@@ -10,14 +10,15 @@ Grouped by what blocks what, not by size. Last updated 2026-10-07.
       `prompts/10-cards-clock-and-league-6.md`, four gates in the container.
       The five card and clock defects and the scraping terms are in
       `DECISIONS.md`, 2026-10-07.
-- [ ] **Ask the tester what exactly went wrong with red cards.** The review
-      found five defects; their account says which one they hit, and whether
-      there is a sixth the code does not show.
+- [ ] **The tester's red-card report.** Not answering as of 2026-10-07, and
+      the owner's call is not to chase it: the review found five defects, and
+      prompt 10 fixes them. If the tester describes it later, check it against
+      those five. Only something outside them reopens the digging.
 - [ ] **Whose Apple membership "expires in 17 days"? Due about 17 October.**
       Shown on developer.apple.com on 30 September. The company's distribution
       certificate runs to 24 July 2027, which suggests a personal membership.
       If it is the company's, only the account holder can renew, and TestFlight
-      stops when it lapses. **Ask the account holder this week.**
+      stops when it lapses. **The PM is handling it** (owner, 2026-10-07).
 - [ ] **On the phone: 0.2.0**, the "On the phone" checklist that prompt 10's
       report ends with. Supersedes the `d9f16ab` phone test below. Install
       over the old build; that is the upgrade test.
@@ -55,8 +56,8 @@ Grouped by what blocks what, not by size. Last updated 2026-10-07.
       Manager; the app record was created by the account holder; the first
       device run on an iPhone 15 worked after one `Info.plist` fix. See
       `reports/2026-09-29-ios-testflight-readiness.md` §8.
-- [ ] **TestFlight: once Apple has processed build 1**, create an internal group,
-      add testers and the build, and install through the TestFlight app.
+- [x] **TestFlight build 1 installed through TestFlight on two devices, and
+      it works** (owner, 2026-10-07).
 - [ ] **Run the "First run on an iPhone" checklist properly**, step by step. On
       2026-09-30 the app launched and "seemed fine"; the itemised checks (fonts in
       three languages, picker persistence, database survives a kill, every send
@@ -83,7 +84,8 @@ Grouped by what blocks what, not by size. Last updated 2026-10-07.
 
 ## Blocked on PSMF answers
 
-**All 30 sent 2026-08-31 via the PM. Awaiting reply.** See `QUESTIONS.md`.
+**All 30 sent 2026-08-31 via the PM. Awaiting reply; still nothing on
+2026-10-07.** See `QUESTIONS.md`.
 Nothing below can start until the relevant answer lands.
 
 - [ ] Roster storage design — blocked on **A1, A2** (does a usable player database
@@ -147,8 +149,8 @@ Nothing below can start until the relevant answer lands.
       one, back it up somewhere that is not this machine, and **never let it near
       the container** — losing it means never updating the app on Play again.
       Blocked behind nothing except deciding to do it.
-- [ ] **No date for showing PSMF the demo.** The point of the whole project, and
-      it is not tracked anywhere. It also gates how much polish is worth doing.
+- [ ] **No date for showing PSMF the demo.** Still none on 2026-10-07. The
+      point of the whole project, and it is not tracked anywhere. It also gates how much polish is worth doing.
 
 ## Queued
 
