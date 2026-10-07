@@ -120,7 +120,8 @@
     <string name="card_reason">Důvod</string>
     <string name="card_reason_note">Důvod je povinný u každé karty. U červené musí být jednoznačný — „zmaření vyložené šance“ nestačí, protože mohlo být provedeno čistě.</string>
     <string name="card_save">Uložit</string>
-    <string name="card_second_yellow_hint">Hráč už v tomto utkání ŽK má. Druhá znamená vyloučení a na zápis se píše 2. ŽK.</string>
+    <string name="card_second_yellow_hint">Hráč už v tomto utkání ŽK má. Uložení zapíše druhou ŽK i červenou kartu (2. ŽK) a hráč bude vyloučen.</string>
+    <string name="card_save_sends_off">Vyloučit (2. ŽK)</string>
     <string name="card_error_subject">Zadejte jméno.</string>
     <string name="card_error_reason">Zadejte důvod.</string>
     <string name="card_error_dismissal">Vyberte, zda jde o přímou ČK, nebo o 2. ŽK.</string>

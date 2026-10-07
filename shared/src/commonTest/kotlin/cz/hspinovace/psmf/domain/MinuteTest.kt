@@ -35,15 +35,20 @@ class MinuteTest {
     }
 
     @Test
-    fun halfTimeSortsAfterMinuteThirtyAndBeforeMinuteThirtyOne() {
+    fun halfTimeSortsAfterMinuteTwentyNineAndBeforeTheSecondHalfsThirty() {
+        // The second half kicks off at 30´ whatever the first half added
+        // (DECISIONS 2026-10-07), so 30´ is the second half's first minute
+        // and 30´+ -- added time and the interval -- comes before it. Until
+        // then this asserted 30´, 30´+, 31´.
         val ordered =
             listOf(
                 Minute.Played(31),
                 Minute.HalfTime,
                 Minute.Played(30),
+                Minute.Played(29),
             ).sorted()
 
-        assertEquals(listOf(Minute.Played(30), Minute.HalfTime, Minute.Played(31)), ordered)
+        assertEquals(listOf(Minute.Played(29), Minute.HalfTime, Minute.Played(30), Minute.Played(31)), ordered)
     }
 
     @Test

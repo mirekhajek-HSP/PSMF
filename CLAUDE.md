@@ -125,9 +125,15 @@ Full list and sources in `docs/TECH_STACK.md` §4. The ones that bite:
 - **A team owns two kit sets and the lineup records which was worn.** `label` is
   verbatim from PSMF and authoritative for the report; `colours` is for the app
   only. Neither is derivable from the other.
-- **The match clock never pauses.** 2 × 30 gross time, continuous. There is no
-  pause, stop, resume or adjust operation and there must not be one. The power
-  play is the only timer with a lifecycle: ten minutes, not shortened by a goal.
+- **No stoppage during play.** 2 × 30 gross time, continuous within each period.
+  There is no pause, stop, resume or adjust operation during play and there must
+  not be one. **A recorded interval between periods** is not that: ending a
+  period and starting the next are each stored once as an instant, the interval
+  is not part of the sixty minutes, and period *k* starts at (*k*−1) × half
+  length — the second half kicks off at `30´` whatever the first added. The
+  power play is the only timer with a lifecycle: ten minutes **of play**, held
+  through the interval, not shortened by a goal, and none after the final
+  whistle or for someone not in the lineup.
 - **The app must never claim a player is eligible.** It may warn that one might
   not be. Absence of a warning is not clearance — fielding an ineligible player
   is a technical forfeit, and an app that displayed "clear" would have caused it.
@@ -149,7 +155,7 @@ Listed because they will otherwise be copied from a familiar codebase:
 | Manual `org.json` | kotlinx.serialization |
 | JUnit 5 + MockK everywhere | `kotlin.test` + fakes in shared code |
 | Foreground service running the clock | Store the kickoff timestamp, derive elapsed time. **iOS cannot run a background timer at all** |
-| Clock pauses for injuries and breaks | **PSMF has no stoppage.** The clock runs continuously; the referee adds time instead |
+| Clock pauses for injuries and breaks | **PSMF has no stoppage during play.** The clock runs continuously; the referee adds time instead. Only the interval between periods is recorded |
 | One kit colour per team | A team owns **two** kit sets and picks one per match |
 | Assists, substitutions | Neither appears on the ZoU. Do not build them |
 | User-configurable match rules | The league sets them. A referee changing the half length is a defect |

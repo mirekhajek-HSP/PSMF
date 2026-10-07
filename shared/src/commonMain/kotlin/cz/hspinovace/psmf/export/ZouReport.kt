@@ -121,9 +121,48 @@ data class ZouCard(
     val minute: String,
     @SerialName("jersey") val jerseyNumber: Int?,
     val name: String,
-    /** Mandatory. For a second-yellow dismissal the form writes `2. ŽK`. */
+    /** Mandatory, and exactly what the referee wrote. */
     val reason: String,
-)
+    /**
+     * For a red, which kind: **from the stored field, never from [reason]**
+     * (DECISIONS 2026-10-07). Null for a yellow.
+     */
+    val dismissal: ZouDismissal? = null,
+) {
+    /**
+     * What the TXT and CSV write after the name. A second-yellow red reads
+     * `2. ŽK` whatever the referee typed, with their reason kept beside it
+     * when they gave one other than `2. ŽK` itself; anything else reads its
+     * reason, so a straight red never says `2. ŽK` unless the referee wrote
+     * those words.
+     */
+    val written: String
+        get() =
+            when {
+                dismissal != ZouDismissal.SECOND_YELLOW -> reason
+                reason.isBlank() || reason.isJustTheSecondYellowMark() -> ZouLabels.Cards.SECOND_YELLOW
+                else -> "${ZouLabels.Cards.SECOND_YELLOW} ($reason)"
+            }
+}
+
+/**
+ * The two kinds of red, as the report spells them. Serialised in Czech,
+ * like every other value in the report; `2. ŽK` is the form's own notation.
+ */
+@Serializable
+enum class ZouDismissal {
+    @SerialName(ZouLabels.Cards.STRAIGHT_RED)
+    STRAIGHT,
+
+    @SerialName(ZouLabels.Cards.SECOND_YELLOW)
+    SECOND_YELLOW,
+}
+
+/** `2. ŽK`, however it was spaced or capitalised -- what 0.1.0 pre-filled into a reason. */
+private fun String.isJustTheSecondYellowMark(): Boolean =
+    squeezed().equals(ZouLabels.Cards.SECOND_YELLOW.squeezed(), ignoreCase = true)
+
+private fun String.squeezed(): String = filterNot { it.isWhitespace() }
 
 @Serializable
 data class ZouResult(

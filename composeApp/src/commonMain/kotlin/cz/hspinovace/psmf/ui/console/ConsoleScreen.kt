@@ -39,12 +39,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cz.hspinovace.psmf.domain.CardEvent
 import cz.hspinovace.psmf.domain.CardSubject
+import cz.hspinovace.psmf.domain.Dismissal
 import cz.hspinovace.psmf.domain.GoalEvent
 import cz.hspinovace.psmf.domain.MatchEvent
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.resources.Res
+import cz.hspinovace.psmf.resources.card_dismissal_second
 import cz.hspinovace.psmf.resources.console_card
 import cz.hspinovace.psmf.resources.console_card_other
 import cz.hspinovace.psmf.resources.console_continue
@@ -421,10 +423,27 @@ private fun LogRow(
                 event.subjectName(state)
             }
         }
+    val secondYellow = stringResource(Res.string.card_dismissal_second)
     val detail =
         when (event) {
-            is GoalEvent -> event.scoreAfter.asWrittenOnReport
-            is CardEvent -> event.reason.text
+            is GoalEvent -> {
+                event.scoreAfter.asWrittenOnReport
+            }
+
+            // The kind from the stored field, as the report writes it.
+            is RedCard -> {
+                if (event.dismissal ==
+                    Dismissal.SECOND_YELLOW
+                ) {
+                    "$secondYellow · ${event.reason}"
+                } else {
+                    event.reason.text
+                }
+            }
+
+            is CardEvent -> {
+                event.reason.text
+            }
         }
 
     Text(

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cz.hspinovace.psmf.data.match.MatchRepository
 import cz.hspinovace.psmf.domain.AppearanceId
+import cz.hspinovace.psmf.domain.Dismissal
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.Minute
@@ -42,6 +43,25 @@ data class ConsoleUiState(
     val selected get() = entry?.side(selectedSide)
 
     fun cardProblem(kind: CardProblem): Boolean = kind in cardProblems
+
+    /**
+     * The player the open card is for already has a yellow in this match.
+     * Read from the row, the same fact `LogCard` reads from the match.
+     */
+    val cardSubjectBooked: Boolean
+        get() {
+            val appearance = card?.appearance ?: return false
+            return (entry?.row(appearance)?.yellowsInThisMatch ?: 0) > 0
+        }
+
+    /** Saving the open card sends a booked player off for a second yellow. */
+    val cardSendsOff: Boolean get() = card?.sendsOffForSecondYellow(cardSubjectBooked) == true
+
+    /** Whether the open red may be `2. ŽK`; for an unbooked player it can only be straight. */
+    val cardOffersSecondYellowKind: Boolean get() = card?.offersSecondYellowKind(cardSubjectBooked) == true
+
+    /** The kind the open red would be saved as, or null until one is chosen. */
+    val cardDismissalKind: Dismissal? get() = card?.dismissalKind(cardSubjectBooked)
 }
 
 sealed interface ConsoleEvent {
@@ -201,15 +221,17 @@ class ConsoleViewModel(
 
     private fun submitCard() {
         val draft = _state.value.card ?: return
-        val problems = draft.problems()
+        val problems = draft.problems(_state.value.cardSubjectBooked)
         if (problems.isNotEmpty()) {
             _state.update { it.copy(cardProblems = problems) }
             return
         }
         val current = match ?: return
+        val halfLength = _state.value.entry?.halfLengthMinutes ?: Minute.HALF_LENGTH
         viewModelScope.launch {
-            // A dismissal starts a power play from this instant; see LogCard.
-            match = logCard(current, draft, clock.now()) ?: current
+            // A second yellow records both cards; a dismissal starts ten
+            // minutes of play from the minute written. See LogCard.
+            match = logCard(current, draft, clock.now(), halfLength) ?: current
             _state.update { it.copy(card = null, cardProblems = emptyList()) }
             reload()
         }

@@ -9,11 +9,13 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * RULE: **the match clock runs continuously and never pauses.**
+ * RULE: **no stoppage during play.**
  *
  * Analysis section 2.6: *"2 × 30 minutes gross time... The clock runs
- * continuously; the referee may add time."* There is no stoppage in malý
- * fotbal — not for injuries, not for breaks in play.
+ * continuously; the referee may add time."* Inside a period there is no
+ * stoppage in malý fotbal — not for injuries, not for breaks in play. The
+ * interval between periods is recorded, and is not that; see
+ * [PeriodBreakTest].
  *
  * golblok pauses its clock. That behaviour must not be carried across, and
  * these tests are what stops it being reintroduced by someone reasoning
@@ -127,7 +129,7 @@ class PeriodBreakTest {
     }
 
     @Test
-    fun startingTheNextPeriodResumesFromWhereTheBreakBegan() {
+    fun startingTheNextPeriodResumesPlayFromTheBreakAndTheMinuteFromThirty() {
         val resumed =
             running().copy(
                 periodBreaks =
@@ -136,10 +138,34 @@ class PeriodBreakTest {
 
         assertFalse(resumed.inPeriodInterval)
         assertEquals(2, resumed.currentPeriodNumber())
-        // Gross time: the second period continues the same sixty minutes
-        // rather than restarting the count from zero.
+        // Play itself picks up from where the break began -- 32 minutes of it
+        // happened, and a power play carried over the interval needs that.
         assertEquals(32.minutes, resumed.elapsedAt(kickoff + 35.minutes))
         assertEquals(57.minutes, resumed.elapsedAt(kickoff + 35.minutes + 25.minutes))
+        // But the minute the form writes restarts at the half length,
+        // whatever the first half added. Until 2026-10-07 this asserted the
+        // opposite, "the second period continues the same sixty minutes":
+        // 32´ at the restart. See DECISIONS, the card and clock review.
+        val halfLength = Fixtures.group.halfLengthMinutes
+        assertEquals(Minute.Played(30), resumed.clock.minuteAt(kickoff + 35.minutes, resumed.status, halfLength))
+        assertEquals(Minute.Played(55), resumed.clock.minuteAt(kickoff + 60.minutes, resumed.status, halfLength))
+    }
+
+    @Test
+    fun anInstantBeforeABreakCountsOnlyThePlayBeforeIt() {
+        // Elapsed play can be asked about any instant, not only "now" -- a
+        // power play that began before the break is measured from one.
+        val resumed =
+            running().copy(
+                periodBreaks =
+                    listOf(PeriodBreak(endedAt = kickoff + 32.minutes, nextStartedAt = kickoff + 47.minutes)),
+            )
+
+        assertEquals(25.minutes, resumed.elapsedAt(kickoff + 25.minutes))
+        assertEquals(32.minutes, resumed.elapsedAt(kickoff + 40.minutes))
+        assertEquals(35.minutes, resumed.elapsedAt(kickoff + 50.minutes))
+        assertEquals(kickoff + 50.minutes, resumed.clock.instantAtElapsed(35.minutes))
+        assertEquals(kickoff + 25.minutes, resumed.clock.instantAtElapsed(25.minutes))
     }
 
     @Test
@@ -161,16 +187,20 @@ class PeriodBreakTest {
 }
 
 /**
- * RULE: **a dismissed player's team plays a player short for ten minutes**,
- * a period *not* shortened by a goal and unaffected by further dismissals
- * (analysis section 2.6).
+ * RULE: **a dismissed player's team plays a player short for ten minutes of
+ * play**, a period *not* shortened by a goal and unaffected by further
+ * dismissals (analysis section 2.6), and held through the interval.
  *
- * This is the only timer in the match with a lifecycle, and it runs
- * alongside a match clock that never pauses.
+ * This is the only timer in the match with a lifecycle, and it runs on the
+ * same clock as the match: no stoppage during play, and a recorded interval
+ * that is not part of it. `CardAndClockReviewTest` has the interval cases.
  */
 class PowerPlayTest {
     private val kickoff = Fixtures.kickoffAt
     private val dismissal = kickoff + 40.minutes
+
+    /** A second half that started at 30:00 of play, so play and wall clock agree from here. */
+    private val clock = PlayClock(kickoff, listOf(PeriodBreak(kickoff + 30.minutes, kickoff + 30.minutes)))
 
     private fun powerPlay() = PowerPlay(TeamSide.AWAY, dismissal, Minute.Played(40))
 
@@ -178,18 +208,30 @@ class PowerPlayTest {
     fun itRunsForTenMinutesFromTheDismissal() {
         val play = powerPlay()
         assertEquals(10.minutes, PowerPlay.LENGTH)
-        assertEquals(dismissal + 10.minutes, play.endsAt)
-        assertEquals(10.minutes, play.remainingAt(dismissal))
-        assertEquals(4.minutes, play.remainingAt(dismissal + 6.minutes))
+        assertEquals(10.minutes, play.remainingAt(clock, dismissal))
+        assertEquals(4.minutes, play.remainingAt(clock, dismissal + 6.minutes))
     }
 
     @Test
     fun itIsRunningInsideTheWindowAndNotOutsideIt() {
         val play = powerPlay()
-        assertFalse(play.isRunningAt(dismissal - 1.seconds))
-        assertTrue(play.isRunningAt(dismissal))
-        assertTrue(play.isRunningAt(dismissal + 9.minutes + 59.seconds))
-        assertFalse(play.isRunningAt(dismissal + 10.minutes))
+        assertFalse(play.isRunningAt(clock, dismissal - 1.seconds))
+        assertTrue(play.isRunningAt(clock, dismissal))
+        assertTrue(play.isRunningAt(clock, dismissal + 9.minutes + 59.seconds))
+        assertFalse(play.isRunningAt(clock, dismissal + 10.minutes))
+    }
+
+    @Test
+    fun theIntervalDoesNotCountTowardsTheTenMinutes() {
+        // Red at 25:00, half-time from 30:00 to a 45:00 restart: five minutes
+        // before the break, nothing during it, five after.
+        val withABreak = PlayClock(kickoff, listOf(PeriodBreak(kickoff + 30.minutes, kickoff + 45.minutes)))
+        val play = PowerPlay(TeamSide.AWAY, kickoff + 25.minutes, Minute.Played(25))
+
+        assertEquals(5.minutes, play.remainingAt(withABreak, kickoff + 30.minutes))
+        assertEquals(5.minutes, play.remainingAt(withABreak, kickoff + 44.minutes))
+        assertTrue(play.isRunningAt(withABreak, kickoff + 49.minutes))
+        assertFalse(play.isRunningAt(withABreak, kickoff + 50.minutes))
     }
 
     @Test
@@ -210,10 +252,10 @@ class PowerPlayTest {
             )
 
         assertEquals(
-            match.powerPlays.single().remainingAt(duringThePenalty),
-            afterAGoal.powerPlays.single().remainingAt(duringThePenalty),
+            match.powerPlays.single().remainingAt(match.clock, duringThePenalty),
+            afterAGoal.powerPlays.single().remainingAt(afterAGoal.clock, duringThePenalty),
         )
-        assertEquals(7.minutes, afterAGoal.powerPlays.single().remainingAt(duringThePenalty))
+        assertEquals(7.minutes, afterAGoal.powerPlays.single().remainingAt(afterAGoal.clock, duringThePenalty))
     }
 
     @Test
@@ -227,7 +269,8 @@ class PowerPlayTest {
             )
 
         // The first still ends when it always would have.
-        assertEquals(dismissal + 10.minutes, match.powerPlays.first().endsAt)
+        assertTrue(match.powerPlays.first().isRunningAt(match.clock, dismissal + 9.minutes + 59.seconds))
+        assertFalse(match.powerPlays.first().isRunningAt(match.clock, dismissal + 10.minutes))
         // Both run at once, so the side is two players short.
         val overlapping = dismissal + 6.minutes
         assertEquals(2, match.playersShortAt(TeamSide.AWAY, overlapping))
@@ -241,7 +284,7 @@ class PowerPlayTest {
 
     @Test
     fun remainingTimeNeverGoesNegative() {
-        assertEquals(kotlin.time.Duration.ZERO, powerPlay().remainingAt(dismissal + 30.minutes))
+        assertEquals(kotlin.time.Duration.ZERO, powerPlay().remainingAt(clock, dismissal + 30.minutes))
     }
 
     @Test

@@ -69,6 +69,13 @@ object ZouLabels {
         const val SECOND_YELLOW = "2. ŽK"
 
         /**
+         * A red in its own right. The form has no notation for it -- a
+         * straight red is simply a red with a reason -- so this is the
+         * app's Czech, used only where the kind has to be named (JSON).
+         */
+        const val STRAIGHT_RED = "přímá ČK"
+
+        /**
          * The paper form requires the boxes to be struck through when no
          * card was issued, so "none" is an affirmation rather than a blank.
          */

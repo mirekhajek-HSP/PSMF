@@ -1,0 +1,22 @@
+-- Version 4 to version 5: goals, cards and power plays record the order
+-- the referee recorded them in.
+--
+-- Undo takes back the last thing recorded (DECISIONS 2026-10-07), and
+-- nothing stored until now could say what that was: `position` is the order
+-- within one table, so it cannot tell a card at 20´ from a goal recorded
+-- after it at 20´, and the minute cannot tell a card typed in late from a
+-- goal recorded before it.
+--
+-- WHAT AN EXISTING MATCH GETS: NULL in every one of its rows. That is the
+-- truth -- version 4 kept no recording order -- and the app reads NULL as
+-- "recorded before 0.2.0": older than anything with a number, and, among
+-- themselves, ordered by the timeline exactly as Undo ordered them in
+-- 0.1.0. So a match carried across the update undoes its old events as it
+-- always did, and its new ones by recording order, newest first. Nothing
+-- is invented to fill the column.
+--
+-- Nullable for the same reason: a default would be a fabricated order.
+
+ALTER TABLE goal_record ADD COLUMN sequence INTEGER;
+ALTER TABLE card_record ADD COLUMN sequence INTEGER;
+ALTER TABLE power_play_record ADD COLUMN sequence INTEGER;

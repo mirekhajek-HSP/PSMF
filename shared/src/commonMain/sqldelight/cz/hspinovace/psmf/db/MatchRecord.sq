@@ -101,21 +101,26 @@ CREATE TABLE period_break_record (
     PRIMARY KEY (match_id, position)
 );
 
--- A dismissed player's team plays a player short for ten minutes.
+-- A dismissed player's team plays a player short for ten minutes of play.
 --
 -- Its own table because a match may have more than one running at once: a
 -- second dismissal starts a second, independent period rather than
 -- extending the first. The ten minutes are fixed -- NOT shortened by a
--- goal -- so nothing but the start instant needs storing.
+-- goal -- and counted on the match's own clock, which skips the interval,
+-- so nothing but the start instant needs storing.
 CREATE TABLE power_play_record (
     match_id          TEXT    NOT NULL,
     position          INTEGER NOT NULL,
     short_handed_side TEXT    NOT NULL,
-    -- ISO-8601 instant, on the same continuous clock as kickoff_at.
+    -- ISO-8601 instant, on the same wall clock as kickoff_at: where the ten
+    -- minutes of play began.
     started_at        TEXT    NOT NULL,
     -- The minute as the referee wrote it against the card. Display only.
     minute_kind       TEXT    NOT NULL,
     minute_value      INTEGER,
+    -- The recording action that started it, shared with its red card, so
+    -- that undoing the card takes this back too. See goal_record.sequence.
+    sequence          INTEGER,
     PRIMARY KEY (match_id, position)
 );
 
@@ -151,6 +156,12 @@ CREATE TABLE goal_record (
     scorer_appearance_id TEXT,
     score_home           INTEGER NOT NULL,
     score_away           INTEGER NOT NULL,
+    -- RECORDING order across goals and cards together, which position --
+    -- the order within this one table -- cannot give: it is what Undo
+    -- takes back. One per recording action, counting from 1 in the match;
+    -- a second yellow's two cards share one. NULL for a row written before
+    -- version 5, which kept no such order; see 4.sqm.
+    sequence             INTEGER,
     PRIMARY KEY (match_id, position)
 );
 
@@ -168,8 +179,11 @@ CREATE TABLE card_record (
     subject_name          TEXT,
     reason                TEXT    NOT NULL,
     -- STRAIGHT or SECOND_YELLOW, red cards only. Suspension arithmetic
-    -- depends on the distinction.
+    -- depends on the distinction, and the report writes 2. ŽK from this
+    -- column, never from reason.
     dismissal             TEXT,
+    -- Recording order; see goal_record.sequence.
+    sequence              INTEGER,
     PRIMARY KEY (match_id, position)
 );
 
@@ -266,8 +280,8 @@ DELETE FROM added_player_record WHERE match_id = ?;
 
 insertGoal:
 INSERT OR REPLACE INTO goal_record (
-    match_id, position, minute_kind, minute_value, side, scorer_appearance_id, score_home, score_away
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+    match_id, position, minute_kind, minute_value, side, scorer_appearance_id, score_home, score_away, sequence
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectGoals:
 SELECT * FROM goal_record WHERE match_id = ? ORDER BY position;
@@ -278,8 +292,8 @@ DELETE FROM goal_record WHERE match_id = ?;
 insertCard:
 INSERT OR REPLACE INTO card_record (
     match_id, position, colour, minute_kind, minute_value, side,
-    subject_kind, subject_appearance_id, subject_name, reason, dismissal
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+    subject_kind, subject_appearance_id, subject_name, reason, dismissal, sequence
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectCards:
 SELECT * FROM card_record WHERE match_id = ? ORDER BY position;
@@ -289,8 +303,8 @@ DELETE FROM card_record WHERE match_id = ?;
 
 insertPowerPlay:
 INSERT OR REPLACE INTO power_play_record (
-    match_id, position, short_handed_side, started_at, minute_kind, minute_value
-) VALUES (?, ?, ?, ?, ?, ?);
+    match_id, position, short_handed_side, started_at, minute_kind, minute_value, sequence
+) VALUES (?, ?, ?, ?, ?, ?, ?);
 
 selectPowerPlays:
 SELECT * FROM power_play_record WHERE match_id = ? ORDER BY position;

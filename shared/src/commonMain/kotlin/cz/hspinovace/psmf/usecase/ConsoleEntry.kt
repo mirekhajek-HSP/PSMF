@@ -11,6 +11,7 @@ import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
 import cz.hspinovace.psmf.domain.PeriodBreak
 import cz.hspinovace.psmf.domain.PersonName
+import cz.hspinovace.psmf.domain.PlayClock
 import cz.hspinovace.psmf.domain.PlayerId
 import cz.hspinovace.psmf.domain.PlayerName
 import cz.hspinovace.psmf.domain.PowerPlay
@@ -18,6 +19,7 @@ import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.YellowCard
+import cz.hspinovace.psmf.domain.isPastTheFinalWhistle
 import kotlin.time.Duration
 import kotlin.time.Instant
 
@@ -91,6 +93,13 @@ data class ConsoleEntry(
 ) {
     val started: Boolean get() = kickoffAt != null
 
+    /**
+     * The same clock [Match.clock] is, rebuilt from this snapshot's
+     * instants: a screen has to render from a snapshot, not from a live
+     * domain object, and this way the two cannot count differently.
+     */
+    val clock: PlayClock get() = PlayClock(kickoffAt, periodBreaks)
+
     fun side(side: TeamSide): ConsoleTeam =
         when (side) {
             TeamSide.HOME -> home
@@ -100,15 +109,10 @@ data class ConsoleEntry(
     fun row(id: AppearanceId): ConsoleRow? = home.row(id) ?: away.row(id)
 
     /** True once a period has ended and the next one has not started yet. */
-    val inPeriodInterval: Boolean
-        get() = periodBreaks.isNotEmpty() && periodBreaks.last().nextStartedAt == null
+    val inPeriodInterval: Boolean get() = clock.inPeriodInterval
 
     /** 1-based. Null before kickoff, and null during [inPeriodInterval]. */
-    fun currentPeriodNumber(): Int? {
-        if (kickoffAt == null) return null
-        if (inPeriodInterval) return null
-        return periodBreaks.size + 1
-    }
+    fun currentPeriodNumber(): Int? = clock.currentPeriodNumber()
 
     /**
      * What the "end/start a period" control on the console should offer,
@@ -124,55 +128,29 @@ data class ConsoleEntry(
             }
 
     /**
-     * Elapsed play, skipping any interval in progress -- see
-     * [Match.elapsedAt], which this mirrors for the same reason the whole
-     * type exists: a screen has to render from a snapshot, not a live
-     * domain object.
-     */
-    private fun elapsedAt(now: Instant): Duration? {
-        val start = kickoffAt ?: return null
-        var total = Duration.ZERO
-        var segmentStart = start
-        for (brk in periodBreaks) {
-            total += brk.endedAt - segmentStart
-            val nextStart = brk.nextStartedAt ?: return total
-            segmentStart = nextStart
-        }
-        return total + (now - segmentStart)
-    }
-
-    /**
      * The minute now, and what an event logged this instant would carry if
      * the referee does not say otherwise.
      *
-     * **The clock never pauses during play** (analysis section 2.6): 2 x
-     * 30 gross, and the referee adds time rather than stopping anything.
-     * There is deliberately no pause, stop, resume or adjust operation
+     * **No stoppage during play** (analysis section 2.6): 2 x 30 gross, and
+     * the referee adds time rather than stopping anything. There is
+     * deliberately no pause, stop, resume or adjust operation during play
      * anywhere on this screen or behind it, and there must not be one. A
-     * half-time is not that: the interval between periods is not part of
-     * the sixty minutes, and the minute holds there rather than climbing
-     * through it.
-     *
-     * `30´+` covers both halves of what the form allows for the first
-     * period: added time still inside it, once elapsed play reaches
-     * [halfLengthMinutes] but nobody has pressed "end of period" yet, and
-     * the interval itself. `60´+` is the final whistle -- [status] ==
-     * [MatchStatus.FINISHED] -- not merely the last period running long,
-     * which stays an ordinary [Minute.Played] exactly as it always has.
+     * half-time is not that: the interval between periods is recorded, is
+     * not part of the sixty minutes, and the minute holds there rather than
+     * climbing through it. The second half then kicks off at `30´`
+     * whatever the first added -- see [PlayClock.minuteAt].
      */
-    fun minuteAt(now: Instant): Minute? {
-        if (kickoffAt == null) return null
-        if (status == MatchStatus.FINISHED) return Minute.AfterFinalWhistle
-        val elapsed = elapsedAt(now) ?: return null
-        val minutes = elapsed.inWholeMinutes.toInt().coerceAtLeast(0)
-        return when {
-            inPeriodInterval -> Minute.HalfTime
-            currentPeriodNumber() == 1 && minutes >= halfLengthMinutes -> Minute.HalfTime
-            else -> Minute.Played(minutes)
-        }
-    }
+    fun minuteAt(now: Instant): Minute? = clock.minuteAt(now, status, halfLengthMinutes)
 
-    fun powerPlaysRunningAt(now: Instant): List<PowerPlay> = powerPlays.filter { it.isRunningAt(now) }
+    /** In force at [now]; none once the final whistle has gone. See [Match.powerPlaysRunningAt]. */
+    fun powerPlaysRunningAt(now: Instant): List<PowerPlay> =
+        if (status.isPastTheFinalWhistle) emptyList() else powerPlays.filter { it.isRunningAt(clock, now) }
+
+    /** Play left on [powerPlay] at [now], for the scoreboard's countdown. */
+    fun remainingAt(
+        powerPlay: PowerPlay,
+        now: Instant,
+    ): Duration = powerPlay.remainingAt(clock, now)
 
     fun playersShortAt(
         side: TeamSide,

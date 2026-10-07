@@ -21,6 +21,11 @@ import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamAssessment
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.YellowCard
+import cz.hspinovace.psmf.usecase.CardDraft
+import cz.hspinovace.psmf.usecase.LogCard
+import cz.hspinovace.psmf.usecase.LogGoal
+import cz.hspinovace.psmf.usecase.MinuteDraft
+import cz.hspinovace.psmf.usecase.UndoLastEvent
 import kotlinx.coroutines.test.runTest
 import java.io.File
 import kotlin.test.AfterTest
@@ -180,7 +185,7 @@ class MatchPersistenceTest {
             val powerPlay = restored.powerPlays.single()
             assertEquals(TeamSide.AWAY, powerPlay.shortHandedSide)
             assertEquals(Minute.Played(40), powerPlay.dismissedAtMinute)
-            assertEquals(4.minutes, powerPlay.remainingAt(Instant.parse("2026-08-31T19:46:00Z")))
+            assertEquals(4.minutes, powerPlay.remainingAt(restored.clock, Instant.parse("2026-08-31T19:46:00Z")))
 
             // What was written in the Číslo RP column is stored, not derived:
             // a player registered later must not change an old report.
@@ -279,6 +284,35 @@ class MatchPersistenceTest {
             val restored = session { it.load(original.id) }!!
             assertEquals(3, restored.goals.size)
             assertEquals(withOneMoreGoal, restored)
+        }
+
+    @Test
+    fun undoAfterTheAppRestartsStillTakesBackTheLastThingRecorded() =
+        runTest {
+            // A card at 20´, then a goal at 20´, and the process dies before
+            // the referee presses Undo. The order they were recorded in has
+            // to be on disk: the minutes alone cannot say, and on 8bd3c11 the
+            // next session guessed the card.
+            val kickoff = Instant.parse("2026-08-31T19:00:00Z")
+            val started = Fixtures.matchInSetup().copy(status = MatchStatus.IN_PROGRESS, kickoffAt = kickoff)
+            val card =
+                CardDraft(
+                    side = TeamSide.AWAY,
+                    appearance = Fixtures.bacaAppearance.id,
+                    reason = "podražení",
+                    minute = MinuteDraft("20"),
+                )
+            session { matches ->
+                matches.save(started)
+                val booked = assertNotNull(LogCard(matches)(started, card, kickoff + 20.minutes))
+                LogGoal(matches)(booked, TeamSide.HOME, null, Minute.Played(20))
+            }
+
+            val undone = session { matches -> UndoLastEvent(matches)(assertNotNull(matches.load(started.id))) }
+
+            assertTrue(undone.goals.isEmpty(), "Undo took the card, not the goal recorded after it")
+            assertEquals(1, undone.cardEvents.size)
+            assertEquals(undone, session { it.load(started.id) })
         }
 
     @Test

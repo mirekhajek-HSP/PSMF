@@ -215,10 +215,13 @@ default.
   `label` is verbatim from PSMF and authoritative; the colour list is for the app.
 - **Venue codes are league-wide**, not group-specific (§2.2), so they live in one
   `venues.json` and every fixture is validated against it.
-- **The match clock runs continuously** (§2.6). No pause, stop, resume or adjust
-  operation exists. The power play — ten minutes after a dismissal, not shortened
-  by a goal, unaffected by further dismissals — is the only timer with a
-  lifecycle.
+- **No stoppage during play** (§2.6). Within a period the clock runs
+  continuously; no pause, stop, resume or adjust operation during play exists.
+  The interval between periods is recorded as instants and is not part of the
+  sixty minutes; period *k* starts at (*k*−1) × half length. The power play —
+  ten minutes **of play** after a dismissal, held through the interval, not
+  shortened by a goal, unaffected by further dismissals, none after the final
+  whistle — is the only timer with a lifecycle.
 - **Suspension information is advisory and one-sided.** Yellow totals accumulate
   per group per season and warn on even totals; two yellows in one match
   contribute zero; a yellow then a straight red counts as one; red cards are not

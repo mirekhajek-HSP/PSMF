@@ -112,7 +112,8 @@
     <string name="card_reason">Reason</string>
     <string name="card_reason_note">A reason is required on every card. On a red it must be unambiguous — “denying a clear chance” will not do, because it might have been done cleanly.</string>
     <string name="card_save">Save</string>
-    <string name="card_second_yellow_hint">This player already has a yellow in this match. A second one is a dismissal, written 2. ŽK on the report.</string>
+    <string name="card_second_yellow_hint">This player already has a yellow in this match. Saving records the second yellow and a red card (2. ŽK), and the player is sent off.</string>
+    <string name="card_save_sends_off">Send off (2. ŽK)</string>
     <string name="card_error_subject">Enter a name.</string>
     <string name="card_error_reason">Enter a reason.</string>
     <string name="card_error_dismissal">Choose whether this is a straight red or a second yellow.</string>

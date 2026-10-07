@@ -14,6 +14,22 @@ import kotlin.jvm.JvmInline
 sealed interface MatchEvent {
     val minute: Minute
     val side: TeamSide
+
+    /**
+     * Which of the referee's recording actions this came from, counting
+     * from 1 within the match.
+     *
+     * **Recording order, not match order.** The minute says when it
+     * happened; this says when it was written down, which is what Undo
+     * takes back -- a card typed in as 22´ after a goal at 25´ is the last
+     * thing recorded. A second yellow's yellow and red share one number:
+     * it is one action on the pitch, and one Undo takes both.
+     *
+     * Null for anything recorded before 0.2.0, which kept no order. Those
+     * count as older than every numbered event and, among themselves, go
+     * by the timeline, which is exactly what Undo did then.
+     */
+    val sequence: Int?
 }
 
 /**
@@ -33,6 +49,7 @@ data class GoalEvent(
     val scorer: AppearanceId?,
     /** `Stav` — the score *after* this goal. */
     val scoreAfter: Score,
+    override val sequence: Int? = null,
 ) : MatchEvent
 
 /**
@@ -112,6 +129,7 @@ data class YellowCard(
     override val side: TeamSide,
     override val subject: CardSubject,
     override val reason: CardReason,
+    override val sequence: Int? = null,
 ) : CardEvent
 
 @Serializable
@@ -119,8 +137,14 @@ data class RedCard(
     override val minute: Minute,
     override val side: TeamSide,
     override val subject: CardSubject,
+    /**
+     * What the referee wrote. For a [Dismissal.SECOND_YELLOW] the report
+     * writes `2. ŽK` from [dismissal] whatever this says, and keeps this
+     * beside it -- never the other way round (DECISIONS 2026-10-07).
+     */
     override val reason: CardReason,
     val dismissal: Dismissal,
+    override val sequence: Int? = null,
 ) : CardEvent
 
 /**

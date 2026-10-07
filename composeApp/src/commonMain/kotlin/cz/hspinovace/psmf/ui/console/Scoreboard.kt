@@ -68,7 +68,14 @@ fun Scoreboard(
         entry.powerPlaysRunningAt(now).forEach { powerPlay ->
             val team = entry.side(powerPlay.shortHandedSide).teamName
             Text(
-                text = stringResource(Res.string.console_power_play, team, powerPlay.remainingAt(now).asCountdown()),
+                // Ten minutes of play: it holds through the interval, and
+                // nothing is listed here once the final whistle has gone.
+                text =
+                    stringResource(
+                        Res.string.console_power_play,
+                        team,
+                        entry.remainingAt(powerPlay, now).asCountdown(),
+                    ),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onErrorContainer,
                 modifier =

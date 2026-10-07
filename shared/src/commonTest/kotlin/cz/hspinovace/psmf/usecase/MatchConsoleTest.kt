@@ -14,6 +14,7 @@ import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.YellowCard
 import cz.hspinovace.psmf.domain.cards
+import cz.hspinovace.psmf.domain.playersShortAt
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -34,7 +35,7 @@ private val poupe = Fixtures.poupeAppearance.id
 private val baca = Fixtures.bacaAppearance.id
 
 /**
- * RULE: **the match clock never pauses.**
+ * RULE: **no stoppage during play.**
  *
  * 2 x 30 gross, and the referee adds time rather than stopping anything.
  * There is no pause, stop, resume or adjust operation to test, which is
@@ -169,36 +170,58 @@ class LogCardTest {
         }
 
     @Test
-    fun aRedCardMustSayWhetherItWasStraightOrASecondYellow() =
+    fun aRedCardToABookedPlayerMustSayWhetherItWasStraightOrASecondYellow() =
         runTest {
             // Not cosmetic: two yellows in one match contribute zero to the
             // season total, a straight red is a different thing entirely.
+            // Only a booked player can be either; see the next test.
+            val booked = assertNotNull(LogCard(FakeMatchRepository())(match(), yellow, KICKOFF))
+            val matches = FakeMatchRepository(listOf(booked))
+            val red = yellow.copy(colour = CardColour.RED, reason = "oplácení", minute = MinuteDraft("40"))
+
+            assertNull(LogCard(matches)(booked, red, KICKOFF))
+            assertTrue(CardProblem.NO_DISMISSAL_KIND in red.problems(booked = true))
+
+            val proper = red.copy(dismissal = Dismissal.STRAIGHT)
+            val updated = assertNotNull(LogCard(matches)(booked, proper, KICKOFF))
+            assertEquals(
+                Dismissal.STRAIGHT,
+                updated.cardEvents
+                    .filterIsInstance<RedCard>()
+                    .single()
+                    .dismissal,
+            )
+        }
+
+    @Test
+    fun aRedCardToAPlayerWithNoYellowIsStraightWithoutBeingAsked() =
+        runTest {
+            // Until 2026-10-07 the test above was this one, unbooked, and
+            // demanded a kind. 2. ŽK is now offered only to a booked player.
             val matches = FakeMatchRepository(listOf(match()))
             val red = yellow.copy(colour = CardColour.RED, reason = "oplácení")
 
-            assertNull(LogCard(matches)(match(), red, KICKOFF))
-            assertTrue(CardProblem.NO_DISMISSAL_KIND in red.problems())
-
-            val proper = red.copy(dismissal = Dismissal.STRAIGHT)
-            val updated = assertNotNull(LogCard(matches)(match(), proper, KICKOFF))
+            assertTrue(CardProblem.NO_DISMISSAL_KIND !in red.problems())
+            val updated = assertNotNull(LogCard(matches)(match(), red, KICKOFF))
             assertEquals(Dismissal.STRAIGHT, (updated.cardEvents.single() as RedCard).dismissal)
         }
 
     @Test
     fun aDismissalStartsATenMinutePowerPlayForThatSide() =
         runTest {
-            val matches = FakeMatchRepository(listOf(match()))
+            val started = match().copy(status = MatchStatus.IN_PROGRESS, kickoffAt = KICKOFF)
+            val matches = FakeMatchRepository(listOf(started))
             val red =
                 yellow.copy(colour = CardColour.RED, dismissal = Dismissal.STRAIGHT, minute = MinuteDraft("40"))
 
-            val updated = assertNotNull(LogCard(matches)(match(), red, KICKOFF + 40.minutes))
+            val updated = assertNotNull(LogCard(matches)(started, red, KICKOFF + 40.minutes))
 
             val powerPlay = updated.powerPlays.single()
             assertEquals(TeamSide.AWAY, powerPlay.shortHandedSide)
             assertEquals(Minute.Played(40), powerPlay.dismissedAtMinute)
-            assertEquals(10.minutes, powerPlay.remainingAt(KICKOFF + 40.minutes))
-            assertTrue(powerPlay.isRunningAt(KICKOFF + 49.minutes))
-            assertTrue(!powerPlay.isRunningAt(KICKOFF + 51.minutes))
+            assertEquals(10.minutes, powerPlay.remainingAt(updated.clock, KICKOFF + 40.minutes))
+            assertTrue(powerPlay.isRunningAt(updated.clock, KICKOFF + 49.minutes))
+            assertTrue(!powerPlay.isRunningAt(updated.clock, KICKOFF + 51.minutes))
         }
 
     @Test
@@ -206,19 +229,21 @@ class LogCardTest {
         runTest {
             // NOT an extension of the first, and neither is shortened by a
             // goal. That is why a power play stores only its start.
-            val matches = FakeMatchRepository(listOf(match()))
+            val started = match().copy(status = MatchStatus.IN_PROGRESS, kickoffAt = KICKOFF)
+            val matches = FakeMatchRepository(listOf(started))
             val first =
                 yellow.copy(colour = CardColour.RED, dismissal = Dismissal.STRAIGHT, minute = MinuteDraft("40"))
             val second = first.copy(appearance = AppearanceId("app-other"), minute = MinuteDraft("45"))
 
-            var current = assertNotNull(LogCard(matches)(match(), first, KICKOFF + 40.minutes))
+            var current = assertNotNull(LogCard(matches)(started, first, KICKOFF + 40.minutes))
             current = assertNotNull(LogCard(matches)(current, second, KICKOFF + 45.minutes))
 
             assertEquals(2, current.powerPlays.size)
-            assertEquals(
-                listOf(KICKOFF + 50.minutes, KICKOFF + 55.minutes),
-                current.powerPlays.map { it.endsAt },
-            )
+            // The first ends at 50:00 and the second at 55:00: two players
+            // short in between, one after.
+            assertEquals(2, current.playersShortAt(TeamSide.AWAY, KICKOFF + 49.minutes))
+            assertEquals(1, current.playersShortAt(TeamSide.AWAY, KICKOFF + 50.minutes))
+            assertEquals(0, current.playersShortAt(TeamSide.AWAY, KICKOFF + 55.minutes))
         }
 
     @Test
@@ -343,9 +368,14 @@ class UndoLastEventTest {
     @Test
     fun twoIdenticalCardsAreNotBothRemovedByOneUndo() =
         runTest {
+            // To someone not in the lineup: two yellows for a player would
+            // be a dismissal now, and no longer identical.
+            val toAnOfficial =
+                CardDraft(side = TeamSide.AWAY, namedPerson = "Lepis A.", reason = "nesp. chování")
+                    .copy(minute = MinuteDraft("20"))
             val matches = FakeMatchRepository(listOf(match()))
-            var current = assertNotNull(LogCard(matches)(match(), yellow, KICKOFF))
-            current = assertNotNull(LogCard(matches)(current, yellow, KICKOFF))
+            var current = assertNotNull(LogCard(matches)(match(), toAnOfficial, KICKOFF))
+            current = assertNotNull(LogCard(matches)(current, toAnOfficial, KICKOFF))
 
             val undone = UndoLastEvent(matches)(current)
 

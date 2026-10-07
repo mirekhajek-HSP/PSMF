@@ -171,9 +171,10 @@ Reworked from golblok. What changes:
   Two consequences, both simplifications: `30´+` and `60´+` become **derivable
   from the period state** instead of remembered, and the half-time score becomes
   **the score when period one ended** instead of something typed on the recap.
-- **Power-play:** 10 minutes after a dismissal before a replacement may come on —
-  not shortened by a goal, unaffected by further dismissals. Its own lifecycle,
-  running alongside a clock that never pauses.
+- **Power-play:** 10 minutes **of play** after a dismissal before a replacement
+  may come on — not shortened by a goal, unaffected by further dismissals, held
+  through the interval, none after the final whistle. Its own lifecycle, on a
+  clock with no stoppage during play.
 - Keep: undo, tap-to-log against a tabbed player list, crash recovery, sent-off
   players visually disabled, left-handed mirroring.
 - **Timer:** store the kickoff timestamp and derive elapsed time. Nothing ticks in

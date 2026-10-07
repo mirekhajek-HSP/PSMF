@@ -116,7 +116,8 @@
     <string name="card_reason">Причина</string>
     <string name="card_reason_note">Причина обовʼязкова для кожної картки. Для червоної вона має бути однозначною — «зрив явного моменту» не годиться, бо могло бути зроблено чисто.</string>
     <string name="card_save">Зберегти</string>
-    <string name="card_second_yellow_hint">У цього гравця вже є ЖК у цьому матчі. Друга означає вилучення і записується як 2. ŽK.</string>
+    <string name="card_second_yellow_hint">У цього гравця вже є ЖК у цьому матчі. Збереження запише другу ЖК і червону картку (2. ŽK), і гравця буде вилучено.</string>
+    <string name="card_save_sends_off">Вилучити (2. ŽK)</string>
     <string name="card_error_subject">Введіть імʼя.</string>
     <string name="card_error_reason">Введіть причину.</string>
     <string name="card_error_dismissal">Виберіть: пряма ЧК або друга ЖК.</string>

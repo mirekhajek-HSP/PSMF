@@ -46,9 +46,12 @@ data class Match(
      * derived clock additionally cannot drift, cannot be killed, and
      * survives a reboot (TECH_STACK section 3).
      *
-     * This one instant is the *whole* clock, because **the match clock runs
-     * continuously and never pauses** (analysis section 2.6). There is
+     * This instant and [periodBreaks] are the *whole* clock. **There is no
+     * stoppage during play** (analysis section 2.6): inside a period the
+     * clock runs continuously and the referee adds time, so there is
      * deliberately no accumulated-time or paused-at field to go with it.
+     * What there is, is **a recorded interval between periods** -- each
+     * boundary stored once as an instant, never as a pause. See [clock].
      */
     val kickoffAt: Instant? = null,
     val goals: List<GoalEvent> = emptyList(),
@@ -62,11 +65,12 @@ data class Match(
     val result: MatchResult? = null,
     val confirmations: List<Confirmation> = emptyList(),
     /**
-     * Ten-minute periods a side spends a player short after a dismissal.
+     * Ten minutes of play a side spends a player short after a dismissal.
      *
      * **The only timer in the match with a start and a finish.** The match
-     * clock itself never pauses — see `MatchClock.kt`, which holds both and
-     * explains why one of them stops and the other cannot.
+     * clock itself has no stoppage during play — see `MatchClock.kt`, which
+     * holds both and explains why one of them finishes and the other
+     * cannot be stopped.
      */
     val powerPlays: List<PowerPlay> = emptyList(),
     /**
@@ -74,14 +78,16 @@ data class Match(
      *
      * Grows by one entry each time the referee ends a period; that entry's
      * [PeriodBreak.nextStartedAt] is filled in when they start the next
-     * one. **Not a second clock** -- [kickoffAt] is still the only instant
-     * the match clock itself is built from (see `MatchClock.kt`); this is
-     * the record of where the gaps are, so elapsed time can be computed by
-     * skipping them rather than counting through a break that analysis
-     * section 2.6 says is not part of the sixty minutes.
+     * one. **Not a second clock and not a pause** -- the record of where
+     * the gaps are, so elapsed play can be computed by skipping them rather
+     * than counting through a break that analysis section 2.6 says is not
+     * part of the sixty minutes. See [PlayClock].
      */
     val periodBreaks: List<PeriodBreak> = emptyList(),
 ) {
+    /** The clock these instants make. A value, worked out on demand; nothing ticks. */
+    val clock: PlayClock get() = PlayClock(kickoffAt, periodBreaks)
+
     fun lineup(side: TeamSide): Lineup? =
         when (side) {
             TeamSide.HOME -> homeLineup
@@ -93,9 +99,26 @@ data class Match(
 
     /**
      * Goals and cards merged and ordered, for the live console's log sheet.
-     * Ordering puts `30´+` after minute 30 and `60´+` last; see [Minute].
+     *
+     * By minute -- `30´+` between 29´ and the second half's 30´, `60´+`
+     * last; see [Minute] -- and within one minute by recording order, so the
+     * last thing written down at a minute is the last thing listed at it.
      */
-    fun timeline(): List<MatchEvent> = (goals + cardEvents).sortedBy { it.minute }
+    fun timeline(): List<MatchEvent> =
+        (goals + cardEvents).sortedWith(
+            compareBy<MatchEvent> { it.minute }.thenBy { it.sequence ?: Int.MIN_VALUE },
+        )
+
+    /**
+     * The number the referee's next recording action gets; see
+     * [MatchEvent.sequence]. One more than anything recorded so far.
+     */
+    fun nextSequence(): Int =
+        (
+            goals.mapNotNull { it.sequence } + cardEvents.mapNotNull { it.sequence } +
+                powerPlays.mapNotNull { it.sequence }
+        ).maxOrNull()
+            ?.plus(1) ?: 1
 
     /** Looks an appearance up in either lineup. */
     fun appearance(id: AppearanceId): Appearance? = homeLineup?.appearance(id) ?: awayLineup?.appearance(id)
@@ -125,8 +148,9 @@ data class Match(
      * read a half-time score from before that, and pretending otherwise
      * would be a fabrication, not a suggestion. Every goal up to and
      * including the interval carries a minute no later than
-     * [Minute.HalfTime] -- the console's own clock guarantees it, see
-     * `ConsoleEntry.minuteAt` -- so the cut is a comparison on
+     * [Minute.HalfTime], and every goal after it one no earlier than the
+     * second half's `30´` -- the console's own clock guarantees both, see
+     * [PlayClock.minuteAt] -- so the cut is a comparison on
      * [GoalEvent.minute], not on when the goal happened to be saved.
      */
     fun scoreAtEndOfFirstPeriod(): Score? {

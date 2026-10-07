@@ -255,6 +255,8 @@ private fun MatchRecordQueries.writeGoals(match: Match) {
             scorer_appearance_id = goal.scorer?.value,
             score_home = goal.scoreAfter.home.toLong(),
             score_away = goal.scoreAfter.away.toLong(),
+            // Recording order across both blocks; what Undo goes by.
+            sequence = goal.sequence?.toLong(),
         )
     }
 }
@@ -274,6 +276,7 @@ private fun MatchRecordQueries.writeCards(match: Match) {
             reason = card.reason.text,
             // Straight versus second yellow changes the suspension.
             dismissal = (card as? RedCard)?.dismissal?.name,
+            sequence = card.sequence?.toLong(),
         )
     }
 }
@@ -287,6 +290,7 @@ private fun MatchRecordQueries.writePowerPlays(match: Match) {
             started_at = powerPlay.startedAt.toString(),
             minute_kind = powerPlay.dismissedAtMinute.kindName(),
             minute_value = powerPlay.dismissedAtMinute.numericValue(),
+            sequence = powerPlay.sequence?.toLong(),
         )
     }
 }
@@ -442,6 +446,7 @@ private fun Power_play_record.toDomain() =
         shortHandedSide = TeamSide.valueOf(short_handed_side),
         startedAt = Instant.parse(started_at),
         dismissedAtMinute = minuteOf(minute_kind, minute_value),
+        sequence = sequence?.toInt(),
     )
 
 private fun Period_break_record.toDomain() =
@@ -456,6 +461,8 @@ private fun Goal_record.toDomain() =
         side = TeamSide.valueOf(side),
         scorer = scorer_appearance_id?.let { AppearanceId(it) },
         scoreAfter = Score(score_home.toInt(), score_away.toInt()),
+        // Null for a row written before version 5; see 4.sqm.
+        sequence = sequence?.toInt(),
     )
 
 private fun Card_record.toDomain(): CardEvent {
@@ -467,11 +474,12 @@ private fun Card_record.toDomain(): CardEvent {
     val minute = minuteOf(minute_kind, minute_value)
     val teamSide = TeamSide.valueOf(side)
     val cardReason = CardReason(reason)
+    val recordedAs = sequence?.toInt()
 
     return if (colour == COLOUR_RED) {
-        RedCard(minute, teamSide, subject, cardReason, Dismissal.valueOf(requireNotNull(dismissal)))
+        RedCard(minute, teamSide, subject, cardReason, Dismissal.valueOf(requireNotNull(dismissal)), recordedAs)
     } else {
-        YellowCard(minute, teamSide, subject, cardReason)
+        YellowCard(minute, teamSide, subject, cardReason, recordedAs)
     }
 }
 

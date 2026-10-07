@@ -1,5 +1,9 @@
 package cz.hspinovace.psmf.ui.console
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasScrollAction
@@ -11,6 +15,7 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.v2.runComposeUiTest
 import cz.hspinovace.psmf.domain.AppearanceId
+import cz.hspinovace.psmf.domain.Dismissal
 import cz.hspinovace.psmf.domain.JerseyNumber
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
@@ -326,18 +331,22 @@ class ConsoleScreenTest {
         }
 
     @Test
-    fun aRedCardMustSayWhetherItWasStraightOrASecondYellow() =
+    fun aRedCardToABookedPlayerMustSayWhetherItWasStraightOrASecondYellow() =
         runComposeUiTest {
+            // Booked: only then is 2. ŽK a choice at all. Until 2026-10-07
+            // this asked an unbooked player too; see the next-but-two test.
+            val booked = row("a-baca", 13, "Bača", "Tomáš", yellows = 1)
             withLanguage("cs") {
                 setContent {
                     PsmfTheme {
                         ConsoleScreen(
                             state =
                                 state(
+                                    entry = entry(rows = listOf(booked)),
                                     card =
                                         CardDraft(
                                             TeamSide.HOME,
-                                            novak.appearanceId,
+                                            booked.appearanceId,
                                             colour = CardColour.RED,
                                             minute = MinuteDraft("40"),
                                         ),
@@ -404,7 +413,114 @@ class ConsoleScreenTest {
                 }
             }
 
-            onNodeWithText("Druhá znamená vyloučení", substring = true).assertIsDisplayed()
+            onNodeWithText("hráč bude vyloučen", substring = true).assertIsDisplayed()
+        }
+
+    @Test
+    fun beforeSavingTheButtonItselfSaysThisYellowSendsThePlayerOff() =
+        runComposeUiTest {
+            // On 8bd3c11 a red hint line said so and the button still read
+            // "Uložit", and saving left the player on the pitch.
+            val booked = row("a-baca", 13, "Bača", "Tomáš", yellows = 1)
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme {
+                        ConsoleScreen(
+                            state =
+                                state(
+                                    entry = entry(rows = listOf(booked)),
+                                    card =
+                                        CardDraft(
+                                            TeamSide.HOME,
+                                            booked.appearanceId,
+                                            reason = "nesp. chování",
+                                            minute = MinuteDraft("49"),
+                                        ),
+                                ),
+                            now = KICKOFF,
+                            onEvent = {},
+                        )
+                    }
+                }
+            }
+
+            onNodeWithText("Vyloučit (2. ŽK)").assertIsDisplayed()
+            onNodeWithText("Uložit").assertDoesNotExist()
+        }
+
+    @Test
+    fun aRedForAPlayerWithNoYellowOffersOnlyAStraightRed() =
+        runComposeUiTest {
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme {
+                        ConsoleScreen(
+                            state =
+                                state(
+                                    card =
+                                        CardDraft(
+                                            TeamSide.HOME,
+                                            novak.appearanceId,
+                                            colour = CardColour.RED,
+                                            minute = MinuteDraft("40"),
+                                        ),
+                                ),
+                            now = KICKOFF,
+                            onEvent = {},
+                        )
+                    }
+                }
+            }
+
+            onNodeWithText("Přímá ČK").assertIsDisplayed()
+            onNodeWithText("2. ŽK").assertDoesNotExist()
+        }
+
+    @Test
+    fun switchingFromSecondYellowToStraightLeavesNoTwoZkInTheReason() =
+        runComposeUiTest {
+            // On 8bd3c11 choosing 2. ŽK wrote "2. ŽK" into an empty reason,
+            // and switching back to straight kept it: a straight red that
+            // read 2. ŽK on the report.
+            val booked = row("a-baca", 13, "Bača", "Tomáš", yellows = 1)
+            var last: CardDraft? = null
+            withLanguage("cs") {
+                setContent {
+                    var current by remember {
+                        mutableStateOf(
+                            state(
+                                entry = entry(rows = listOf(booked)),
+                                card =
+                                    CardDraft(
+                                        TeamSide.HOME,
+                                        booked.appearanceId,
+                                        colour = CardColour.RED,
+                                        minute = MinuteDraft("40"),
+                                    ),
+                            ),
+                        )
+                    }
+                    PsmfTheme {
+                        ConsoleScreen(
+                            state = current,
+                            now = KICKOFF,
+                            onEvent = { event ->
+                                if (event is ConsoleEvent.CardEdited) {
+                                    current = current.copy(card = event.draft)
+                                    last = event.draft
+                                }
+                            },
+                        )
+                    }
+                }
+                // Inside the locale block: each click recomposes, and a
+                // recomposition after it would read the strings in English.
+                onNodeWithText("2. ŽK").performClick()
+                onNodeWithText("Přímá ČK").performClick()
+            }
+
+            assertEquals(Dismissal.STRAIGHT, last?.dismissal)
+            assertEquals("", last?.reason)
         }
 
     @Test
@@ -490,6 +606,50 @@ class ConsoleScreenTest {
                             onEvent = {},
                         )
                     }
+                }
+            }
+
+            onNodeWithText("Oslabení", substring = true).assertDoesNotExist()
+        }
+
+    @Test
+    fun aPowerPlayHoldsItsTimeThroughTheInterval() =
+        runComposeUiTest {
+            // Red at 25:00, half-time from 30:00: five minutes of play are
+            // left at the break, and still five ten minutes into it.
+            val powerPlay =
+                PowerPlay(
+                    shortHandedSide = TeamSide.AWAY,
+                    startedAt = KICKOFF + 25.minutes,
+                    dismissedAtMinute = Minute.Played(25),
+                )
+            val onBreak =
+                entry(
+                    powerPlays = listOf(powerPlay),
+                    periodBreaks = listOf(PeriodBreak(endedAt = KICKOFF + 30.minutes)),
+                )
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme { ConsoleScreen(state = state(onBreak), now = KICKOFF + 40.minutes, onEvent = {}) }
+                }
+            }
+
+            onNodeWithText("Oslabení: ${UiTestData.awayTeam.name}, zbývá 5:00").assertIsDisplayed()
+        }
+
+    @Test
+    fun nothingCountsDownOnTheScoreboardAfterTheFinalWhistle() =
+        runComposeUiTest {
+            val powerPlay =
+                PowerPlay(
+                    shortHandedSide = TeamSide.AWAY,
+                    startedAt = KICKOFF + 58.minutes,
+                    dismissedAtMinute = Minute.Played(58),
+                )
+            val finished = entry(powerPlays = listOf(powerPlay), status = MatchStatus.FINISHED)
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme { ConsoleScreen(state = state(finished), now = KICKOFF + 61.minutes, onEvent = {}) }
                 }
             }
 

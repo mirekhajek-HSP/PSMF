@@ -1,14 +1,16 @@
 package cz.hspinovace.psmf.data.db
 
-import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import cz.hspinovace.psmf.data.match.MatchRepository
 import cz.hspinovace.psmf.data.match.SqlDelightMatchRepository
 import cz.hspinovace.psmf.db.PsmfDatabase
 import cz.hspinovace.psmf.domain.Match
+import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
 import cz.hspinovace.psmf.domain.PowerPlay
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.export.CompleteReport
+import cz.hspinovace.psmf.usecase.LogGoal
+import cz.hspinovace.psmf.usecase.UndoLastEvent
 import kotlinx.coroutines.test.runTest
 import java.io.File
 import java.sql.Connection
@@ -86,21 +88,67 @@ class SchemaMigrationTest {
     }
 
     /**
-     * Writes to a database without touching its version: the driver is
-     * handed no schema, so it neither creates nor migrates. It is the only
-     * way to produce rows that genuinely predate the migration.
+     * Writes rows into an old database without touching its version, the
+     * way the release that created it would have.
+     *
+     * Today's code cannot write into an old schema directly once a migration
+     * adds a column to a table it writes -- 4.sqm added `sequence` to three
+     * -- so [block] writes into a scratch database at the current version,
+     * and the rows are then copied across with **only the columns the old
+     * table has**. A column the old schema lacks is exactly a value the old
+     * release could not have stored, so leaving it behind is what makes the
+     * rows genuinely predate the migration. Nothing is migrated here; the
+     * old file keeps its version.
      */
     private suspend fun beforeTheUpdate(
         file: File,
         block: suspend (MatchRepository) -> Unit,
     ) {
-        val driver = JdbcSqliteDriver("jdbc:sqlite:${file.absolutePath}")
+        val scratch = File.createTempFile("psmf-scratch-", ".db").also { it.delete() }
+        temporaryFiles += scratch
+        val driver = DatabaseDriverFactory("jdbc:sqlite:${scratch.absolutePath}").create()
         try {
             block(SqlDelightMatchRepository(PsmfDatabase(driver)))
         } finally {
             driver.close()
         }
+        connect(file).use { connection ->
+            connection.createStatement().use { statement ->
+                statement.execute("ATTACH DATABASE '${scratch.absolutePath}' AS fresh")
+                tableNames(file).forEach { table -> copyOldColumns(connection, table) }
+                statement.execute("DETACH DATABASE fresh")
+            }
+        }
     }
+
+    /** One table's rows from `fresh` into `main`, in the columns `main` has. */
+    private fun copyOldColumns(
+        connection: Connection,
+        table: String,
+    ) {
+        val old = columnNames(connection, "main", table)
+        val columns = old.intersect(columnNames(connection, "fresh", table))
+        if (columns.isEmpty()) return
+        val list = columns.joinToString(", ")
+        connection.createStatement().use {
+            it.execute(
+                "INSERT INTO main.$table ($list) SELECT $list FROM fresh.$table",
+            )
+        }
+    }
+
+    private fun columnNames(
+        connection: Connection,
+        schema: String,
+        table: String,
+    ): Set<String> =
+        connection.createStatement().use { statement ->
+            statement.executeQuery("PRAGMA $schema.table_info($table)").use {
+                buildSet {
+                    while (it.next()) add(it.getString("name"))
+                }
+            }
+        }
 
     /** What the app itself does on the launch after an update. */
     private suspend fun <T> afterTheUpdate(
@@ -186,6 +234,48 @@ class SchemaMigrationTest {
             val nonNullRestored = assertNotNull(restored, "the report did not survive 3.sqm")
             assertEquals(report, nonNullRestored)
             assertEquals(emptyList(), nonNullRestored.periodBreaks)
+        }
+
+    @Test
+    fun aMatchFromZeroPointOneKeepsEveryEventAndUndoesItsOldOnesAsItAlwaysDid() =
+        runTest {
+            // The step 0.2.0 adds, on its own: version 4 is what 0.1.0 (1)
+            // shipped with. Its rows carry no recording order, and 4.sqm
+            // gives them none -- NULL is the truth. They read back as
+            // recorded before 0.2.0, and Undo takes them by the timeline,
+            // exactly as 0.1.0 did, until something new is recorded.
+            val database = databaseAtVersion(4)
+            val inProgress =
+                finishedReport().copy(
+                    status = MatchStatus.IN_PROGRESS,
+                    result = null,
+                    confirmations = emptyList(),
+                )
+
+            beforeTheUpdate(database) { it.save(inProgress) }
+
+            assertEquals(4, userVersion(database))
+            assertFalse("sequence" in columns(database, "card_record"), "4.db already had the new column")
+
+            val restored = assertNotNull(afterTheUpdate(database) { it.load(inProgress.id) })
+
+            assertEquals(current, userVersion(database), "4.sqm did not run")
+            assertContains(columns(database, "card_record"), "sequence")
+            assertEquals(inProgress, restored)
+            assertTrue((restored.goals + restored.cardEvents).all { it.sequence == null })
+            assertTrue(restored.powerPlays.all { it.sequence == null })
+
+            // The last of the old events by the timeline is the 49´ red.
+            val undone = afterTheUpdate(database) { UndoLastEvent(it)(restored) }
+            assertEquals(listOf(Minute.Played(20), Minute.HalfTime), undone.cardEvents.map { it.minute })
+            assertTrue(undone.powerPlays.isEmpty(), "the red's power play outlived it")
+
+            // Something recorded after the update is newer than all of them.
+            val withANewGoal =
+                afterTheUpdate(database) { LogGoal(it)(restored, TeamSide.HOME, null, Minute.Played(55)) }
+            assertEquals(1, withANewGoal.goals.last().sequence)
+            val newestFirst = afterTheUpdate(database) { UndoLastEvent(it)(withANewGoal) }
+            assertEquals(restored, newestFirst)
         }
 
     @Test
@@ -278,6 +368,11 @@ class SchemaMigrationTest {
                 }
             }
         }
+
+    private fun columns(
+        file: File,
+        table: String,
+    ): Set<String> = connect(file).use { columnNames(it, "main", table) }
 
     private fun tableNames(file: File): Set<String> =
         connect(file).use { connection ->

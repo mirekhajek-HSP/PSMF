@@ -101,17 +101,24 @@ class ConsoleEntryTest {
             // 60'+ is the final whistle, not merely the last period running
             // long -- past the nominal 60 here, nothing stops, exactly as
             // it always has.
+            //
+            // The first half ran to 32 minutes and the break lasted three.
+            // Until 2026-10-07 the first half here ended at exactly 30:00,
+            // where the old rule (the second half continuing from 32´) and
+            // the new one (restarting at 30´) give the same answer, so the
+            // test could not tell them apart. Now it can: 34 minutes into
+            // the second half is 64´, not 66´.
             val match =
                 matchWithLineups().copy(
                     kickoffAt = KICKOFF_AT,
                     periodBreaks =
                         listOf(
-                            PeriodBreak(endedAt = KICKOFF_AT + 30.minutes, nextStartedAt = KICKOFF_AT + 30.minutes),
+                            PeriodBreak(endedAt = KICKOFF_AT + 32.minutes, nextStartedAt = KICKOFF_AT + 35.minutes),
                         ),
                 )
             val entry = console(match)
 
-            assertEquals(Minute.Played(64), entry.minuteAt(KICKOFF_AT + 64.minutes))
+            assertEquals(Minute.Played(64), entry.minuteAt(KICKOFF_AT + 69.minutes))
         }
 
     @Test

@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -17,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import cz.hspinovace.psmf.domain.Dismissal
 import cz.hspinovace.psmf.resources.Res
@@ -37,6 +39,7 @@ import cz.hspinovace.psmf.resources.card_person
 import cz.hspinovace.psmf.resources.card_reason
 import cz.hspinovace.psmf.resources.card_reason_note
 import cz.hspinovace.psmf.resources.card_save
+import cz.hspinovace.psmf.resources.card_save_sends_off
 import cz.hspinovace.psmf.resources.card_second_yellow_hint
 import cz.hspinovace.psmf.resources.card_title
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
@@ -53,6 +56,11 @@ import org.jetbrains.compose.resources.stringResource
  * red must say whether it was straight or a second yellow. Both are
  * enforced here rather than left to the referee to remember, because the
  * fine for an incomplete report lands on the delegating team.
+ *
+ * **A yellow for a booked player sends them off**, and the sheet says so in
+ * two places before anything is saved: a statement of what saving records,
+ * and the save button itself, which stops reading "Uložit" and reads
+ * "Vyloučit (2. ŽK)". The button is where the thumb already is.
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -61,9 +69,6 @@ fun CardSheet(
     state: ConsoleUiState,
     onEvent: (ConsoleEvent) -> Unit,
 ) {
-    val alreadyBooked =
-        draft.appearance?.let { state.entry?.row(it)?.yellowsInThisMatch ?: 0 } ?: 0
-
     AlertDialog(
         onDismissRequest = { onEvent(ConsoleEvent.CardDismissed) },
         title = { Text(stringResource(Res.string.card_title)) },
@@ -89,16 +94,18 @@ fun CardSheet(
                 ColourChips(draft, onEvent)
 
                 if (draft.isRed) {
-                    DismissalChips(draft, onEvent)
+                    DismissalChips(draft, state, onEvent)
                     if (state.cardProblem(CardProblem.NO_DISMISSAL_KIND)) {
                         Problem(stringResource(Res.string.card_error_dismissal))
                     }
-                } else if (alreadyBooked > 0) {
-                    // Not a block: the referee decides. But they should not
+                }
+                if (state.cardSendsOff) {
+                    // Not a block: the referee decides. But they must not
                     // discover afterwards that this was a dismissal.
                     Text(
                         text = stringResource(Res.string.card_second_yellow_hint),
                         style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
                         color = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -122,8 +129,17 @@ fun CardSheet(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onEvent(ConsoleEvent.CardSubmitted) }) {
-                Text(stringResource(Res.string.card_save))
+            if (state.cardSendsOff) {
+                TextButton(
+                    onClick = { onEvent(ConsoleEvent.CardSubmitted) },
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                ) {
+                    Text(stringResource(Res.string.card_save_sends_off), fontWeight = FontWeight.Bold)
+                }
+            } else {
+                TextButton(onClick = { onEvent(ConsoleEvent.CardSubmitted) }) {
+                    Text(stringResource(Res.string.card_save))
+                }
             }
         },
         dismissButton = {
@@ -150,28 +166,30 @@ private fun ColourChips(
     }
 }
 
+/**
+ * Straight, or `2. ŽK` -- the second only for a player already booked in
+ * this match (or someone not in the lineup, who gets no automatic second
+ * yellow). For anyone else a red can only be straight, and says so.
+ *
+ * Choosing a kind never writes into the reason. The report writes `2. ŽK`
+ * from the stored kind, so pre-filling it would only leave words behind
+ * when the referee switched back to straight.
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun DismissalChips(
     draft: CardDraft,
+    state: ConsoleUiState,
     onEvent: (ConsoleEvent) -> Unit,
 ) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) {
-        Chip(stringResource(Res.string.card_dismissal_straight), draft.dismissal == Dismissal.STRAIGHT) {
+        Chip(stringResource(Res.string.card_dismissal_straight), state.cardDismissalKind == Dismissal.STRAIGHT) {
             onEvent(ConsoleEvent.CardEdited(draft.copy(dismissal = Dismissal.STRAIGHT)))
         }
-        // `2. ŽK` is the literal string the form uses, so it is also what
-        // goes in the reason unless the referee writes something else.
-        val secondYellow = stringResource(Res.string.card_dismissal_second)
-        Chip(secondYellow, draft.dismissal == Dismissal.SECOND_YELLOW) {
-            onEvent(
-                ConsoleEvent.CardEdited(
-                    draft.copy(
-                        dismissal = Dismissal.SECOND_YELLOW,
-                        reason = draft.reason.ifBlank { secondYellow },
-                    ),
-                ),
-            )
+        if (state.cardOffersSecondYellowKind) {
+            Chip(stringResource(Res.string.card_dismissal_second), state.cardDismissalKind == Dismissal.SECOND_YELLOW) {
+                onEvent(ConsoleEvent.CardEdited(draft.copy(dismissal = Dismissal.SECOND_YELLOW)))
+            }
         }
     }
 }

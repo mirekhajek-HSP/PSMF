@@ -120,7 +120,8 @@ object ZouCsv {
             card.minute,
             card.jerseyNumber?.toString().orEmpty(),
             card.name,
-            card.reason,
+            // `2. ŽK` from the stored kind, the referee's reason beside it.
+            card.written,
             colour,
         )
     }

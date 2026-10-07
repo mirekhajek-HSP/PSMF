@@ -6,6 +6,7 @@ import cz.hspinovace.psmf.domain.AppearanceId
 import cz.hspinovace.psmf.domain.CardEvent
 import cz.hspinovace.psmf.domain.CardSubject
 import cz.hspinovace.psmf.domain.ConfirmingParty
+import cz.hspinovace.psmf.domain.Dismissal
 import cz.hspinovace.psmf.domain.Lineup
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.PlayerId
@@ -84,8 +85,12 @@ class BuildZouReport(
                     // Null means the referee has not accounted for the block
                     // at all, which is not the same as affirming none.
                     accountedFor = match.cards != null,
-                    yellow = match.cardEvents.filterIsInstance<YellowCard>().map { it.toZou(appearances) },
-                    red = match.cardEvents.filterIsInstance<RedCard>().map { it.toZou(appearances) },
+                    // In match order, not the order they were typed: a card
+                    // written up late still sits at its minute, and 30´+
+                    // comes before the second half's 30´. The sort is stable,
+                    // so one minute keeps the order it was recorded in.
+                    yellow = match.cardsInMatchOrder<YellowCard>().map { it.toZou(appearances) },
+                    red = match.cardsInMatchOrder<RedCard>().map { it.toZou(appearances) },
                 ),
             result =
                 match.result?.let { result ->
@@ -152,6 +157,9 @@ private fun Lineup.toZou(
                 }.sortedBy { it.jerseyNumber ?: Int.MAX_VALUE },
     )
 
+private inline fun <reified T : CardEvent> Match.cardsInMatchOrder(): List<T> =
+    cardEvents.filterIsInstance<T>().sortedBy { it.minute }
+
 private fun CardEvent.toZou(appearances: Map<AppearanceId, ZouAppearance>): ZouCard {
     val row = (subject as? CardSubject.Player)?.let { appearances[it.appearance] }
     return ZouCard(
@@ -161,6 +169,14 @@ private fun CardEvent.toZou(appearances: Map<AppearanceId, ZouAppearance>): ZouC
         // A card may be shown to somebody with no number on the sheet.
         name = row?.name ?: (subject as? CardSubject.NamedPerson)?.name?.value.orEmpty(),
         reason = reason.text,
+        // The kind comes from the stored field. The report never infers it
+        // from what the referee typed, and never lets typing hide it.
+        dismissal =
+            when ((this as? RedCard)?.dismissal) {
+                Dismissal.STRAIGHT -> ZouDismissal.STRAIGHT
+                Dismissal.SECOND_YELLOW -> ZouDismissal.SECOND_YELLOW
+                null -> null
+            },
     )
 }
 

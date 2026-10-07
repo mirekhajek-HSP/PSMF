@@ -5,6 +5,36 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-07 · Two calls inside the card fix: the button says "Vyloučit", and a late red runs from its minute
+
+**The session's calls, asked for by `prompts/10` and reported back for review.**
+
+**How the card sheet says a yellow is a dismissal.** For a player already
+booked in this match, the save button stops reading *Uložit* and reads
+**Vyloučit (2. ŽK)**, in the error colour, and the line above it now says what
+saving does: *"Uložení zapíše druhou ŽK i červenou kartu (2. ŽK) a hráč bude
+vyloučen."* The old hint said the same thing and changed nothing; the button is
+where the thumb is, so it is the one place the referee cannot miss. No extra
+confirmation step: one tap sends off, one Undo restores, which is the cheaper
+correction at the pitch.
+
+**A red written up late runs from the minute written.** When the minute on the
+card is the one the clock shows, the ten minutes start at the moment of saving.
+When the referee writes an earlier one, they start at the beginning of that
+minute, placed on the clock period by period — a first-half `28´` saved in the
+second half has four minutes in the first half, nothing in the interval, six
+after the restart. The mapping is clean because period boundaries are recorded
+instants; `30´+` maps to the end of the first period; a minute later than the
+clock is clamped to the moment of saving. The cost: a typo (`4` for `40`) gives
+a power play that is already over, and nothing on screen says so beyond its
+absence.
+
+**Reverses if:** a referee finds the button change too easy to tap through, or
+says late logging is rare and typos common — then run from the moment of saving,
+which is one line in `LogCard`.
+
+---
+
 ## 2026-10-07 · Scrape psmf.cz after all: league 6, all twelve groups, for internal testing
 
 **Owner's decision, reversing 2026-08-31.** That entry said wait for PSMF's

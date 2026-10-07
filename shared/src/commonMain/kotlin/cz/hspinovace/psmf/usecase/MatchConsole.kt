@@ -18,17 +18,19 @@ import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.YellowCard
-import cz.hspinovace.psmf.domain.cards
 import cz.hspinovace.psmf.domain.inPeriodInterval
+import cz.hspinovace.psmf.domain.isPastTheFinalWhistle
 import kotlin.time.Instant
 
 /**
- * The whistle. Stores the one instant the whole clock is derived from.
+ * The whistle. Stores the instant the whole clock is derived from.
  *
- * Nothing else about time is recorded, because there is nothing else: the
- * match clock runs continuously and the referee adds time rather than
- * stopping it. A paused-at or accumulated-time field would be the first
- * step towards a clock that can drift, be killed, or disagree with itself.
+ * The only other instants ever recorded are the period boundaries
+ * ([EndPeriod], [StartNextPeriod]), because there is no stoppage during
+ * play: inside a period the clock runs continuously and the referee adds
+ * time rather than stopping it. A paused-at or accumulated-time field would
+ * be the first step towards a clock that can drift, be killed, or disagree
+ * with itself.
  */
 class StartMatch(
     private val matches: MatchRepository,
@@ -83,10 +85,12 @@ class EndPeriod(
 /**
  * The whistle to resume play.
  *
- * Nothing ticked in the interval; this only records when it ended, which
- * is what lets the minute pick up from where the break began rather than
- * from zero -- 2 x 30 is gross time, and the second period continues the
- * same sixty minutes rather than starting a new count.
+ * Nothing ticked in the interval; this only records when it ended. The
+ * minute then restarts at the half length -- the second half kicks off at
+ * `30´` whatever the first added, which `30´+` has already absorbed
+ * (DECISIONS 2026-10-07, see [cz.hspinovace.psmf.domain.PlayClock.minuteAt]) --
+ * while play keeps counting on from where the break began, which is what a
+ * power play carried over the interval needs.
  */
 class StartNextPeriod(
     private val matches: MatchRepository,
@@ -123,7 +127,14 @@ class LogGoal(
         scorer: AppearanceId?,
         minute: Minute,
     ): Match {
-        val goal = GoalEvent(minute = minute, side = side, scorer = scorer, scoreAfter = Score.GOALLESS)
+        val goal =
+            GoalEvent(
+                minute = minute,
+                side = side,
+                scorer = scorer,
+                scoreAfter = Score.GOALLESS,
+                sequence = match.nextSequence(),
+            )
         val updated = match.copy(goals = (match.goals + goal).rescored())
         matches.save(updated)
         return updated
@@ -157,6 +168,12 @@ enum class CardColour {
  * reason* — plus the straight-versus-second-yellow distinction, which is
  * not cosmetic: yellows accumulate per group per season and two in one
  * match contribute zero, so a red has to say which kind it was.
+ *
+ * **Whether the player is already booked is a fact about the match, not
+ * about the draft**, so the functions that depend on it take it as
+ * `booked`: true when the player this card is for already has a yellow in
+ * this match. [LogCard] reads it from the match it records into; the
+ * console reads it from the row it opened the card from.
  */
 data class CardDraft(
     val side: TeamSide,
@@ -183,20 +200,45 @@ data class CardDraft(
             else -> PersonName.orNull(namedPerson)?.let { CardSubject.NamedPerson(it) }
         }
 
-    fun problems(): List<CardProblem> =
+    /**
+     * Whether a red may be `2. ŽK` here: for a player already booked in this
+     * match, or for someone not in the lineup -- who gets no automatic
+     * second yellow, so the referee says which kind it was. For any other
+     * player a red can only be straight.
+     */
+    fun offersSecondYellowKind(booked: Boolean): Boolean = appearance == null || booked
+
+    /** The kind of red this records, or null for a yellow or a kind not yet chosen. */
+    fun dismissalKind(booked: Boolean): Dismissal? =
+        when {
+            !isRed -> null
+            !offersSecondYellowKind(booked) -> Dismissal.STRAIGHT
+            else -> dismissal
+        }
+
+    /**
+     * **Saving this sends a booked player off for a second yellow**: the
+     * yellow and the red it becomes, recorded together as one action. True
+     * for a yellow to a booked player, and for a red marked `2. ŽK` to one.
+     * Never for someone not in the lineup.
+     */
+    fun sendsOffForSecondYellow(booked: Boolean): Boolean =
+        appearance != null && booked && (!isRed || dismissal == Dismissal.SECOND_YELLOW)
+
+    fun problems(booked: Boolean = false): List<CardProblem> =
         buildList {
             if (subject() == null) add(CardProblem.NO_SUBJECT)
             if (reason.isBlank()) add(CardProblem.NO_REASON)
-            if (isRed && dismissal == null) add(CardProblem.NO_DISMISSAL_KIND)
+            if (isRed && dismissalKind(booked) == null) add(CardProblem.NO_DISMISSAL_KIND)
             if (minute.toMinute() == null) add(CardProblem.NO_MINUTE)
         }
 
-    fun toCard(): CardEvent? {
-        if (problems().isNotEmpty()) return null
+    fun toCard(booked: Boolean = false): CardEvent? {
+        if (problems(booked).isNotEmpty()) return null
         val subject = subject() ?: return null
         val at = minute.toMinute() ?: return null
         return if (isRed) {
-            RedCard(at, side, subject, CardReason(reason.trim()), requireNotNull(dismissal))
+            RedCard(at, side, subject, CardReason(reason.trim()), requireNotNull(dismissalKind(booked)))
         } else {
             YellowCard(at, side, subject, CardReason(reason.trim()))
         }
@@ -267,12 +309,32 @@ data class MinuteDraft(
 }
 
 /**
- * Writes a card, and starts a power play if it was a dismissal.
+ * Writes a card, and starts a power play if it sent a player off.
  *
- * **Ten minutes, and a second dismissal starts a second, independent
- * period rather than extending the first** (analysis section 2.6). It is
- * not shortened by a goal either — see [PowerPlay], which stores only the
- * instant it began, because nothing else can change it.
+ * **A second yellow is one action that records two cards** (DECISIONS
+ * 2026-10-07). A yellow for a player already booked in this match -- or a
+ * red marked `2. ŽK` for one -- records the second [YellowCard] *and* a
+ * [RedCard] of kind [Dismissal.SECOND_YELLOW], at the same minute, with
+ * one [Match.nextSequence] between them, so one Undo takes both back. No
+ * referee makes three entries for what is one card on the pitch, and
+ * nothing else leaves a player holding two yellows and no dismissal. None
+ * of this applies to someone not in the lineup (`NamedPerson`), whose
+ * cards stay exactly as the referee writes them.
+ *
+ * **The power play is ten minutes of play**, and a second dismissal starts
+ * a second, independent one rather than extending the first (analysis
+ * section 2.6). None starts after the final whistle -- the match `FINISHED`
+ * or the card written `60´+` -- and none for a `NamedPerson`, who is not on
+ * the pitch to be replaced.
+ *
+ * Where it starts: from [at], the moment of saving, when the card carries
+ * the minute the clock shows; from the start of the written minute when
+ * the referee wrote an earlier one, because the side has been short since
+ * then. A written minute is placed on the clock period by period
+ * ([cz.hspinovace.psmf.domain.PlayClock.instantOfMinute]), so a first-half red written up in the
+ * second half still skips the interval. Never later than [at].
+ * [halfLengthMinutes] is the group's, the same number the console's own
+ * minute is built from.
  */
 class LogCard(
     private val matches: MatchRepository,
@@ -281,36 +343,79 @@ class LogCard(
         match: Match,
         draft: CardDraft,
         at: Instant,
+        halfLengthMinutes: Int = Minute.HALF_LENGTH,
     ): Match? {
-        val card = draft.toCard() ?: return null
+        val subject = draft.subject()
+        val booked = subject is CardSubject.Player && match.isBookedWithoutDismissal(subject)
+        val card = draft.toCard(booked) ?: return null
+        val sequence = match.nextSequence()
+
+        val recorded =
+            if (draft.sendsOffForSecondYellow(booked)) {
+                listOf(
+                    YellowCard(card.minute, card.side, card.subject, card.reason, sequence),
+                    RedCard(card.minute, card.side, card.subject, card.reason, Dismissal.SECOND_YELLOW, sequence),
+                )
+            } else {
+                listOf(card.recordedAs(sequence))
+            }
+        val powerPlay =
+            recorded
+                .filterIsInstance<RedCard>()
+                .firstOrNull()
+                ?.let { match.powerPlayFor(it, at, halfLengthMinutes, sequence) }
 
         val updated =
             match.copy(
-                cards = CardsSection.Issued(match.cardEvents + card),
-                powerPlays =
-                    if (card is RedCard) {
-                        match.powerPlays +
-                            PowerPlay(
-                                shortHandedSide = card.side,
-                                startedAt = at,
-                                dismissedAtMinute = card.minute,
-                            )
-                    } else {
-                        match.powerPlays
-                    },
+                cards = CardsSection.Issued(match.cardEvents + recorded),
+                powerPlays = match.powerPlays + listOfNotNull(powerPlay),
             )
         matches.save(updated)
         return updated
     }
 }
 
+/** A yellow in this match and no red yet: the next yellow is a dismissal. */
+private fun Match.isBookedWithoutDismissal(subject: CardSubject.Player): Boolean =
+    cardEvents.any { it is YellowCard && it.subject == subject } &&
+        cardEvents.none { it is RedCard && it.subject == subject }
+
+private fun CardEvent.recordedAs(sequence: Int): CardEvent =
+    when (this) {
+        is YellowCard -> copy(sequence = sequence)
+        is RedCard -> copy(sequence = sequence)
+    }
+
+private fun Match.powerPlayFor(
+    card: RedCard,
+    at: Instant,
+    halfLengthMinutes: Int,
+    sequence: Int,
+): PowerPlay? {
+    if (card.subject !is CardSubject.Player) return null
+    if (status.isPastTheFinalWhistle || card.minute == Minute.AfterFinalWhistle) return null
+    val asItHappened = clock.minuteAt(at, status, halfLengthMinutes) == card.minute
+    val written = if (asItHappened) null else clock.instantOfMinute(card.minute, halfLengthMinutes)
+    return PowerPlay(
+        shortHandedSide = card.side,
+        startedAt = written?.let { minOf(it, at) } ?: at,
+        dismissedAtMinute = card.minute,
+        sequence = sequence,
+    )
+}
+
 /**
  * Takes back the last thing recorded.
  *
- * "Last" is the end of the merged timeline rather than the last item of
- * either list, because the referee thinks in one sequence of events and
- * not in the form's two blocks. Undoing a dismissal also takes back the
- * power play it began; nothing else could have started one.
+ * **By recording order, not by minute** (DECISIONS 2026-10-07): a card at
+ * 20´ then a goal at 20´ takes back the goal; a card typed in as 22´ after
+ * a goal at 25´ takes back the card. Everything one action recorded goes
+ * together -- a second yellow's yellow and red, and the power play a
+ * dismissal began -- because they share a [MatchEvent.sequence].
+ *
+ * Events recorded before 0.2.0 carry no sequence. They are older than
+ * anything that does, and among themselves the last is the end of the
+ * timeline, exactly as Undo chose before.
  *
  * This is undo, not editing. Amending a finished report is screen 9 and is
  * out of the demo (DEMO_SCOPE).
@@ -319,50 +424,66 @@ class UndoLastEvent(
     private val matches: MatchRepository,
 ) {
     suspend operator fun invoke(match: Match): Match {
-        val last = match.timeline().lastOrNull() ?: return match
-
-        val updated =
-            when (last) {
-                is GoalEvent -> {
-                    match.copy(goals = match.goals.minusLast(last).rescored())
-                }
-
-                is CardEvent -> {
-                    match.copy(
-                        cards = withoutCard(match, last),
-                        powerPlays = withoutPowerPlayFor(match, last),
-                    )
-                }
-            }
+        val updated = match.withoutLastAction() ?: return match
         matches.save(updated)
         return updated
     }
+}
 
-    private fun withoutCard(
-        match: Match,
-        card: CardEvent,
-    ): CardsSection? {
-        val remaining =
-            match.cards
-                ?.cards()
-                .orEmpty()
-                .minusLast(card)
-        // Back to null rather than NoneIssued: taking a card back does not
-        // amount to the referee affirming that none were issued.
-        return if (remaining.isEmpty()) null else CardsSection.Issued(remaining)
+private fun Match.withoutLastAction(): Match? {
+    val action = (goals + cardEvents).mapNotNull { it.sequence }.maxOrNull() ?: return withoutLastUnnumbered()
+    return copy(
+        goals = goals.filterNot { it.sequence == action }.rescored(),
+        // Untouched unless a card goes: undoing a goal must not turn an
+        // affirmed "no cards" back into a block nobody has accounted for.
+        cards =
+            if (cardEvents.any { it.sequence == action }) {
+                cardsSectionOf(
+                    cardEvents.filterNot {
+                        it.sequence ==
+                            action
+                    },
+                )
+            } else {
+                cards
+            },
+        powerPlays = powerPlays.filterNot { it.sequence == action },
+    )
+}
+
+/** Before 0.2.0 no order was kept: the end of the timeline, as Undo did then. */
+private fun Match.withoutLastUnnumbered(): Match? =
+    when (val last = timeline().lastOrNull()) {
+        null -> {
+            null
+        }
+
+        is GoalEvent -> {
+            copy(goals = goals.minusLast(last).rescored())
+        }
+
+        is CardEvent -> {
+            copy(
+                cards = cardsSectionOf(cardEvents.minusLast(last)),
+                powerPlays = withoutUnnumberedPowerPlayFor(last),
+            )
+        }
     }
 
-    private fun withoutPowerPlayFor(
-        match: Match,
-        card: CardEvent,
-    ): List<PowerPlay> {
-        if (card !is RedCard) return match.powerPlays
-        val started =
-            match.powerPlays.lastOrNull {
-                it.shortHandedSide == card.side && it.dismissedAtMinute == card.minute
-            } ?: return match.powerPlays
-        return match.powerPlays.minusLast(started)
-    }
+/**
+ * Back to null rather than NoneIssued when nothing is left: taking a card
+ * back does not amount to the referee affirming that none were issued.
+ */
+private fun cardsSectionOf(remaining: List<CardEvent>): CardsSection? =
+    if (remaining.isEmpty()) null else CardsSection.Issued(remaining)
+
+private fun Match.withoutUnnumberedPowerPlayFor(card: CardEvent): List<PowerPlay> {
+    if (card !is RedCard) return powerPlays
+    val started =
+        powerPlays.lastOrNull {
+            it.sequence == null && it.shortHandedSide == card.side && it.dismissedAtMinute == card.minute
+        } ?: return powerPlays
+    return powerPlays.minusLast(started)
 }
 
 /** Removes the last occurrence, so identical events do not all disappear. */

@@ -23,7 +23,8 @@ sealed interface Minute : Comparable<Minute> {
 
     /**
      * Ordering position. Doubled so that the two half-open markers can sit
-     * between whole minutes: `30´+` falls after minute 30 and before 31.
+     * between whole minutes: `30´+` falls after minute 29 and before the
+     * second half's `30´`.
      */
     val sortKey: Int
 
@@ -42,13 +43,16 @@ sealed interface Minute : Comparable<Minute> {
         override val sortKey: Int get() = value * 2
     }
 
-    /** `30´+` — the half-time interval. */
+    /** `30´+` — the first half's added time, and the half-time interval. */
     @Serializable
     data object HalfTime : Minute {
         override val written: String get() = "$HALF_LENGTH$MARK+"
 
-        // +1 so it sorts after minute 30 and before minute 31.
-        override val sortKey: Int get() = HALF_LENGTH * 2 + 1
+        // -1 so it sorts after minute 29 and before minute 30. The second
+        // half kicks off at 30´ whatever the first half added (DECISIONS
+        // 2026-10-07), so 30´ is the second half's first minute and
+        // everything written 30´+ happened before it.
+        override val sortKey: Int get() = HALF_LENGTH * 2 - 1
     }
 
     /**

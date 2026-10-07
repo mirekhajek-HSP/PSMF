@@ -120,7 +120,7 @@ object ZouText {
                         card.minute,
                         card.jerseyNumber?.toString(),
                         card.name.takeIf { it.isNotBlank() },
-                    ).joinToString(" ") + " - ${card.reason}",
+                    ).joinToString(" ") + " - ${card.written}",
             )
         }
     }
