@@ -6,7 +6,9 @@ import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.time.Duration
+import java.time.Instant
 import java.time.OffsetDateTime
+import java.time.ZoneId
 
 /** Where pages come from. The parser tests hand in saved pages; a run hands in [PoliteCachedFetcher]. */
 fun interface PageSource {
@@ -40,6 +42,20 @@ class PoliteCachedFetcher(
     var cacheHits: Int = 0
         private set
 
+    /**
+     * When the oldest page read in this run was fetched: a cached page's
+     * file time, or the moment of the request. Null before anything is read.
+     */
+    var oldestPageFetchedAt: Instant? = null
+        private set
+
+    /**
+     * [oldestPageFetchedAt] as a Prague date: the day the data stands for.
+     * A run from the cache is as old as the cache, not as the day it ran.
+     */
+    fun fetchedOn(): kotlinx.datetime.LocalDate? =
+        oldestPageFetchedAt?.let { kotlinx.datetime.LocalDate.parse(it.atZone(PRAGUE).toLocalDate().toString()) }
+
     private val client =
         HttpClient
             .newBuilder()
@@ -53,6 +69,7 @@ class PoliteCachedFetcher(
         val cached = File(cacheDir, cacheName(path))
         if (cached.isFile && cached.length() > 0) {
             cacheHits++
+            noteFetchedAt(Instant.ofEpochMilli(cached.lastModified()))
             return cached.readText()
         }
         check(!offline) { "$path is not in the cache, and --offline forbids fetching it" }
@@ -77,7 +94,12 @@ class PoliteCachedFetcher(
 
         cacheDir.mkdirs()
         cached.writeText(response.body())
+        noteFetchedAt(Instant.now())
         return response.body()
+    }
+
+    private fun noteFetchedAt(instant: Instant) {
+        oldestPageFetchedAt = minOf(oldestPageFetchedAt ?: instant, instant)
     }
 
     private fun waitForTheGap() {
@@ -104,6 +126,7 @@ class PoliteCachedFetcher(
         const val MINIMUM_GAP_MILLIS = 1_200L
         const val TIMEOUT_SECONDS = 30L
         private const val HTTP_OK = 200
+        private val PRAGUE: ZoneId = ZoneId.of("Europe/Prague")
 
         /** `/souteze/a/6-k/` -> `souteze__a__6-k.html`. Readable, flat, and one file per page. */
         fun cacheName(path: String): String {

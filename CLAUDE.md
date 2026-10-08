@@ -66,6 +66,8 @@ iosApp/       Xcode wrapper. Touched rarely; changes here need the Mac.
 tools/league-import/  JVM-only importer, psmf.cz to the seed files. The ONLY
                 place jsoup or a network call is allowed; never a
                 dependency of the app.
+tools/launcher-icon/  One Java file: the Android TEST launcher icon, made
+                from the iOS one. Goes when the real icon arrives.
 docs/         TECH_STACK.md, LEAGUE_APP_ANALYSIS.md, DECISIONS.md,
                 DEMO_SCOPE.md, TODO.md, QUESTIONS.md, BUILD_MATRIX.md
 prompts/      Session briefs. See prompts/README.md for which are live.

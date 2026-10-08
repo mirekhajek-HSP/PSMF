@@ -13,12 +13,11 @@ data class ImportOptions(
     val seasonPath: String = "/souteze/2026-hanspaulska-liga-podzim/",
     val league: Int = 6,
     val offline: Boolean = false,
-    val asOf: LocalDate =
-        LocalDate.parse(
-            java.time.LocalDate
-                .now(java.time.ZoneId.of("Europe/Prague"))
-                .toString(),
-        ),
+    /**
+     * The day the counts stand for. Null, the default: the day the oldest
+     * page read was fetched -- a run from the cache is as old as the cache.
+     */
+    val asOf: LocalDate? = null,
 ) {
     companion object {
         fun parse(args: Array<String>): ImportOptions {
@@ -50,7 +49,11 @@ class LeagueImport(
     private val report: ImportReport,
     private val mintId: () -> String = { UUID.randomUUID().toString() },
 ) {
-    fun run(existing: ExistingSeed): SeedOutput {
+    /** [asOf] is asked once every page has been read: by default it is when they were fetched. */
+    fun run(
+        existing: ExistingSeed,
+        asOf: () -> LocalDate,
+    ): SeedOutput {
         val season = options.seasonPath
         val groups = Pages.groupsOfLeague(pages.get("$season${options.league}/"), season, options.league)
         check(groups.isNotEmpty()) { "No groups linked from $season${options.league}/ -- has the site changed?" }
@@ -64,7 +67,7 @@ class LeagueImport(
                 val teamPages = links.associate { it.slug to Pages.team(pages.get("$season$slug/tymy/${it.slug}/")) }
                 GroupAssembly(report).assemble(slug, links, kits, teamPages).also { count(it, teamPages) }
             }
-        return SeedFiles(existing, report, options.asOf, mintId).build(assembled, pitches)
+        return SeedFiles(existing, report, asOf(), mintId).build(assembled, pitches)
     }
 
     private fun count(
@@ -100,8 +103,11 @@ fun main(args: Array<String>) {
     val fetcher = PoliteCachedFetcher(options.cache, options.offline)
     val report = ImportReport()
 
-    val output = LeagueImport(fetcher, options, report).run(SeedJson.read(options.output))
-    val files = SeedJson.render(output, options.asOf)
+    // Not the day of the run: a re-run from the cache must not make the
+    // yellow counts look fresher than the pages they were read from.
+    val asOf by lazy { options.asOf ?: checkNotNull(fetcher.fetchedOn()) { "no page was read" } }
+    val output = LeagueImport(fetcher, options, report).run(SeedJson.read(options.output)) { asOf }
+    val files = SeedJson.render(output, asOf)
     // Through the app's own catalogue first: a run that would not load writes nothing.
     val loaded = SeedJson.loadAsTheAppWould(files)
 
@@ -109,9 +115,9 @@ fun main(args: Array<String>) {
     report.requests = fetcher.networkRequests
     report.cacheHits = fetcher.cacheHits
     report.seconds = (System.nanoTime() - started) / NANOS_PER_SECOND
-    options.summary.writeText(report.asMarkdown(options.asOf.toString()))
+    options.summary.writeText(report.asMarkdown(asOf.toString()))
 
-    println(report.asMarkdown(options.asOf.toString()))
+    println(report.asMarkdown(asOf.toString()))
     println("Wrote ${files.size} files to ${options.output}; ${loaded.size} groups load through SeedLeagueCatalog.")
     if (loaded.size != output.groups.size) exitProcess(1)
 }

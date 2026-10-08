@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The TEST icon (DECISIONS 2026-10-07, 2026-10-08). The foreground is the whole
+     picture, made by tools/launcher-icon/LauncherIcon.java from the iOS
+     icon; the background is never seen, but an adaptive icon must have one.
+     minSdk 28, so no -v26 qualifier and no legacy bitmaps. -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+</adaptive-icon>

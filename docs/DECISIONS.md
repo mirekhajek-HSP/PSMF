@@ -5,6 +5,73 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-08 · The Android TEST icon: the artwork 64 dp wide, and no themed variant
+
+**The session's calls, carrying out the owner's 2026-10-07 entry below.**
+
+The iOS PNG is drawn **64 dp wide in the middle of the 108 dp adaptive
+canvas**, and its yellow and its red band are carried out to the edges, so
+no mask finds a gap. That keeps "ZoU" and "TEST" inside the 66 dp circle
+every launcher mask is promised to leave: the farthest corner of the Z is
+27 dp from the centre. 72 dp, the iOS proportions exactly, would also be
+inside, by 2 dp. At 64 dp the 1024 px source is composed 1:1 at 16 px per
+dp, then scaled to the five densities. The foreground is the whole picture,
+opaque; the background is the same yellow and is never seen.
+`tools/launcher-icon/LauncherIcon.java` makes it, and renders it under a
+circle, AOSP's squircle and a rounded square, which were looked at before
+committing.
+
+**No monochrome layer.** Android 13+ themed icons need one, and lint says
+so (`MonochromeLauncherIcon`). Drawing one would be new artwork for a
+placeholder. With themed icons on, a launcher shows this icon in colour or
+derives its own; which, on the tester's phone, is not verified.
+
+**Reverses if:** the real icon arrives — it replaces all of this,
+`tools/launcher-icon/` included — or a tester with themed icons on cannot
+find the app.
+
+---
+
+## 2026-10-07 · What the league import keys on, and what it does with what it cannot reconcile
+
+**The session's calls under `prompts/10` Part 3**, written into the seed
+README and `SeedFiles.kt`.
+
+- **A fixture's ref is its pairing**, `6k-krabice-vs-hustec`. Upcoming
+  fixtures carry no PSMF id. A pairing meets once a half-season, and it
+  survives the reschedules PSMF actually makes, where a date, a pitch or a
+  round would not.
+- **A player's ref is the name, league-wide; a later namesake gets the team
+  appended.** The first in import order — groups a to l, teams by slug,
+  squads in *Statistiky* order — keeps `novak-jan`; a later one is
+  `novak-jan-strazci-pomerance`, and `-<group>-<team>` if that is taken
+  too. 18 on 2026-10-07. A re-run never re-decides: it finds an existing
+  player by group, team and name before it mints anything, and recognises
+  a transfer only when exactly one player of that name has left the team
+  they were in.
+- **Nothing that leaves the site is dropped.** A team or player in the old
+  files and not on the site now is carried over and reported: a saved match
+  may point at it.
+- **A name that fits no squad row, or two, is reported, not guessed**, and
+  its cards count for nobody. Six on 2026-10-07, all from two same-name
+  pairs inside one team each.
+- **`asOf` is the day the pages were fetched** — the oldest page read, a
+  cached page's file time — never the day of the run. Even that overstates
+  it: match details lag results (53 matches on 2026-10-07), and their cards
+  are in no count. The counts are advisory and the app never claims
+  eligibility, so this is said, not fixed.
+- **A match saved against the retired placeholder is kept, and offered
+  nowhere.** Nothing deletes it; no screen finds it, because its fixture is
+  not in league data. Listing such matches somewhere would show a referee a
+  match that can be neither continued nor sent.
+
+**Reverses if:** a pairing ever meets twice in a half-season (a replay, a
+cup), and the round joins the fixture ref; PSMF publish ids for upcoming
+fixtures; or a tester needs an old placeholder match back — it is still in
+the database, which `PlaceholderMatchAfterTheUpgradeTest` shows.
+
+---
+
 ## 2026-10-07 · Two calls inside the card fix: the button says "Vyloučit", and a late red runs from its minute
 
 **The session's calls, asked for by `prompts/10` and reported back for review.**

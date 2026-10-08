@@ -226,6 +226,7 @@
     <string name="teams_squad_size">%1$d on the squad list</string>
     <string name="teams_kits">Kit sets</string>
     <string name="teams_kits_note">A team owns two sets; the first is the primary. What was worn is recorded at the match.</string>
+    <string name="teams_kits_note_one">The team lists one set. What was worn is recorded at the match.</string>
     <string name="teams_roster">Squad list</string>
     <string name="teams_read_only_note">Only the jersey number can be changed. Names, RP numbers and cards are the league’s record.</string>
     <string name="teams_absence_note">Absence is set in the report, not here: it is about one match, not about a player.</string>

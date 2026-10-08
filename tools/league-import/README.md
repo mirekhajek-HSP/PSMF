@@ -37,11 +37,19 @@ lists every request ever made. `robots.txt` disallows only `/cms/`.
 `composeApp/src/commonMain/composeResources/files/leagues/`: `index.json`,
 `venues.json`, `6a.json` … `6l.json`, through the app's own seed DTOs; and
 `last-run.md` here, with counts and everything it **reported instead of
-guessing** — unmatched or ambiguous names, ref collisions, kit and fixture
-oddities, departed refs.
+guessing** — unmatched or ambiguous names, the refs it had to give a
+suffix, kit and fixture oddities, departed refs. It describes **that run**:
+a re-run keeps every ref it finds, so its suffix list is empty after the
+first; the 18 the first run decided are in the 2026-10-07 report.
 
 Before writing a byte it loads its output through the app's own
 `SeedLeagueCatalog`; a run that would not load writes nothing.
+
+Every player's `discipline.asOf` is the day the **oldest page read** was
+fetched — for a cached page, its file time — not the day of the run, so a
+re-run from the cache does not make the yellow counts look fresher than
+they are. Copy the cache with its times kept (`cp -p`), or the next run
+will believe it. `-PimportArgs="--as-of 2026-10-07"` overrides it.
 
 ## The id rule
 

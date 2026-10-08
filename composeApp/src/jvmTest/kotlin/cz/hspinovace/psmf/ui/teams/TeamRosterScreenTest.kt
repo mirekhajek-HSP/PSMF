@@ -52,6 +52,21 @@ class TeamRosterScreenTest {
                 onNodeWithText("6. liga K").assertIsDisplayed()
                 onNodeWithText("modrá", substring = true).assertIsDisplayed()
                 onNodeWithText("bílo-modrá", substring = true).assertIsDisplayed()
+                onNodeWithText("Tým má dvě sady", substring = true).assertIsDisplayed()
+            }
+        }
+
+    @Test
+    fun aTeamThatListsOneKitIsNotToldItOwnsTwo() =
+        runComposeUiTest {
+            // 55 of league 6's 144 teams list a single set on psmf.cz. The
+            // app does not invent a second, and the note must not either.
+            val oneKit = roster().let { r -> r.copy(team = r.team.copy(kits = r.team.kits.take(1))) }
+            withLanguage("cs") {
+                setContent { Screen(state = TeamRosterUiState(loading = false, roster = oneKit)) }
+
+                onNodeWithText("Tým má dvě sady", substring = true).assertDoesNotExist()
+                onNodeWithText("Tým uvádí jen jednu sadu.", substring = true).assertIsDisplayed()
             }
         }
 

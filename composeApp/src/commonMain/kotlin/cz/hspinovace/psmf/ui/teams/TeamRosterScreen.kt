@@ -35,6 +35,7 @@ import cz.hspinovace.psmf.resources.teams_jersey_range
 import cz.hspinovace.psmf.resources.teams_jersey_restore
 import cz.hspinovace.psmf.resources.teams_kits
 import cz.hspinovace.psmf.resources.teams_kits_note
+import cz.hspinovace.psmf.resources.teams_kits_note_one
 import cz.hspinovace.psmf.resources.teams_read_only_note
 import cz.hspinovace.psmf.resources.teams_roster
 import cz.hspinovace.psmf.resources.teams_rp_and_dob_missing
@@ -143,15 +144,18 @@ private fun KitsSection(
     roster: TeamRoster,
     onEvent: (TeamRosterEvent) -> Unit,
 ) {
+    // A team owns two sets, but psmf.cz lists only one for some of them
+    // (55 of 144 in league 6), and nothing invents the second.
+    val note = if (roster.kits.size == 1) Res.string.teams_kits_note_one else Res.string.teams_kits_note
     Section(
         title = stringResource(Res.string.teams_kits),
-        note = stringResource(Res.string.teams_kits_note),
+        note = stringResource(note),
     ) {
-        // Both sets, in order, as plain text. Not chips: a chip that does
+        // The sets, in order, as plain text. Not chips: a chip that does
         // nothing when tapped is worse than a label, and these are labels
-        // -- a team owns two sets and picks one per match so the sides are
-        // not in similar colours. Which one was worn is a fact about a
-        // match and is not on this screen.
+        // -- a team picks one set per match so the sides are not in
+        // similar colours. Which one was worn is a fact about a match and
+        // is not on this screen.
         //
         // The labels are verbatim from PSMF and never derived from the
         // colours: "bílo-modrá" is not obtainable from ["bílá", "modrá"].

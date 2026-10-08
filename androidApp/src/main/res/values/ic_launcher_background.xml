@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The TEST icon's yellow, read from AppIcon-test-1024.png. -->
+    <color name="ic_launcher_background">#FDC500</color>
+</resources>

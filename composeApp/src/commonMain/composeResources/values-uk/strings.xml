@@ -230,6 +230,7 @@
     <string name="teams_squad_size">%1$d у складі</string>
     <string name="teams_kits">Комплекти форми</string>
     <string name="teams_kits_note">Команда має два комплекти, перший — основний. Що вдягли, записують на матчі.</string>
+    <string name="teams_kits_note_one">Команда вказала лише один комплект. Що вдягли, записують на матчі.</string>
     <string name="teams_roster">Склад</string>
     <string name="teams_read_only_note">Змінити можна лише номер. Імена, номери RP і картки — це записи ліги.</string>
     <string name="teams_absence_note">Відсутність зазначають у протоколі, не тут: вона стосується одного матчу, а не гравця.</string>

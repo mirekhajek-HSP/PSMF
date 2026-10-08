@@ -19,6 +19,7 @@ this repository, which describe intent:
 
 | Date | Report | Covers | Outcome |
 |---|---|---|---|
+| 2026-10-07 – 08 | [Cards, the clock, league 6 — build 0.2.0 (2)](2026-10-07-cards-clock-and-league-6.md) | Five card-and-clock defects, schema 5 and 6, league players with no identification, **league 6 imported from psmf.cz**, the Android TEST icon, 0.2.0 (2) | Four gates met · 4 commits · 170 requests to psmf.cz · debug APK 69.95 MB, 52 KB under 70 · 436 + 383 + 194 + 23 tests · not yet on a phone |
 | 2026-09-29 – 30 | [iOS TestFlight readiness](2026-09-29-ios-testflight-readiness.md) | Whole-app link, privacy manifest from the binary, `Info.plist` for upload, send and save on iOS, **first device run, first TestFlight upload** | Four gates met · **build 0.1.0 (1) uploaded** · one device-only defect (launch abort, fixed) · export on `ios/export` until Android is checked · 388 + 182 tests |
 | 2026-09-28 | [iOS Parts 2 and 3](2026-09-01-ios-parts-2-and-3.md) | Mac prerequisites, `iosArm64` compile and link, Part 1 verdict | Gate 2 met with zero source changes · Gate 3 blocked on hardware · verdict (b) confirmed · new clock: K/N Intel host deprecated |
 | 2026-09-01 | [Six fixes from a physical phone](2026-09-01-six-fixes-from-a-physical-phone.md) | Half-time domain fix, console action icons, follow star, cascading filters, translated rules panel, save-folder-once | Four gates met · 4 commits · 388 + 162 tests · four owner-spec corrections · one device-found bug |

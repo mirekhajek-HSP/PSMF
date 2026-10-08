@@ -234,6 +234,7 @@
     <string name="teams_squad_size">%1$d na soupisce</string>
     <string name="teams_kits">Sady dresů</string>
     <string name="teams_kits_note">Tým má dvě sady, první je základní. Co se hrálo, se zapisuje u zápasu.</string>
+    <string name="teams_kits_note_one">Tým uvádí jen jednu sadu. Co se hrálo, se zapisuje u zápasu.</string>
     <string name="teams_roster">Soupiska</string>
     <string name="teams_read_only_note">Upravit lze jen číslo dresu. Jména, čísla RP a karty jsou záznam ligy.</string>
     <string name="teams_absence_note">Neúčast se zadává u zápisu, ne tady: platí pro jeden zápas, ne pro hráče.</string>

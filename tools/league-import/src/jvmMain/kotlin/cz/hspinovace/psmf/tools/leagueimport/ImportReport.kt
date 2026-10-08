@@ -25,7 +25,11 @@ class ImportReport {
     /** A name that fits more than one *Statistiky* row of one team. */
     val ambiguousNames = mutableListOf<String>()
 
-    /** Two different players whose names make the same ref; how each was resolved. */
+    /**
+     * Two different players whose names make the same ref, resolved by this
+     * run. A re-run keeps every ref it finds and decides none again, so after
+     * the first run this is empty; the suffixed refs are in the files.
+     */
     val refCollisions = mutableListOf<String>()
     val kitOddities = mutableListOf<String>()
     val fixtureOddities = mutableListOf<String>()
@@ -75,7 +79,7 @@ class ImportReport {
             section("Two yellows in one match", secondYellows)
             section("Names in a lineup or on a card with no Statistiky row (not guessed)", unmatchedNames)
             section("Names fitting more than one Statistiky row", ambiguousNames)
-            section("Player ref collisions", refCollisions)
+            section("Player refs given a suffix by this run (a kept ref is not listed again)", refCollisions)
             section("Name oddities", nameOddities)
             section("Kit oddities", kitOddities)
             section("Fixture oddities", fixtureOddities)

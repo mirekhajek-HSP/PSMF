@@ -42,7 +42,9 @@ Grouped by what blocks what, not by size. Last updated 2026-10-07.
 - [ ] **Drop `materialIconsExtended`** — five icons are costing 31 MB. The debug
       APK went 38 → 70 MB and is 64 MB of DEX. Copy the five vectors locally.
       Mostly a debug-build artifact, but this project has never built a release and
-      iOS has no R8 at all. A morning's work.
+      iOS has no R8 at all. A morning's work. **0.2.0's debug APK is 69.95 MB**
+      (69,948,495 bytes, clean package), 52 KB under 70: the next addition
+      crosses it.
 - [x] ~~**Wait for A1/A2, then import one whole league. No scraping.**~~
       Reversed 2026-10-07: league 6 is scraped from psmf.cz (prompt 10).
       A1/A2 are still wanted, for RP numbers and dates of birth, which the
@@ -102,8 +104,10 @@ Nothing below can start until the relevant answer lands.
 - [x] **`applicationId` / iOS bundle ID** — **`cz.hspinovace.psmf`**, both platforms.
       Settled 2026-09-29.
 - [ ] **App icon** — to be provided. A temporary **TEST** icon is in place so
-      internal TestFlight can run (DECISIONS, 2026-09-30). **Replace it before
-      external testing or any store submission.** Ask PSMF about their logo.
+      internal TestFlight can run (DECISIONS, 2026-09-30), and on Android since
+      0.2.0 (2026-10-07). **Replace it before external testing or any store
+      submission**, on both platforms in one commit; delete
+      `tools/launcher-icon/` with it. Ask PSMF about their logo.
 - [x] **Merge `ios/export` after the Windows machine builds Android.** Done
       2026-10-07; the phone half rides on 0.2.0. Part 4
       of `prompts/09` changed common export code and **edited Android by hand

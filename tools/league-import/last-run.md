@@ -41,7 +41,7 @@ None.
 - 6-k hattrick-prosek-fc, game 311830 (round 3): lineup 'Miroslav Láník' fits [Láník Miroslav, Láník Miroslav]
 - 6-k hattrick-prosek-fc, game 311817 (round 1): lineup 'Miroslav Láník' fits [Láník Miroslav, Láník Miroslav]
 
-## Player ref collisions (0)
+## Player refs given a suffix by this run (a kept ref is not listed again) (0)
 
 None.
 
