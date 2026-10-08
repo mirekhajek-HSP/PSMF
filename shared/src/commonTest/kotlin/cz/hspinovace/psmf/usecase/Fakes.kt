@@ -27,6 +27,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 /**
  * Hand-written fakes, not mocks: shared tests compile for iOS and MockK is
@@ -131,6 +135,18 @@ class FakeRememberedDateOfBirthRepository(
     }
 }
 
+/**
+ * A clock stopped at the start of [date] in UTC, for anything that asks
+ * what day it is. Pair it with `TimeZone.UTC`.
+ */
+class PinnedClock(
+    date: LocalDate,
+) : Clock {
+    private val instant = date.atStartOfDayIn(TimeZone.UTC)
+
+    override fun now(): Instant = instant
+}
+
 class FakeLeagueRepository(
     private val groups: List<LeagueGroup>,
 ) : LeagueRepository {
@@ -226,4 +242,11 @@ object TestLeague {
         )
 
     fun repository() = FakeLeagueRepository(listOf(group))
+
+    /**
+     * Before every fixture here, so the default "Nadcházející" window holds
+     * the whole of this small league and tests about something else are not
+     * quietly about dates.
+     */
+    val beforeTheSeason = PinnedClock(LocalDate(2026, 8, 1))
 }

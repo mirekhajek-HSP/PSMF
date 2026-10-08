@@ -193,12 +193,22 @@ None blocking, all from the build reports.
       only the final whistle while `30´+` also covers added time. Neither is wrong
       for HL. See `DECISIONS.md`; one for the referee visit.
 - [ ] **The `ViewModel`-reads-once-at-startup bug shape** was found once
-      (`SettingsViewModel.exportFolderChosen`) and fixed once. Nothing guards
-      against the next instance.
+      (`SettingsViewModel.exportFolderChosen`) and fixed once, then found
+      again in `FixturesViewModel` (a report started from the list came back
+      without its badge; fixed by observing the reports, prompt 12). Nothing
+      guards against the next instance.
 - [ ] **The Týmy scroll-restore fix has no test** — the JVM Compose host cannot
       model lazy-list scroll anchoring. Deleting the fake tests was right.
-- [ ] **The venue filter is real UI against provisional data** — 7 codes, not ~35.
-      `/hriste/` on psmf.cz has all of them with addresses and surfaces.
+- [x] ~~**The venue filter is real UI against provisional data**~~ — real since
+      prompt 10: 43 pitches with names from `/hriste/`, 38 of them with a league 6
+      match. Offered in scope and by name since prompt 12.
+- [ ] **The theme sets no `surfaceContainer` roles**, so any Material 3
+      component that uses them (menus, dialogs, sheets) is drawn in Material's
+      baseline lavender. The Zápasy menus spell out `surface` (prompt 12); the
+      rest still fall back. One fix in `PsmfTheme`, light and dark.
+- [ ] **"Налаштування" breaks mid-word on a 360 dp phone** in the tab bar
+      (`Налаштуван` / `ня`), seen on the emulator at 360 dp during prompt 12.
+      The 2026-08-31 tab-label test measures 411 dp. Pre-existing.
 - [ ] **The commentary field is a placeholder**, not a design. Blocked on **A6**.
 - [ ] **TXT/CSV/JSON are a stand-in.** Blocked on **A8**.
 - [ ] **One deprecation warning** — `BackHandler`.

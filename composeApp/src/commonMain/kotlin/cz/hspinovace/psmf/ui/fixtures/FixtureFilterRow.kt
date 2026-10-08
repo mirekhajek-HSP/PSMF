@@ -1,65 +1,101 @@
-@file:OptIn(ExperimentalLayoutApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package cz.hspinovace.psmf.ui.fixtures
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.FilterChip
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import cz.hspinovace.psmf.domain.Venue
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import cz.hspinovace.psmf.domain.GroupId
+import cz.hspinovace.psmf.domain.VenueCode
 import cz.hspinovace.psmf.resources.Res
-import cz.hspinovace.psmf.resources.fixtures_filter_any
+import cz.hspinovace.psmf.resources.fixtures_dates_all
+import cz.hspinovace.psmf.resources.fixtures_dates_played
+import cz.hspinovace.psmf.resources.fixtures_dates_today
+import cz.hspinovace.psmf.resources.fixtures_dates_upcoming
+import cz.hspinovace.psmf.resources.fixtures_filter_all_leagues
+import cz.hspinovace.psmf.resources.fixtures_filter_all_pitches
 import cz.hspinovace.psmf.resources.fixtures_filter_clear
+import cz.hspinovace.psmf.resources.fixtures_filter_dates
 import cz.hspinovace.psmf.resources.fixtures_filter_group
 import cz.hspinovace.psmf.resources.fixtures_filter_league
 import cz.hspinovace.psmf.resources.fixtures_filter_team
+import cz.hspinovace.psmf.resources.fixtures_filter_whole_league
 import cz.hspinovace.psmf.resources.header_pitch
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
+import cz.hspinovace.psmf.usecase.DateWindow
 import cz.hspinovace.psmf.usecase.FilterOptions
 import cz.hspinovace.psmf.usecase.FixtureFilter
 import cz.hspinovace.psmf.usecase.LeagueLevelOption
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * Narrow the fixture list by league and group, by pitch, and by team name.
+ * Narrow the fixture list: league, then group, then pitch, then dates,
+ * then team.
  *
- * # Sized to the real competition, not the bundled twelve teams
+ * # Select boxes, not chips (DECISIONS 2026-10-08)
  *
- * The real competition (analysis 2.2) is eight league levels split into
- * up to sixty groups, roughly thirty-five pitches, and on the order of
- * nine hundred teams. Three different shapes need three different
- * controls:
+ * This was a wall of chips, argued for at one group and seven pitches: a
+ * chip costs one tap where a menu costs two, shows what is chosen without
+ * opening, and is a bigger target. Real league 6 is twelve groups and
+ * forty-three pitches, and on a phone the chips filled the screen: no
+ * match was visible, and the filter could not be scrolled to find one.
+ * At that size a menu's second tap is cheap and a screenful of chips is
+ * not. What was worth keeping from the argument is kept: **a closed select
+ * still says what is chosen**, and every option in an open one is a
+ * full-width row at least [PsmfDimens.minTouchTarget] tall.
  *
- * - **League and group** cascade. Row one is every level the loaded data
- *   holds -- one today, up to eight at full scale -- and row two is that
- *   level's group letters, appearing only once a level is picked. Neither
- *   row hardcodes a count or a letter range: both are built from
- *   [FilterOptions.leagueLevels],
- *   so a sixty-first group file changes what is drawn and nothing else.
- *   Picking a level alone is a complete filter -- the whole league, no
- *   group required -- and picking a different level always drops whatever
- *   letter was chosen under the old one.
- * - **Pitch** is a flat, wrapping row of chips. There is no cascade to a
- *   pitch, and thirty-five of them still wrap onto a couple of lines
- *   rather than needing a menu.
- * - **Team** is a text field, not a picker: nine hundred rows is not a
- *   list a chip row or a dropdown survives. Matched the way the Týmy tab's
- *   own search is, diacritics folded. The followed-team shortcut this
- *   screen used to offer now lives entirely in the Týmy tab.
+ * - **League** is always there: every level the data holds, after
+ *   "Všechny ligy".
+ * - **Group** appears under it once a league is chosen: the whole league
+ *   first, then its groups. Choosing a different league clears it.
+ * - **Pitch** offers only pitches with a match in the chosen league and
+ *   group, by code and name, and clears when a new league or group no
+ *   longer plays there ([FilterOptions.normalise]).
+ * - **Dates** defaults to upcoming. "Zrušit filtr" returns it there rather
+ *   than to every date.
+ * - **Team** is a text field, not a select: a hundred and forty-four
+ *   teams is a list to search, not to scroll. Matched the way the Týmy
+ *   tab's own search is, diacritics folded.
  *
- * Chips throughout, not dropdowns: a menu costs an extra tap, hides which
- * option is currently active, and gives a smaller target than a chip sized
- * for a cold thumb.
+ * Nothing here hardcodes a count, a letter or a pitch: all of it comes from
+ * [FilterOptions], so a new group file changes what is offered and nothing
+ * else.
+ *
+ * It is the first item of the list and scrolls away with it. The list has
+ * a button back to it once it is out of view, and a line saying what it
+ * is set to (`FixturesScreen`).
  */
 @Composable
 fun FixtureFilterRow(
@@ -68,37 +104,64 @@ fun FixtureFilterRow(
     onFilterChanged: (FixtureFilter) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // Every change goes through the cascade, so what is reported is always
+    // a filter the options allow -- the ViewModel applies the same rule.
+    val change: (FixtureFilter) -> Unit = { onFilterChanged(options.normalise(it)) }
+    val level = options.leagueLevels.firstOrNull { it.level == filter.leagueLevel }
+
     Column(
         modifier =
             modifier
                 .fillMaxWidth()
-                .padding(horizontal = PsmfDimens.screenPadding, vertical = PsmfDimens.labelGap),
+                .padding(horizontal = PsmfDimens.screenPadding, vertical = PsmfDimens.itemSpacing),
         verticalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
     ) {
-        LeagueLevelRow(options.leagueLevels, filter, onFilterChanged)
+        Select(
+            label = stringResource(Res.string.fixtures_filter_league),
+            choices =
+                listOf(Choice<Int?>(null, stringResource(Res.string.fixtures_filter_all_leagues))) +
+                    options.leagueLevels.map { Choice(it.level, it.name) },
+            selected = filter.leagueLevel,
+            // A group from "6. liga" means nothing under another league.
+            onSelect = { change(filter.copy(leagueLevel = it, groupId = null)) },
+        )
 
-        val selectedLevel = options.leagueLevels.firstOrNull { it.level == filter.leagueLevel }
-        if (selectedLevel != null) {
-            GroupLetterRow(selectedLevel, filter, onFilterChanged)
+        if (level != null) {
+            GroupSelect(level, filter, change)
         }
 
-        if (options.venues.isNotEmpty()) {
-            VenueRow(options.venues, filter, onFilterChanged)
-        }
+        Select(
+            label = stringResource(Res.string.header_pitch),
+            choices =
+                listOf(Choice<VenueCode?>(null, stringResource(Res.string.fixtures_filter_all_pitches))) +
+                    options.venuesInScope(filter).map { Choice(it.code, it.code.value, it.name) },
+            selected = filter.venue,
+            onSelect = { change(filter.copy(venue = it)) },
+        )
+
+        Select(
+            label = stringResource(Res.string.fixtures_filter_dates),
+            choices = DateWindow.entries.map { Choice(it, it.label()) },
+            selected = filter.dates,
+            onSelect = { change(filter.copy(dates = it)) },
+        )
 
         OutlinedTextField(
             value = filter.teamQuery,
-            onValueChange = { onFilterChanged(filter.copy(teamQuery = it)) },
+            onValueChange = { change(filter.copy(teamQuery = it)) },
             label = { Text(stringResource(Res.string.fixtures_filter_team)) },
             singleLine = true,
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
             modifier =
                 Modifier
                     .fillMaxWidth()
                     .heightIn(min = PsmfDimens.minTouchTarget),
         )
 
-        if (!filter.isEmpty) {
+        if (!filter.isDefault) {
             TextButton(
+                // Everything back to how the tab opens, dates included: to
+                // upcoming, not to every date.
                 onClick = { onFilterChanged(FixtureFilter()) },
                 modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
             ) {
@@ -108,105 +171,140 @@ fun FixtureFilterRow(
     }
 }
 
-/** Row one: every league level the loaded data holds. Always shown. */
+/** Under the league once one is chosen: the whole league, then its groups. */
 @Composable
-private fun LeagueLevelRow(
-    levels: List<LeagueLevelOption>,
-    filter: FixtureFilter,
-    onFilterChanged: (FixtureFilter) -> Unit,
-) {
-    ChipRow(stringResource(Res.string.fixtures_filter_league)) {
-        Chip(
-            label = stringResource(Res.string.fixtures_filter_any),
-            selected = filter.leagueLevel == null,
-            onClick = { onFilterChanged(filter.copy(leagueLevel = null, groupId = null)) },
-        )
-        levels.forEach { option ->
-            Chip(
-                label = option.level.toString(),
-                selected = filter.leagueLevel == option.level,
-                // A group id from "6. liga" makes no sense once the level
-                // reads "7" -- changing the league always clears the group.
-                onClick = { onFilterChanged(filter.copy(leagueLevel = option.level, groupId = null)) },
-            )
-        }
-    }
-}
-
-/** Row two: the chosen level's group letters. Only once a level is picked. */
-@Composable
-private fun GroupLetterRow(
+private fun GroupSelect(
     level: LeagueLevelOption,
     filter: FixtureFilter,
-    onFilterChanged: (FixtureFilter) -> Unit,
+    change: (FixtureFilter) -> Unit,
 ) {
-    ChipRow(stringResource(Res.string.fixtures_filter_group)) {
-        Chip(
-            label = stringResource(Res.string.fixtures_filter_any),
-            selected = filter.groupId == null,
-            // The level stays chosen -- only the letter clears. A league
-            // alone is a valid filter, not a step back to "every league".
-            onClick = { onFilterChanged(filter.copy(groupId = null)) },
-        )
-        level.groups.forEach { group ->
-            Chip(
-                label = group.groupLetter,
-                selected = filter.groupId == group.id,
-                onClick = { onFilterChanged(filter.copy(leagueLevel = level.level, groupId = group.id)) },
-            )
-        }
-    }
-}
-
-/** The pitch row: flat and wrapping, sized for roughly thirty-five codes. */
-@Composable
-private fun VenueRow(
-    venues: List<Venue>,
-    filter: FixtureFilter,
-    onFilterChanged: (FixtureFilter) -> Unit,
-) {
-    ChipRow(stringResource(Res.string.header_pitch)) {
-        Chip(
-            label = stringResource(Res.string.fixtures_filter_any),
-            selected = filter.venue == null,
-            onClick = { onFilterChanged(filter.copy(venue = null)) },
-        )
-        venues.forEach { venue ->
-            Chip(
-                label = venue.code.value,
-                selected = filter.venue == venue.code,
-                onClick = { onFilterChanged(filter.copy(venue = venue.code)) },
-            )
-        }
-    }
-}
-
-/** A labelled, wrapping row of chips -- the shape all three filter rows share. */
-@Composable
-private fun ChipRow(
-    label: String,
-    content: @Composable () -> Unit,
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) { content() }
-    }
-}
-
-@Composable
-private fun Chip(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
-    FilterChip(
-        selected = selected,
-        onClick = onClick,
-        label = { Text(label) },
-        modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
+    Select(
+        label = stringResource(Res.string.fixtures_filter_group),
+        choices =
+            listOf(Choice<GroupId?>(null, stringResource(Res.string.fixtures_filter_whole_league, level.name))) +
+                level.groups.map { Choice(it.id, it.name) },
+        selected = filter.groupId,
+        // The league stays chosen; only the group changes. A league alone
+        // is a valid filter, not a step back to every league.
+        onSelect = { change(filter.copy(groupId = it)) },
     )
 }
+
+/** The dates option's name, in the select and in the line that stands in for the filter. */
+@Composable
+internal fun DateWindow.label(): String =
+    when (this) {
+        DateWindow.UPCOMING -> stringResource(Res.string.fixtures_dates_upcoming)
+        DateWindow.TODAY -> stringResource(Res.string.fixtures_dates_today)
+        DateWindow.PLAYED -> stringResource(Res.string.fixtures_dates_played)
+        DateWindow.ALL -> stringResource(Res.string.fixtures_dates_all)
+    }
+
+/** One option: what it means, what it is called, and -- for a pitch -- its name beside its code. */
+private data class Choice<T>(
+    val value: T,
+    val text: String,
+    val detail: String? = null,
+) {
+    val closedText: String get() = listOfNotNull(text, detail).joinToString(" · ")
+}
+
+/**
+ * A select box: closed, a field that says what is chosen; open, a menu as
+ * wide as the field, one full-width row per option, the chosen one ticked.
+ *
+ * Material's exposed dropdown, so the platform's own menu behaviour --
+ * scrolling a long list, dismissing on a tap outside, reading as a list to
+ * a screen reader -- comes with it.
+ */
+@Composable
+private fun <T> Select(
+    label: String,
+    choices: List<Choice<T>>,
+    selected: T,
+    onSelect: (T) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val current = choices.firstOrNull { it.value == selected }
+
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = current?.closedText ?: selected.toString(),
+            onValueChange = {},
+            readOnly = true,
+            singleLine = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier =
+                Modifier
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                    .fillMaxWidth()
+                    .heightIn(min = PsmfDimens.minTouchTarget),
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            // Spelled out: the theme sets no surfaceContainer, so Material's
+            // default would draw the menu in its own lavender.
+            containerColor = MaterialTheme.colorScheme.surface,
+        ) {
+            choices.forEach { choice ->
+                val isSelected = choice == current
+                DropdownMenuItem(
+                    text = { ChoiceText(choice) },
+                    onClick = {
+                        expanded = false
+                        onSelect(choice.value)
+                    },
+                    leadingIcon = { Tick(visible = isSelected) },
+                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
+                    modifier =
+                        Modifier
+                            .heightIn(min = PsmfDimens.minTouchTarget)
+                            .then(
+                                if (isSelected) {
+                                    Modifier.background(MaterialTheme.colorScheme.secondaryContainer)
+                                } else {
+                                    Modifier
+                                },
+                            ).semantics { this.selected = isSelected },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChoiceText(choice: Choice<*>) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = choice.text,
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = if (choice.detail != null) FontWeight.SemiBold else null,
+        )
+        choice.detail?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+/** The chosen option's tick, or the same width of nothing so the rows line up. */
+@Composable
+private fun Tick(visible: Boolean) {
+    if (visible) {
+        Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(TICK_SIZE))
+    } else {
+        Spacer(Modifier.size(TICK_SIZE))
+    }
+}
+
+private val TICK_SIZE = 24.dp

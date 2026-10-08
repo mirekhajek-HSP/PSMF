@@ -109,6 +109,12 @@ class FixturesViewModel(
 
     init {
         load()
+        // A report started, or moved on, while the referee was in another
+        // tab: rebuild, so its row comes back with its badge -- and, for a
+        // report on an earlier day, still listed under "Nadcházející".
+        viewModelScope.launch {
+            listFixtures.reportsChanged().collect { rebuild(pause = Duration.ZERO) }
+        }
     }
 
     /**
@@ -118,10 +124,18 @@ class FixturesViewModel(
      * follows: straight away for a choice, and after [TYPING_PAUSE] for a
      * keystroke, so a team name typed at speed builds one list rather than
      * one per letter.
+     *
+     * The cascade is applied here as well as in the filter's own controls:
+     * a group outside the chosen league, or a pitch outside the chosen
+     * league and group, never reaches the state.
      */
     fun onFilterChanged(filter: FixtureFilter) {
-        val typing = filter.teamQuery != _state.value.filter.teamQuery
-        _state.update { it.copy(filter = filter) }
+        val applied =
+            _state.value.listing
+                ?.options
+                ?.normalise(filter) ?: filter
+        val typing = applied.teamQuery != _state.value.filter.teamQuery
+        _state.update { it.copy(filter = applied) }
         rebuild(pause = if (typing) TYPING_PAUSE else Duration.ZERO)
     }
 

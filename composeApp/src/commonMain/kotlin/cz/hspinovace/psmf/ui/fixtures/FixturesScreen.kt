@@ -1,5 +1,8 @@
 package cz.hspinovace.psmf.ui.fixtures
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,21 +16,34 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import cz.hspinovace.psmf.domain.FixtureId
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.resources.Res
+import cz.hspinovace.psmf.resources.fixtures_back_to_filter
+import cz.hspinovace.psmf.resources.fixtures_day_today
 import cz.hspinovace.psmf.resources.fixtures_empty
 import cz.hspinovace.psmf.resources.fixtures_error_title
 import cz.hspinovace.psmf.resources.fixtures_filtered_empty
@@ -38,6 +54,14 @@ import cz.hspinovace.psmf.resources.fixtures_status_confirmed
 import cz.hspinovace.psmf.resources.fixtures_status_finished
 import cz.hspinovace.psmf.resources.fixtures_status_in_progress
 import cz.hspinovace.psmf.resources.fixtures_status_setup
+import cz.hspinovace.psmf.resources.fixtures_summary_team
+import cz.hspinovace.psmf.resources.weekday_friday
+import cz.hspinovace.psmf.resources.weekday_monday
+import cz.hspinovace.psmf.resources.weekday_saturday
+import cz.hspinovace.psmf.resources.weekday_sunday
+import cz.hspinovace.psmf.resources.weekday_thursday
+import cz.hspinovace.psmf.resources.weekday_tuesday
+import cz.hspinovace.psmf.resources.weekday_wednesday
 import cz.hspinovace.psmf.ui.common.ActionRow
 import cz.hspinovace.psmf.ui.common.PrimaryAction
 import cz.hspinovace.psmf.ui.common.WaitVeil
@@ -47,6 +71,10 @@ import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.FixtureFilter
 import cz.hspinovace.psmf.usecase.FixtureListing
 import cz.hspinovace.psmf.usecase.FixtureRow
+import cz.hspinovace.psmf.usecase.SectionHeading
+import kotlinx.coroutines.launch
+import kotlinx.datetime.DayOfWeek
+import kotlinx.datetime.LocalDate
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -82,79 +110,195 @@ fun FixturesScreen(
                 }
 
                 else -> {
-                    Column {
-                        // Outside the list, so it stays put: a filter that
-                        // scrolls away cannot be cleared without scrolling back
-                        // to find it, and it is drawn even when the result is
-                        // empty for exactly that reason.
-                        FixtureFilterRow(state.filter, listing.options, onFilterChanged)
-                        when {
-                            listing.filteredToNothing -> {
-                                CentredMessage(stringResource(Res.string.fixtures_filtered_empty))
-                            }
-
-                            listing.isEmpty -> {
-                                CentredMessage(stringResource(Res.string.fixtures_empty))
-                            }
-
-                            else -> {
-                                FixtureList(listing, onFixtureSelected)
-                            }
-                        }
-                    }
+                    FixtureList(state.filter, listing, onFixtureSelected, onFilterChanged)
                 }
             }
         }
     }
 }
 
+/**
+ * The filter and the list, scrolling as one.
+ *
+ * # The filter scrolls away (DECISIONS 2026-10-08)
+ *
+ * It used to sit above the list and stay put, on the argument that a
+ * filter scrolled out of sight cannot be cleared. With real league data
+ * that left the list no height at all. It is the list's first item now,
+ * and once it is out of view two things answer the old argument:
+ *
+ * - **a button back to it**, bottom right, clear of the tab bar; the list
+ *   ends with room under its last row so the button never covers it;
+ * - **a slim line at the top saying what the list is narrowed to**, so a
+ *   referee deep in the list still knows it is "6. liga K · ZAK" and not
+ *   everything.
+ *
+ * It does not come back on a short scroll up. The filter is four or five
+ * fields tall, a third of a phone's list; sliding that over the rows the
+ * referee is scrolling back to read would fight the list, and the line and
+ * the button already say and do what it would.
+ */
 @Composable
 private fun FixtureList(
+    filter: FixtureFilter,
+    listing: FixtureListing,
+    onFixtureSelected: (FixtureId) -> Unit,
+    onFilterChanged: (FixtureFilter) -> Unit,
+) {
+    val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
+    // Item 0 is the filter. Any later first item means it has gone entirely.
+    val filterOutOfView by remember { derivedStateOf { listState.firstVisibleItemIndex > 0 } }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = BUTTON_CLEARANCE),
+        ) {
+            item(key = FILTER_KEY, contentType = FILTER_KEY) {
+                FixtureFilterRow(filter, listing.options, onFilterChanged)
+            }
+            when {
+                listing.filteredToNothing -> {
+                    item(key = "filtered-empty") { Message(stringResource(Res.string.fixtures_filtered_empty)) }
+                }
+
+                listing.isEmpty -> {
+                    item(key = "empty") { Message(stringResource(Res.string.fixtures_empty)) }
+                }
+
+                else -> {
+                    sections(listing, onFixtureSelected)
+                }
+            }
+        }
+
+        AnimatedVisibility(
+            visible = filterOutOfView,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.TopCenter),
+        ) {
+            FilterSummary(filter, listing)
+        }
+
+        AnimatedVisibility(
+            visible = filterOutOfView,
+            enter = fadeIn(),
+            exit = fadeOut(),
+            modifier = Modifier.align(Alignment.BottomEnd).padding(PsmfDimens.screenPadding),
+        ) {
+            FloatingActionButton(onClick = { scope.launch { listState.animateScrollToItem(0) } }) {
+                Icon(
+                    Icons.Filled.KeyboardArrowUp,
+                    contentDescription = stringResource(Res.string.fixtures_back_to_filter),
+                )
+            }
+        }
+    }
+}
+
+private fun LazyListScope.sections(
     listing: FixtureListing,
     onFixtureSelected: (FixtureId) -> Unit,
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = PsmfDimens.sectionSpacing),
-    ) {
-        listing.groups.forEach { group ->
-            // Only when the shipped data holds more than one group. Adding a
-            // group is a data change, so this heading has to appear on its
-            // own -- nobody edits a screen to add a league.
-            if (listing.hasSeveralGroups) {
-                item(key = "group-${group.group.id.value}") {
-                    ListHeading("${group.group.name} · ${group.season.name}", emphasised = true)
-                }
+    listing.sections.forEach { section ->
+        val key =
+            when (val heading = section.heading) {
+                is SectionHeading.Round -> "round-${heading.round}"
+                is SectionHeading.Day -> "day-${heading.date}"
             }
-            group.rounds.forEach { round ->
-                item(key = "round-${group.group.id.value}-${round.round}") {
-                    ListHeading(stringResource(Res.string.fixtures_round, round.round))
-                }
-                fixtureItems(round.fixtures, onFixtureSelected)
-            }
+        item(key = key, contentType = "heading") {
+            ListHeading(section.heading.text(listing.today))
+        }
+        val rows = section.rows
+        items(rows.size, key = { rows[it].fixture.id.value }, contentType = { "fixture" }) { index ->
+            val row = rows[index]
+            FixtureListItem(row = row, showGroup = listing.byDay, onClick = { onFixtureSelected(row.fixture.id) })
+            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
         }
     }
 }
 
-private fun LazyListScope.fixtureItems(
-    fixtures: List<FixtureRow>,
-    onFixtureSelected: (FixtureId) -> Unit,
+/** `6. kolo` for one group; `Dnes · čtvrtek 8. 10.` or `Pátek 9. 10.` for several. */
+@Composable
+private fun SectionHeading.text(today: LocalDate?): String =
+    when (this) {
+        is SectionHeading.Round -> {
+            stringResource(Res.string.fixtures_round, round)
+        }
+
+        is SectionHeading.Day -> {
+            val day = "${date.dayOfWeek.label()} ${date.asDayAndMonth()}"
+            if (date == today) {
+                stringResource(Res.string.fixtures_day_today, day)
+            } else {
+                day.replaceFirstChar { it.uppercase() }
+            }
+        }
+    }
+
+@Composable
+private fun DayOfWeek.label(): String =
+    stringResource(
+        when (this) {
+            DayOfWeek.MONDAY -> Res.string.weekday_monday
+            DayOfWeek.TUESDAY -> Res.string.weekday_tuesday
+            DayOfWeek.WEDNESDAY -> Res.string.weekday_wednesday
+            DayOfWeek.THURSDAY -> Res.string.weekday_thursday
+            DayOfWeek.FRIDAY -> Res.string.weekday_friday
+            DayOfWeek.SATURDAY -> Res.string.weekday_saturday
+            DayOfWeek.SUNDAY -> Res.string.weekday_sunday
+        },
+    )
+
+/**
+ * What the list is narrowed to, in one line, for when the filter itself is
+ * out of view: the dates always, then whatever else is chosen.
+ *
+ * Information, not a control -- the button is the way back -- so it can
+ * stay one line of text tall.
+ */
+@Composable
+private fun FilterSummary(
+    filter: FixtureFilter,
+    listing: FixtureListing,
 ) {
-    items(fixtures.size, key = { fixtures[it].fixture.id.value }) { index ->
-        val row = fixtures[index]
-        FixtureListItem(row = row, onClick = { onFixtureSelected(row.fixture.id) })
-        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+    val level = listing.options.leagueLevels.firstOrNull { it.level == filter.leagueLevel }
+    val parts =
+        listOfNotNull(
+            filter.dates.label(),
+            level?.let { it.groups.firstOrNull { group -> group.id == filter.groupId }?.name ?: it.name },
+            filter.venue?.value,
+            filter.teamQuery.trim().takeIf { it.isNotEmpty() }?.let {
+                stringResource(
+                    Res.string.fixtures_summary_team,
+                    it,
+                )
+            },
+        )
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        shadowElevation = SUMMARY_ELEVATION,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(
+            text = parts.joinToString(" · "),
+            style = MaterialTheme.typography.labelLarge,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(horizontal = PsmfDimens.screenPadding, vertical = SUMMARY_PADDING),
+        )
     }
 }
 
 @Composable
-private fun ListHeading(
-    text: String,
-    emphasised: Boolean = false,
-) {
+private fun ListHeading(text: String) {
     Text(
         text = text,
-        style = if (emphasised) MaterialTheme.typography.titleLarge else MaterialTheme.typography.titleSmall,
+        style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier =
             Modifier
@@ -172,10 +316,14 @@ private fun ListHeading(
  * scans for their own match. The whole row is the target, not a chevron:
  * [PsmfDimens.minTouchTarget] is a floor, and the row grows past it as
  * soon as the system font scale does.
+ *
+ * [showGroup] when the list holds more than one group: it is then headed
+ * by day, and nothing else on screen says which group a row is in.
  */
 @Composable
 private fun FixtureListItem(
     row: FixtureRow,
+    showGroup: Boolean,
     onClick: () -> Unit,
 ) {
     Row(
@@ -213,11 +361,20 @@ private fun FixtureListItem(
             row.reportStatus?.let { ReportBadge(it) }
         }
 
-        Text(
-            text = row.fixture.venue.value,
-            style = MaterialTheme.typography.labelLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Column(horizontalAlignment = Alignment.End) {
+            if (showGroup) {
+                Text(
+                    text = row.group.reportCode,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            Text(
+                text = row.fixture.venue.value,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 
@@ -250,11 +407,18 @@ private fun ReportBadge(status: MatchStatus) {
     )
 }
 
+/** A sentence in place of the rows, under the filter, which stays reachable above it. */
 @Composable
-private fun CentredMessage(text: String) {
-    Box(modifier = Modifier.fillMaxSize().padding(PsmfDimens.screenPadding), contentAlignment = Alignment.Center) {
-        Text(text, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
-    }
+private fun Message(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyLarge,
+        textAlign = TextAlign.Center,
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = PsmfDimens.screenPadding, vertical = PsmfDimens.sectionSpacing),
+    )
 }
 
 @Composable
@@ -280,3 +444,14 @@ private fun SeedFailure(
         }
     }
 }
+
+private const val FILTER_KEY = "filter"
+
+/**
+ * Room under the last row for the button back to the filter: its 56dp and
+ * the margin either side. Scrolled to the end, the last row sits above it.
+ */
+private val BUTTON_CLEARANCE = 56.dp + PsmfDimens.screenPadding * 2
+
+private val SUMMARY_PADDING = 8.dp
+private val SUMMARY_ELEVATION = 2.dp

@@ -17,7 +17,7 @@ around them was not.
 
 | Tab | Czech | Holds |
 |---|---|---|
-| 1 | **Zápasy** | Fixtures across every bundled group, filtered by league and team |
+| 1 | **Zápasy** | Fixtures across every bundled group, filtered by league, group, pitch, date and team |
 | 2 | **Zápis** | The report — the wizard, unchanged, badged while one is in progress |
 | 3 | **Týmy** | Followed teams, search, roster |
 | 4 | **Nastavení** | Language, theme, and the league's rules as information |
@@ -48,7 +48,7 @@ Ten in the full product. **Nine in the demo**, arranged in four tabs.
 
 | # | Screen | golblok origin | In demo | Notes |
 |---|---|---|---|---|
-| 1 | **Fixtures** | HomeScreen | ✅ | Its own tab. Matches across all groups, filterable by league and team. An in-progress match is reachable from any tab — see *Shell*. |
+| 1 | **Fixtures** | HomeScreen | ✅ | Its own tab. Matches across all groups, filterable by league, group, pitch, date and team. An in-progress match is reachable from any tab — see *Shell*. |
 | 2 | **Match header** | MatchSetupScreen | ✅ | *Different content, not a modification.* Pick a fixture, then referee + assistant, licensed-hire flag (`R`), and the **delegating team** — which is who gets fined for a bad report. |
 | 3 | **Lineup** | — *new* | ✅ | Per team: who is present, jersey numbers, kit worn, identification. Captain confirms. **Absences live here and nowhere else.** |
 | 3a | **Týmy** | TeamsScreen | ✅ | Its own tab. Search, follow, roster. Jersey numbers editable; nothing else. |
@@ -71,13 +71,19 @@ can be replaced — it demonstrates the opposite.
 Seed data for every bundled group. No scraper, no backend, no network. Tap a
 fixture to start or to resume one already under way.
 
-Nine divisions is roughly 900 teams, so a flat list does not survive real data.
-Filter by league and by team.
+League 6 alone is 12 groups, 144 teams, 792 fixtures and 43 pitches, so a flat
+list does not survive real data. **Select boxes** for league, then group, then
+pitch (only pitches with a match in that league and group, by code and name),
+then dates (*Nadcházející* by default); a **text field** for the team. The
+filter is the list's first item and scrolls away with it; a button brings it
+back, and a line at the top says what the list is narrowed to (DECISIONS
+2026-10-08).
 
-**Fixtures stay in round and kickoff order** — the order on the paper schedule, and
-what makes the round headings work as navigation. "Followed teams first" applies to
-the **team picker**, not to the fixture rows: at nine divisions the picker is
-otherwise a nine-hundred-row scroll.
+**One group in view: round and kickoff order** — the order on the paper
+schedule, and what makes the round headings work as navigation. **Several
+groups: by day**, each row naming its group (`6K`). *Odehrané* lists the
+newest first. A report started and not confirmed is never hidden by the
+dates.
 
 ### 2 · Match header
 ZoU page 1. Pitch, date, time, league group come from the fixture. The referee

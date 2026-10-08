@@ -5,6 +5,64 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-08 · Zápasy: no single-day picker, a line that says what the list is narrowed to, and no quick return
+
+**The session's calls under `prompts/12` Part 2**, carrying out the owner's
+entry two below. The two judgement calls the prompt asked for come first.
+
+**One specific match day: not added.** The season has 83 match days, 53
+of them still to come on 2026-10-08. A select of 53 dates is a scroll, not a
+choice, for a cold thumb. What a referee actually asks is covered already:
+*Dnes* for match day; *Nadcházející* lists several groups by day, each
+heading a weekday and a date, today's headed *Dnes*; and a pitch narrows the
+upcoming list to a median of 10 rows (48 at the busiest). If it is wanted
+after all, the cheap way is a fifth dates option, *Den…*, opening Material
+3's own date picker with only the days that have a match in scope
+selectable: no dependency, and the select stays four rows.
+
+**Once the filter has scrolled away, a slim line at the top says what the
+list is narrowed to**: the dates always, then the league or group, the pitch
+and the team text, e.g. *Nadcházející · 6. liga K · ZAK*. Brand yellow, one
+line, ellipsised. It is information, not a control; the button bottom right
+is the way back. A referee deep in a list must not have to remember that it
+is 6K and not everything, and the button alone could only say *a* filter
+exists, not which.
+
+**The filter does not come back on a short scroll up.** It is four or five
+fields, about a third of a phone's list. Sliding that over the rows the
+referee is scrolling back to read fights the list, and a second floating
+copy of a text field and four menus is where focus and keyboard bugs live.
+The line and the button already say and do what it would.
+
+Also decided here:
+
+- **"Odehrané" is before today**, and *Nadcházející* is today onwards, so
+  the two never overlap and a match finished at 21:00 is still under
+  *Dnes* until midnight.
+- **"One group in view" is the rows, not the selects.** A team typed with no
+  league chosen is one group, and its season reads by round.
+- **A group chosen without its league gets it** (`FilterOptions.normalise`);
+  a group under another league is dropped; a pitch outside the league and
+  group is dropped. The selects and the ViewModel apply the same function.
+- **League names come from the data** (`6. liga`, the groups' own name less
+  the letter), so *Celá 6. liga* reads *Уся 6. liga* in Ukrainian: the label
+  translates, the name does not.
+- **Pitches with no fixture are never offered**, even under *Všechny ligy*:
+  38 of the 43 in `venues.json` have a league 6 match.
+- **The list rebuilds when a report changes state.** It was built once per
+  filter, so a report started from the list came back without its badge
+  until the filter changed — a second instance of the read-once shape
+  `docs/TODO.md` already names. Now it observes the reports.
+- **The menu is drawn on `surface`.** The theme sets no `surfaceContainer`,
+  so Material's menu fell back to its own lavender. Spelled out on the menu
+  only; the theme gap is a TODO, not this prompt's.
+
+**Reverses if:** referees ask for a day (then *Den…* as above); the line
+reads as noise rather than as a reminder; or a real phone shows the filter
+in the way often enough that a quick return earns its complexity.
+
+---
+
 ## 2026-10-08 · Zápasy: a spinner only after 300 ms, and the list built off the main thread
 
 **The session's call under `prompts/12` Part 1**, carrying out the entry below.

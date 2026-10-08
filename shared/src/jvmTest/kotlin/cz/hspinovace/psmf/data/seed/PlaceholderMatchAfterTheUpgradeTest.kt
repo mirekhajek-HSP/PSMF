@@ -17,6 +17,8 @@ import cz.hspinovace.psmf.export.BuildZouReport
 import cz.hspinovace.psmf.usecase.BrowseTeams
 import cz.hspinovace.psmf.usecase.BuildConsoleEntry
 import cz.hspinovace.psmf.usecase.BuildLineupEntry
+import cz.hspinovace.psmf.usecase.DateWindow
+import cz.hspinovace.psmf.usecase.FixtureFilter
 import cz.hspinovace.psmf.usecase.ListFixtures
 import cz.hspinovace.psmf.usecase.LoadTeamRoster
 import cz.hspinovace.psmf.usecase.LogGoal
@@ -97,7 +99,12 @@ class PlaceholderMatchAfterTheUpgradeTest {
 
             // Nothing offers the match: no badge, no row in Zápasy.
             assertNull(ObserveReportInProgress(matches, league)().first())
-            val rows = ListFixtures(league, matches)().groups.flatMap { g -> g.rounds.flatMap { it.fixtures } }
+            // The whole season, so this does not quietly test less once the
+            // shipped fixtures are all in the past.
+            val rows =
+                ListFixtures(league, matches)(FixtureFilter(dates = DateWindow.ALL))
+                    .sections
+                    .flatMap { it.rows }
             assertTrue(rows.isNotEmpty())
             assertTrue(rows.none { it.reportStatus != null }, "an old report is attached to a new fixture")
             // Nor the team, followed or opened directly.

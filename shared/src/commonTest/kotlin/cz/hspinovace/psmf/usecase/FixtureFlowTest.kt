@@ -16,6 +16,7 @@ import cz.hspinovace.psmf.domain.TeamId
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
+import kotlinx.datetime.TimeZone
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -26,15 +27,14 @@ import kotlin.test.assertTrue
 /** Screen 1's data: seed fixtures joined to whatever reports exist. */
 class ListFixturesTest {
     private fun listFixtures(matches: FakeMatchRepository = FakeMatchRepository()) =
-        ListFixtures(TestLeague.repository(), matches)
+        ListFixtures(TestLeague.repository(), matches, TestLeague.beforeTheSeason, TimeZone.UTC)
 
     @Test
     fun groupsFixturesByRoundInOrder() =
         runTest {
             val listing = listFixtures()()
 
-            val rounds = listing.groups.single().rounds
-            assertEquals(listOf(1, 2), rounds.map { it.round })
+            assertEquals(listOf(1, 2), listing.sections.map { (it.heading as SectionHeading.Round).round })
         }
 
     @Test
@@ -44,14 +44,10 @@ class ListFixturesTest {
             // for their own match reads by time, so the list is by time.
             val listing = listFixtures()()
 
-            val secondRound =
-                listing.groups
-                    .single()
-                    .rounds
-                    .first { it.round == 2 }
+            val secondRound = listing.sections.first { it.heading == SectionHeading.Round(2) }
             assertEquals(
                 listOf(TestLeague.secondRoundEarly.id, TestLeague.secondRoundLate.id),
-                secondRound.fixtures.map { it.fixture.id },
+                secondRound.rows.map { it.fixture.id },
             )
         }
 
@@ -60,11 +56,9 @@ class ListFixturesTest {
         runTest {
             val row =
                 listFixtures()()
-                    .groups
-                    .single()
-                    .rounds
+                    .sections
                     .first()
-                    .fixtures
+                    .rows
                     .single()
 
             assertEquals(Fixtures.homeTeam.name, row.homeTeam.name)
@@ -77,10 +71,8 @@ class ListFixturesTest {
         runTest {
             assertTrue(
                 listFixtures()()
-                    .groups
-                    .single()
-                    .rounds
-                    .flatMap { it.fixtures }
+                    .sections
+                    .flatMap { it.rows }
                     .all { it.reportStatus == null },
             )
         }
@@ -94,23 +86,19 @@ class ListFixturesTest {
                 Fixtures.matchInSetup().copy(id = MatchId("m1"), status = MatchStatus.IN_PROGRESS)
             val listing = listFixtures(FakeMatchRepository(listOf(inProgress)))()
 
-            val rows =
-                listing.groups
-                    .single()
-                    .rounds
-                    .flatMap { it.fixtures }
+            val rows = listing.sections.flatMap { it.rows }
             val started = rows.single { it.fixture.id == Fixtures.fixtureId }
             assertEquals(MatchStatus.IN_PROGRESS, started.reportStatus)
             assertTrue(rows.filterNot { it.fixture.id == Fixtures.fixtureId }.all { it.reportStatus == null })
         }
 
     @Test
-    fun oneGroupNeedsNoGroupHeadings() =
+    fun oneGroupIsListedByRoundNotByDay() =
         runTest {
-            // Whether the list shows group headings is asked of the data, not
+            // Whether the list is by round or by day is asked of the rows, not
             // hardcoded: dropping a second file into files/leagues/ has to
             // change the UI without anyone editing a screen.
-            assertTrue(!listFixtures()().hasSeveralGroups)
+            assertFalse(listFixtures()().byDay)
         }
 
     @Test
@@ -118,6 +106,7 @@ class ListFixturesTest {
         runTest {
             val empty = ListFixtures(FakeLeagueRepository(emptyList()), FakeMatchRepository())
             assertTrue(empty().isEmpty)
+            assertFalse(empty().filteredToNothing, "no data is not the filter's doing")
         }
 
     @Test
@@ -128,19 +117,20 @@ class ListFixturesTest {
             // filter that quietly ignored venue would still pass by luck.
             val listing = listFixtures()(FixtureFilter(venue = TestLeague.otherVenue.code))
 
-            val fixtures = listing.groups.flatMap { it.rounds.flatMap { round -> round.fixtures } }
+            val fixtures = listing.sections.flatMap { it.rows }
             assertEquals(listOf(TestLeague.secondRoundLate.id), fixtures.map { it.fixture.id })
         }
 
     @Test
-    fun theOptionsCarryEveryPitchInTheLeague() =
+    fun theOptionsCarryEveryPitchThatHasAMatch() =
         runTest {
-            // Built from the unfiltered data, same reasoning as leagues: a
-            // chip that vanished as soon as it was picked would leave no
-            // way back to the pitches not currently selected.
+            // Both of this league's pitches have a fixture. Which pitches are
+            // offered once a league and group are chosen is
+            // FixtureListAtLeagueScaleTest's question.
             val venues = listFixtures()().options.venues.map { it.code }
 
-            assertEquals(listOf(TestLeague.venue.code, TestLeague.otherVenue.code), venues)
+            // By code, the way psmf.cz lists them.
+            assertEquals(listOf(TestLeague.otherVenue.code, TestLeague.venue.code), venues)
         }
 }
 
@@ -247,11 +237,14 @@ class FixtureFilterTest {
         )
 
     private fun listFixtures(groups: List<LeagueGroup> = listOf(TestLeague.group, otherGroup)) =
-        ListFixtures(FakeLeagueRepository(groups), FakeMatchRepository())
+        ListFixtures(FakeLeagueRepository(groups), FakeMatchRepository(), TestLeague.beforeTheSeason, TimeZone.UTC)
+
+    private fun FixtureListing.rows(): List<FixtureRow> = sections.flatMap { it.rows }
+
+    private fun FixtureListing.groupNames(): List<String> = rows().map { it.group.name }.distinct()
 
     private fun FixtureListing.teamNames(): List<String> =
-        groups
-            .flatMap { group -> group.rounds.flatMap { it.fixtures } }
+        rows()
             .flatMap { listOf(it.homeTeam.name, it.awayTeam.name) }
             .distinct()
 
@@ -260,9 +253,9 @@ class FixtureFilterTest {
         runTest {
             val listing = listFixtures()()
 
-            assertEquals(listOf("6. liga K", "7. liga A"), listing.groups.map { it.group.name })
-            assertTrue(listing.hasSeveralGroups)
-            assertTrue(listing.filter.isEmpty)
+            assertEquals(setOf("6. liga K", "7. liga A"), listing.groupNames().toSet())
+            assertTrue(listing.byDay)
+            assertTrue(listing.filter.isDefault)
         }
 
     @Test
@@ -270,8 +263,10 @@ class FixtureFilterTest {
         runTest {
             val listing = listFixtures()(FixtureFilter(groupId = otherGroupId))
 
-            assertEquals(listOf("7. liga A"), listing.groups.map { it.group.name })
-            assertFalse(listing.hasSeveralGroups)
+            assertEquals(listOf("7. liga A"), listing.groupNames())
+            assertFalse(listing.byDay)
+            // A group picked on its own brings its league with it.
+            assertEquals(7, listing.filter.leagueLevel)
         }
 
     @Test
@@ -281,11 +276,8 @@ class FixtureFilterTest {
             // uses: typing "letna" has to find "FK Letná".
             val listing = listFixtures()(FixtureFilter(teamQuery = "letna"))
 
-            val fixtures = listing.groups.flatMap { group -> group.rounds.flatMap { it.fixtures } }
-            assertEquals(1, fixtures.size)
+            assertEquals(1, listing.rows().size)
             assertTrue(listing.teamNames().contains("FK Letná"))
-            // The other league's rounds are still there as empty groups,
-            // which is why `isEmpty` asks about fixtures and not groups.
             assertFalse(listing.isEmpty)
         }
 
@@ -321,10 +313,7 @@ class FixtureFilterTest {
                     FixtureFilter(leagueLevel = 6),
                 )
 
-            assertEquals(
-                setOf("6. liga K", "6. liga L"),
-                listing.groups.map { it.group.name }.toSet(),
-            )
+            assertEquals(setOf("6. liga K", "6. liga L"), listing.groupNames().toSet())
         }
 
     @Test
@@ -337,7 +326,7 @@ class FixtureFilterTest {
                     FixtureFilter(leagueLevel = 6, groupId = anotherSixthLevelGroup.group.id),
                 )
 
-            assertEquals(listOf("6. liga L"), listing.groups.map { it.group.name })
+            assertEquals(listOf("6. liga L"), listing.groupNames())
         }
 
     @Test

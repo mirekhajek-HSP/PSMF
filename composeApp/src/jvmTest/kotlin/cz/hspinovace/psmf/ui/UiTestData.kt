@@ -14,8 +14,8 @@ import cz.hspinovace.psmf.domain.Venue
 import cz.hspinovace.psmf.domain.VenueCode
 import cz.hspinovace.psmf.usecase.FixtureListing
 import cz.hspinovace.psmf.usecase.FixtureRow
-import cz.hspinovace.psmf.usecase.GroupFixtures
-import cz.hspinovace.psmf.usecase.RoundRows
+import cz.hspinovace.psmf.usecase.FixtureSection
+import cz.hspinovace.psmf.usecase.SectionHeading
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import java.util.Locale
@@ -58,12 +58,13 @@ object UiTestData {
 
     fun listing(row: FixtureRow = row()): FixtureListing =
         FixtureListing(
-            listOf(GroupFixtures(season, group, listOf(RoundRows(1, listOf(row))))),
+            listOf(FixtureSection(SectionHeading.Round(1), listOf(row))),
         )
 
     fun row(status: cz.hspinovace.psmf.domain.MatchStatus? = null) =
         FixtureRow(
             fixture = fixture,
+            group = group,
             homeTeam = homeTeam,
             awayTeam = awayTeam,
             venue = venue,

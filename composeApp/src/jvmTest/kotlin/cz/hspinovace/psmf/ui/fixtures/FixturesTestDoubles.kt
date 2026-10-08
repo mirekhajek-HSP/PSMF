@@ -17,6 +17,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.atStartOfDayIn
+import kotlin.time.Clock
+import kotlin.time.Instant
 
 /**
  * League data held in memory.
@@ -97,17 +102,35 @@ class GatedMatchRepository(
     }
 }
 
+/** A clock stopped at the start of [date] in UTC: what "today" is for a test. */
+class PinnedClock(
+    date: LocalDate,
+) : Clock {
+    private val instant = date.atStartOfDayIn(TimeZone.UTC)
+
+    override fun now(): Instant = instant
+}
+
+/**
+ * Before every fixture in [cz.hspinovace.psmf.ui.UiTestData], so the
+ * default "Nadcházející" holds all of it and a test about something else
+ * is not quietly about dates.
+ */
+val BEFORE_THE_SEASON: LocalDate = LocalDate(2026, 8, 1)
+
 /**
  * The ViewModel over [league] and [matches], wired the way the Koin module
- * wires it -- except that the list is built on the test's Main dispatcher
- * rather than a background one, so the test clock decides when it lands.
+ * wires it -- except that today is [today], and the list is built on the
+ * test's Main dispatcher rather than a background one, so the test clock
+ * decides when it lands.
  */
 fun fixturesViewModel(
     league: LeagueRepository,
     matches: MatchRepository,
+    today: LocalDate = BEFORE_THE_SEASON,
 ): FixturesViewModel =
     FixturesViewModel(
-        listFixtures = ListFixtures(league, matches),
+        listFixtures = ListFixtures(league, matches, PinnedClock(today), TimeZone.UTC),
         startOrResumeMatch = StartOrResumeMatch(league, matches) { "new-match" },
         work = Dispatchers.Main,
     )
