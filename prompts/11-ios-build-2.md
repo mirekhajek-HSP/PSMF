@@ -1,14 +1,16 @@
-# Prompt — iOS build 0.2.0 (2) to TestFlight, and the first upgrade on an iPhone
+# Prompt — the next iOS build to TestFlight, and the first upgrade on an iPhone
 
 **Where:** the MacBook Pro 2018 (Intel) · **Model:** Opus
-**Follows:** `prompts/10`, executed on Windows 2026-10-07/08. Main is at
-`c8bafd4` or later.
+**Follows:** `prompts/10` and `prompts/12`, both on Windows. **Run this only
+after `prompts/12` has landed on `main`**: the owner wants its Zápasy fix on
+the iPhone too. Expect **0.2.1 (3)**. Build number 2 is skipped on iOS, which
+is fine, because a build number only has to increase.
 
 ---
 
 ## What this is for
 
-Version 0.2.0 (2) exists in the repository and has never been built for iOS.
+Version 0.2.x exists in the repository and has never been built for iOS.
 It changes more under iOS than it looks, without touching a line of
 `iosMain`:
 
@@ -27,7 +29,7 @@ works only once per phone.
 ---
 
 ```
-Build 0.2.0 (2) for iOS, upload it to TestFlight, and run it as an upgrade
+Build the version main carries for iOS, upload it to TestFlight, and run it as an upgrade
 over build 1 on an iPhone. Four parts. STOP AND REPORT after each.
 
 Work on main. The owner prefers it to branches. Push after each gate.
@@ -59,8 +61,9 @@ so `git pull` will refuse.
   1. Note the team ID Xcode wrote (you will need it in step 4).
   2. Discard the local change to project.pbxproj. It holds nothing worth
      keeping beyond that ID.
-  3. git pull. Confirm MARKETING_VERSION 0.2.0 and CURRENT_PROJECT_VERSION 2,
-     Debug and Release.
+  3. git pull. Confirm MARKETING_VERSION and CURRENT_PROJECT_VERSION match
+     Android's versionName and versionCode (expected 0.2.1 and 3), Debug and
+     Release. If they do not match, STOP.
   4. OUTCOME: the team ID lives in a git-ignored file, so that signing with
      the company team leaves `git status` clean under iosApp/ — today and on
      every later build. The KMP template's approach is a committed
@@ -81,9 +84,9 @@ The team ID itself must never be committed, in any file.
 
   - ./gradlew :composeApp:linkDebugFrameworkIosArm64, then the app,
     unsigned as in prompts/09 Part 1. Report anything that broke: this is
-    the first iOS compile of everything prompts/10 changed.
+    the first iOS compile of everything prompts/10 and prompts/12 changed.
   - iosApp/scripts/check-required-reason-apis.sh on the Release build.
-    Nothing in prompts/10 should add a required-reason symbol. If one
+    Nothing in prompts/10 or 12 should add a required-reason symbol. If one
     appears, STOP: that is a finding, not something to declare away.
   - Confirm the league files are in the bundle: index.json, venues.json
     and the twelve 6a.json … 6l.json.
@@ -91,9 +94,10 @@ The team ID itself must never be committed, in any file.
 ### GATE 1
   - builds green, check green, resources present; times against last time
 
-## PART 2 — archive and upload build 2
+## PART 2 — archive and upload
 
-  - Archive Release, 0.2.0 (2), automatic signing, the COMPANY team.
+  - Archive Release, at the version from Part 0, automatic signing, the
+    COMPANY team.
   - Validate, then upload with **TestFlight Internal Only**. Build 1 went
     up as "App Store Connect", which the last report said not to repeat
     while the TEST icon stands.
@@ -106,14 +110,14 @@ The team ID itself must never be committed, in any file.
 
 ## PART 3 — the upgrade, on the iPhone
 
-Wait until Apple has processed build 2 and it is offered in TestFlight.
+Wait until Apple has processed the new build and it is offered in TestFlight.
 
 THE ORDER MATTERS. Before updating, the phone must have build 1 installed
 from TestFlight AND a match recorded in it: started, a goal, a yellow, a
 red. If it has none, record one now in build 1. Without old data there is no
 migration to test.
 
-Then update to build 2 through the TestFlight app. Do NOT delete the app
+Then update to the new build through the TestFlight app. Do NOT delete the app
 first; that wipes the database and the test with it.
 
 Expected, and what failure looks like:
@@ -163,7 +167,7 @@ FAIL with a note.
 
 ## Report
 
-reports/2026-10-08-ios-build-2.md, committed and pushed. Open with one
+reports/<date>-ios-build-3.md, committed and pushed. Open with one
 sentence: did schema 4 → 6 survive the upgrade on a real iPhone? Then each
 gate against its criteria, the two checklists in full, every defect with
 steps to reproduce, and what is still unverified.

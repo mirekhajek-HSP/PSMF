@@ -5,6 +5,48 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-08 · Zápasy: select boxes instead of chips, a filter that scrolls away, and no loading screen for a filter change
+
+**Owner's decision, from the first phone run of 0.2.0. It reverses "chips
+throughout, not dropdowns"** (2026-08-31, *Filters are sized to their data*,
+and the KDoc of `FixtureFilterRow`).
+
+**What broke.** Real league data made the tab unusable. The filter sits
+*above* the list and never scrolls. With 12 group chips and 43 pitch chips it
+fills the whole screen, so no match is visible and the filter itself cannot
+be scrolled. The chip argument (one tap fewer, the active option visible) held
+for one group and seven pitches. It does not hold for twelve groups and
+forty-three pitches.
+
+**Decided:**
+
+- **League, group and pitch are select boxes.** League first. Choosing one
+  reveals a group select under it. Then pitch, then the team text field. A
+  closed select still shows what is chosen, which was the part of the chip
+  argument worth keeping.
+- **Pitches show their name as well as their code**, now that the data has
+  one. The list offers only pitches that have a match in the chosen league or
+  group, not all 43 in Prague.
+- **A date select**, defaulting to *upcoming* (today onwards). A referee
+  opens this tab to find this week's match, not September's. A fixture whose
+  report is started and not yet confirmed is never hidden by it: the list must
+  not make a match the referee is in the middle of disappear.
+- **The filter scrolls away with the list.** A scroll-to-top button appears
+  once it has gone.
+- **No loading screen for a filter change.** The league data is parsed once
+  and cached (`SeedLeagueRepository`). After the first load, a filter
+  change is in-memory work on 792 fixtures. The flash came from the
+  ViewModel swapping the whole screen to *Loading* on every change, including
+  every keystroke in the team field, which also throws away the field being
+  typed in. Any wait that is genuinely noticeable gets the owner's design: a
+  spinner in the middle over the content, blurred where the platform can (iOS,
+  Android 12+), dimmed where it cannot (Android 9–11).
+
+**Reverses if:** referees find the selects slower than they are worth at a
+pitch. The test is a cold thumb choosing one pitch out of a dozen.
+
+---
+
 ## 2026-10-08 · The Android TEST icon: the artwork 64 dp wide, and no themed variant
 
 **The session's calls, carrying out the owner's 2026-10-07 entry below.**

@@ -25,7 +25,13 @@ Grouped by what blocks what, not by size. Last updated 2026-10-08.
       planning folder. The checklist is §10 of prompt 10's report. **Install
       over the old build, never uninstall first**: steps 1–4 are the upgrade
       test and work only once. Supersedes the `d9f16ab` phone test below.
-- [ ] **Prompt 11: TestFlight build 2 (0.2.0) on the Mac.**
+- [ ] **Prompt 12: the Zápasy tab, unusable with real data.** Found on the
+      phone with 0.2.0: the pinned chip filter (12 groups, 43 pitches) fills
+      the screen, and every filter tap blanks it to *Načítání*.
+      `prompts/12-fixtures-tab-redesign.md`: select boxes, a date filter, a
+      filter that scrolls away, no loading flash. Builds **0.2.1 (3)**.
+      **Before prompt 11.**
+- [ ] **Prompt 11: the next TestFlight build on the Mac, after prompt 12.**
       `prompts/11-ios-build-2.md`. The first database migration ever to run
       on iOS (schema 4 → 6), so the iPhone must update **over** build 1 with
       a match recorded in it. Also moves the team ID into a git-ignored

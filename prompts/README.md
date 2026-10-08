@@ -20,7 +20,8 @@ thing was built the way it was; do not re-run them.
 | 08 | iOS Parts 2 and 3 — compile, then run | Mac | Part 2 executed 2026-09-28; **Part 3 live, blocked on an iPhone** |
 | 09 | iOS TestFlight readiness and a working export | Mac | executed 2026-09-29/30; all on `main` since 2026-10-07; build 0.1.0 (1) uploaded |
 | 10 | Red cards, the clock, league 6 from psmf.cz, build 0.2.0 | WSL container | executed 2026-10-07/08; verified; Android APK 0.2.0 (2) built; the phone checklist still to do |
-| 11 | iOS build 0.2.0 (2) to TestFlight, the first upgrade on an iPhone | Mac | **live** |
+| 11 | iOS build to TestFlight, the first upgrade on an iPhone | Mac | **live, after 12** |
+| 12 | Zápasy: select boxes, a date filter, no loading flash; 0.2.1 (3) | WSL container | **live, before 11** |
 | 99 | golblok maintenance | separate repo | live, unrelated to this app |
 
 ## Known staleness in the executed ones
