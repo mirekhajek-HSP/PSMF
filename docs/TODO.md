@@ -1,15 +1,17 @@
 # TODO
 
-Grouped by what blocks what, not by size. Last updated 2026-10-07.
+Grouped by what blocks what, not by size. Last updated 2026-10-08.
 
 ---
 
 ## Next
 
-- [ ] **Prompt 10: red cards, the clock, league 6, build 0.2.0 (2).**
-      `prompts/10-cards-clock-and-league-6.md`, four gates in the container.
-      The five card and clock defects and the scraping terms are in
-      `DECISIONS.md`, 2026-10-07.
+- [x] **Prompt 10: red cards, the clock, league 6, build 0.2.0 (2).** Done
+      2026-10-08, `c8bafd4`. Verified independently from a clean, uncached
+      build: 436 shared JVM · 383 Android host · 194 UI · 23 importer tests,
+      detekt green, APK 69,948,495 bytes, signed with the same debug key as
+      every earlier build (installs as an update). See
+      `reports/2026-10-07-cards-clock-and-league-6.md`.
 - [ ] **The tester's red-card report.** Not answering as of 2026-10-07, and
       the owner's call is not to chase it: the review found five defects, and
       prompt 10 fixes them. If the tester describes it later, check it against
@@ -19,12 +21,15 @@ Grouped by what blocks what, not by size. Last updated 2026-10-07.
       certificate runs to 24 July 2027, which suggests a personal membership.
       If it is the company's, only the account holder can renew, and TestFlight
       stops when it lapses. **The PM is handling it** (owner, 2026-10-07).
-- [ ] **On the phone: 0.2.0**, the "On the phone" checklist that prompt 10's
-      report ends with. Supersedes the `d9f16ab` phone test below. Install
-      over the old build; that is the upgrade test.
-- [ ] **TestFlight build 2 (0.2.0) from `main` once prompt 10 lands.** On the
-      Mac, *TestFlight Internal Only* while the TEST icon stands. Then the
-      "First run on an iPhone" checklist, recorded step by step.
+- [ ] **On the phone: 0.2.0**, `builds/psmf-0.2.0-debug-c8bafd4.apk` in the
+      planning folder. The checklist is §10 of prompt 10's report. **Install
+      over the old build, never uninstall first**: steps 1–4 are the upgrade
+      test and work only once. Supersedes the `d9f16ab` phone test below.
+- [ ] **Prompt 11: TestFlight build 2 (0.2.0) on the Mac.**
+      `prompts/11-ios-build-2.md`. The first database migration ever to run
+      on iOS (schema 4 → 6), so the iPhone must update **over** build 1 with
+      a match recorded in it. Also moves the team ID into a git-ignored
+      xcconfig, and records both iPhone checklists step by step.
 - [x] **`ios/export` merged**, 2026-10-07 (`152f637`), after `./gradlew build
       :shared:allTests detekt` went green in the container: 388 + 349 + 182
       tests. The hand-edited Android sources compiled first time.
@@ -39,7 +44,8 @@ Grouped by what blocks what, not by size. Last updated 2026-10-07.
       - **Install over the last one.** Another live migration test, free.
       - The card control stayed **one icon**, decided on an emulator against its
         own reversal condition. That decision wants a real thumb.
-- [ ] **Drop `materialIconsExtended`** — five icons are costing 31 MB. The debug
+- [ ] **Drop `materialIconsExtended`** — five icons are costing 31 MB, and
+      the 0.2.0 debug APK is 52 KB under 70 MB. The debug
       APK went 38 → 70 MB and is 64 MB of DEX. Copy the five vectors locally.
       Mostly a debug-build artifact, but this project has never built a release and
       iOS has no R8 at all. A morning's work. **0.2.0's debug APK is 69.95 MB**
@@ -64,7 +70,8 @@ Grouped by what blocks what, not by size. Last updated 2026-10-07.
       2026-09-30 the app launched and "seemed fine"; the itemised checks (fonts in
       three languages, picker persistence, database survives a kill, every send
       and save case, the CSV's `EF BB BF`) have not been recorded one by one.
-- [ ] **Keep the team ID out of the repository.** Selecting the team made Xcode
+- [ ] **Keep the team ID out of the repository** — in prompt 11, Part 0.
+      Selecting the team made Xcode
       write `DEVELOPMENT_TEAM` into `project.pbxproj`, which is left modified and
       uncommitted on the Mac. Moving it into a git-ignored local `.xcconfig` would
       stop that file showing as changed.
