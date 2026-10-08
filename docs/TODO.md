@@ -21,17 +21,18 @@ Grouped by what blocks what, not by size. Last updated 2026-10-08.
       certificate runs to 24 July 2027, which suggests a personal membership.
       If it is the company's, only the account holder can renew, and TestFlight
       stops when it lapses. **The PM is handling it** (owner, 2026-10-07).
-- [ ] **On the phone: 0.2.0**, `builds/psmf-0.2.0-debug-c8bafd4.apk` in the
-      planning folder. The checklist is §10 of prompt 10's report. **Install
-      over the old build, never uninstall first**: steps 1–4 are the upgrade
-      test and work only once. Supersedes the `d9f16ab` phone test below.
-- [ ] **Prompt 12: the Zápasy tab, unusable with real data.** Found on the
-      phone with 0.2.0: the pinned chip filter (12 groups, 43 pitches) fills
-      the screen, and every filter tap blanks it to *Načítání*.
-      `prompts/12-fixtures-tab-redesign.md`: select boxes, a date filter, a
-      filter that scrolls away, no loading flash. Builds **0.2.1 (3)**.
-      **Before prompt 11.**
-- [ ] **Prompt 11: the next TestFlight build on the Mac, after prompt 12.**
+- [ ] **On the phone: 0.2.1 (3)**, `builds/psmf-0.2.1-debug-<commit>.apk` in
+      the planning folder, installed **over 0.2.0, never uninstalling first**.
+      The checklist is §9 of prompt 12's report (Zápasy). Prompt 10's §10 still
+      applies for everything else, except its upgrade steps, which ran when
+      0.2.0 went on. Supersedes the 0.2.0 and `d9f16ab` phone tests below.
+- [x] **Prompt 12: the Zápasy tab, unusable with real data** — done
+      2026-10-08, `reports/2026-10-08-fixtures-tab-redesign.md`. Select boxes,
+      scoped pitches by name, a date filter, a filter that scrolls away, no
+      loading flash, 0.2.1 (3).
+- [ ] **The debug APK is 47,639 bytes over 70 MB** (0.2.1: 70,047,639).
+      `materialIconsExtended`, below, is the 31 MB answer.
+- [ ] **Prompt 11: the next TestFlight build on the Mac, now 0.2.1 (3).**
       `prompts/11-ios-build-2.md`. The first database migration ever to run
       on iOS (schema 4 → 6), so the iPhone must update **over** build 1 with
       a match recorded in it. Also moves the team ID into a git-ignored
