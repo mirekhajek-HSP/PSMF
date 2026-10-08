@@ -29,7 +29,7 @@ class FixturesScreenTest {
             setContent {
                 PsmfTheme {
                     FixturesScreen(
-                        state = FixturesUiState.Ready(UiTestData.listing()),
+                        state = FixturesUiState(listing = UiTestData.listing()),
                         onFixtureSelected = {},
                         onRetry = {},
                         onFilterChanged = {},
@@ -51,7 +51,7 @@ class FixturesScreenTest {
             setContent {
                 PsmfTheme {
                     FixturesScreen(
-                        state = FixturesUiState.Ready(UiTestData.listing()),
+                        state = FixturesUiState(listing = UiTestData.listing()),
                         onFixtureSelected = { tapped = it },
                         onRetry = {},
                         onFilterChanged = {},
@@ -72,7 +72,10 @@ class FixturesScreenTest {
                 setContent {
                     PsmfTheme {
                         FixturesScreen(
-                            state = FixturesUiState.Ready(UiTestData.listing(UiTestData.row(MatchStatus.IN_PROGRESS))),
+                            state =
+                                FixturesUiState(
+                                    listing = UiTestData.listing(UiTestData.row(MatchStatus.IN_PROGRESS)),
+                                ),
                             onFixtureSelected = {},
                             onRetry = {},
                             onFilterChanged = {},
@@ -93,7 +96,7 @@ class FixturesScreenTest {
                 setContent {
                     PsmfTheme {
                         FixturesScreen(
-                            state = FixturesUiState.Failed("Seed data problem in 6k.json: unknown team 'x'"),
+                            state = FixturesUiState(failure = "Seed data problem in 6k.json: unknown team 'x'"),
                             onFixtureSelected = {},
                             onRetry = { retried = true },
                             onFilterChanged = {},
@@ -118,7 +121,7 @@ class FixturesScreenTest {
                 setContent {
                     PsmfTheme {
                         FixturesScreen(
-                            state = FixturesUiState.Ready(UiTestData.listing()),
+                            state = FixturesUiState(listing = UiTestData.listing()),
                             onFixtureSelected = {},
                             onRetry = {},
                             onFilterChanged = {},
@@ -138,9 +141,10 @@ class FixturesScreenTest {
                     PsmfTheme {
                         FixturesScreen(
                             state =
-                                FixturesUiState.Ready(
-                                    cz.hspinovace.psmf.usecase
-                                        .FixtureListing(emptyList()),
+                                FixturesUiState(
+                                    listing =
+                                        cz.hspinovace.psmf.usecase
+                                            .FixtureListing(emptyList()),
                                 ),
                             onFixtureSelected = {},
                             onRetry = {},

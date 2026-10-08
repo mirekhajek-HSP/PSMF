@@ -25,8 +25,8 @@ import cz.hspinovace.psmf.resources.fixtures_filter_league
 import cz.hspinovace.psmf.resources.fixtures_filter_team
 import cz.hspinovace.psmf.resources.header_pitch
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
+import cz.hspinovace.psmf.usecase.FilterOptions
 import cz.hspinovace.psmf.usecase.FixtureFilter
-import cz.hspinovace.psmf.usecase.FixtureListing
 import cz.hspinovace.psmf.usecase.LeagueLevelOption
 import org.jetbrains.compose.resources.stringResource
 
@@ -44,7 +44,7 @@ import org.jetbrains.compose.resources.stringResource
  *   holds -- one today, up to eight at full scale -- and row two is that
  *   level's group letters, appearing only once a level is picked. Neither
  *   row hardcodes a count or a letter range: both are built from
- *   [FilterOptions.leagueLevels][cz.hspinovace.psmf.usecase.FilterOptions],
+ *   [FilterOptions.leagueLevels],
  *   so a sixty-first group file changes what is drawn and nothing else.
  *   Picking a level alone is a complete filter -- the whole league, no
  *   group required -- and picking a different level always drops whatever
@@ -63,13 +63,11 @@ import org.jetbrains.compose.resources.stringResource
  */
 @Composable
 fun FixtureFilterRow(
-    listing: FixtureListing,
+    filter: FixtureFilter,
+    options: FilterOptions,
     onFilterChanged: (FixtureFilter) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val options = listing.options
-    val filter = listing.filter
-
     Column(
         modifier =
             modifier

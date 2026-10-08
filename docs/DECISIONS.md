@@ -5,6 +5,42 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-08 · Zápasy: a spinner only after 300 ms, and the list built off the main thread
+
+**The session's call under `prompts/12` Part 1**, carrying out the entry below.
+
+Measured against all of league 6 (792 fixtures): a filter change is
+**0.01–0.23 ms** on the JVM and **1–6 ms median, 10 ms worst** on the
+emulator; the cold first load, which parses all twelve files, is
+**115–126 ms** on the emulator. None of that is a visible wait on the
+emulator. The flash was the screen being replaced, not the work.
+
+- **Threshold 300 ms.** Above every wait measured, with room for a phone
+  several times slower than the emulator; below the point where an
+  unchanged screen reads as a tap that did not register. A spinner for a
+  shorter wait would itself be the flash. It fades in and out over
+  150 ms, so a wait that only just crosses the line does not blink. In
+  practice it will show, if ever, on the cold start of a slow phone, over
+  an empty frame.
+- **Blur or dim is Compose's own answer**, `RenderEffect.isSupported()`,
+  in common code: false below Android 12, where `Modifier.blur` is
+  silently ignored. No platform code, nothing in `iosMain`.
+- **The list is built on `Dispatchers.Default`.** A filter change does
+  not need it; the first load does, because a spinner drawn by the thread
+  doing the parsing does not spin.
+- **The team field waits 250 ms after the last keystroke** before the
+  list follows it, so a name typed at speed builds one list.
+
+Checked for the same pattern elsewhere: no other screen swaps to a loading
+state on a filter or a search. Týmy keeps its list while the query
+changes; every other `loading` flag covers only a screen's first load.
+
+**Reverses if:** a real phone shows the spinner on filter changes, which
+would mean the work is far slower there than measured, and is worth
+profiling before it is worth hiding.
+
+---
+
 ## 2026-10-08 · Zápasy: select boxes instead of chips, a filter that scrolls away, and no loading screen for a filter change
 
 **Owner's decision, from the first phone run of 0.2.0. It reverses "chips

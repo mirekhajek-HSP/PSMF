@@ -208,7 +208,7 @@ class FixtureFilterRowTest {
         onFilterChanged: (FixtureFilter) -> Unit = {},
     ) {
         PsmfTheme {
-            FixtureFilterRow(listing = listing, onFilterChanged = onFilterChanged)
+            FixtureFilterRow(filter = listing.filter, options = listing.options, onFilterChanged = onFilterChanged)
         }
     }
 

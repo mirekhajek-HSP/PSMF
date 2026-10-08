@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -41,10 +40,12 @@ import cz.hspinovace.psmf.resources.fixtures_status_in_progress
 import cz.hspinovace.psmf.resources.fixtures_status_setup
 import cz.hspinovace.psmf.ui.common.ActionRow
 import cz.hspinovace.psmf.ui.common.PrimaryAction
+import cz.hspinovace.psmf.ui.common.WaitVeil
 import cz.hspinovace.psmf.ui.format.asClockTime
 import cz.hspinovace.psmf.ui.format.asDayAndMonth
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.FixtureFilter
+import cz.hspinovace.psmf.usecase.FixtureListing
 import cz.hspinovace.psmf.usecase.FixtureRow
 import org.jetbrains.compose.resources.stringResource
 
@@ -52,6 +53,12 @@ import org.jetbrains.compose.resources.stringResource
  * Screen 1, as a plain state-driven composable: immutable state in,
  * callbacks out, no ViewModel and no Koin. Everything about how it looks
  * can therefore be tested and previewed without a dependency graph.
+ *
+ * **Nothing here replaces the screen while a list is being built.** The
+ * filter and the last list stay put, and a wait long enough to notice
+ * ([FixturesUiState.waiting]) veils them under a spinner. Before the first
+ * list exists there is nothing to veil, so the first load shows the same
+ * spinner over an empty frame.
  */
 @Composable
 fun FixturesScreen(
@@ -62,33 +69,37 @@ fun FixturesScreen(
     modifier: Modifier = Modifier,
 ) {
     Surface(modifier = modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-        when (state) {
-            FixturesUiState.Loading -> {
-                CentredMessage(stringResource(Res.string.fixtures_loading), busy = true)
-            }
+        WaitVeil(waiting = state.waiting, description = stringResource(Res.string.fixtures_loading)) {
+            val listing = state.listing
+            when {
+                state.failure != null -> {
+                    SeedFailure(state.failure, onRetry)
+                }
 
-            is FixturesUiState.Failed -> {
-                SeedFailure(state, onRetry)
-            }
+                listing == null -> {
+                    // The first load, not yet landed: an empty frame, which
+                    // the veil covers if the wait is long enough to notice.
+                }
 
-            is FixturesUiState.Ready -> {
-                Column {
-                    // Outside the list, so it stays put: a filter that
-                    // scrolls away cannot be cleared without scrolling back
-                    // to find it, and it is drawn even when the result is
-                    // empty for exactly that reason.
-                    FixtureFilterRow(state.listing, onFilterChanged)
-                    when {
-                        state.listing.filteredToNothing -> {
-                            CentredMessage(stringResource(Res.string.fixtures_filtered_empty))
-                        }
+                else -> {
+                    Column {
+                        // Outside the list, so it stays put: a filter that
+                        // scrolls away cannot be cleared without scrolling back
+                        // to find it, and it is drawn even when the result is
+                        // empty for exactly that reason.
+                        FixtureFilterRow(state.filter, listing.options, onFilterChanged)
+                        when {
+                            listing.filteredToNothing -> {
+                                CentredMessage(stringResource(Res.string.fixtures_filtered_empty))
+                            }
 
-                        state.listing.isEmpty -> {
-                            CentredMessage(stringResource(Res.string.fixtures_empty))
-                        }
+                            listing.isEmpty -> {
+                                CentredMessage(stringResource(Res.string.fixtures_empty))
+                            }
 
-                        else -> {
-                            FixtureList(state, onFixtureSelected)
+                            else -> {
+                                FixtureList(listing, onFixtureSelected)
+                            }
                         }
                     }
                 }
@@ -99,18 +110,18 @@ fun FixturesScreen(
 
 @Composable
 private fun FixtureList(
-    state: FixturesUiState.Ready,
+    listing: FixtureListing,
     onFixtureSelected: (FixtureId) -> Unit,
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = PsmfDimens.sectionSpacing),
     ) {
-        state.listing.groups.forEach { group ->
+        listing.groups.forEach { group ->
             // Only when the shipped data holds more than one group. Adding a
             // group is a data change, so this heading has to appear on its
             // own -- nobody edits a screen to add a league.
-            if (state.listing.hasSeveralGroups) {
+            if (listing.hasSeveralGroups) {
                 item(key = "group-${group.group.id.value}") {
                     ListHeading("${group.group.name} · ${group.season.name}", emphasised = true)
                 }
@@ -240,24 +251,15 @@ private fun ReportBadge(status: MatchStatus) {
 }
 
 @Composable
-private fun CentredMessage(
-    text: String,
-    busy: Boolean = false,
-) {
+private fun CentredMessage(text: String) {
     Box(modifier = Modifier.fillMaxSize().padding(PsmfDimens.screenPadding), contentAlignment = Alignment.Center) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
-        ) {
-            if (busy) CircularProgressIndicator()
-            Text(text, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
-        }
+        Text(text, style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center)
     }
 }
 
 @Composable
 private fun SeedFailure(
-    state: FixturesUiState.Failed,
+    detail: String,
     onRetry: () -> Unit,
 ) {
     Column(
@@ -272,9 +274,7 @@ private fun SeedFailure(
         // The loader's own message, verbatim. It names the file and the row,
         // and seed data is hand-edited -- whoever broke it is holding the
         // phone, so hiding this behind a log would help nobody.
-        state.detail?.let {
-            Text(it, style = MaterialTheme.typography.bodyMedium)
-        }
+        Text(detail, style = MaterialTheme.typography.bodyMedium)
         ActionRow {
             PrimaryAction(text = stringResource(Res.string.fixtures_retry), onClick = onRetry)
         }
