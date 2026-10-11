@@ -1,0 +1,16 @@
+// The base configuration of the iosApp target, Debug and Release, and the
+// one place a machine's signing team comes in from.
+//
+// DEVELOPMENT_TEAM is NOT set here and must never be committed, in any
+// file. It lives in Local.xcconfig beside this one, which .gitignore
+// excludes. Copy Local.xcconfig.example to Local.xcconfig and put the
+// COMPANY team's ID in it, never a personal team's: the first team to sign
+// cz.hspinovace.psmf owns it for good (docs/DECISIONS.md, 2026-09-29).
+//
+// Do NOT pick the team in Xcode's Signing & Capabilities menu. That writes
+// DEVELOPMENT_TEAM into project.pbxproj, where it overrides this file and
+// shows up in git. The menu shows the team from here; leave it alone.
+//
+// Optional include: with no Local.xcconfig the build still works unsigned
+// (CODE_SIGNING_ALLOWED=NO), which is what CI and a fresh clone need.
+#include? "Local.xcconfig"

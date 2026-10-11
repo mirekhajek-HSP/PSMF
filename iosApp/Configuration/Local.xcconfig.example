@@ -1,0 +1,6 @@
+// Copy this file to Local.xcconfig in the same folder. Local.xcconfig is
+// git-ignored; this example is not, so never put a real ID in it.
+//
+// The COMPANY team's ID: developer.apple.com -> Account -> Membership
+// details -> Team ID. Never a personal team. See Config.xcconfig.
+DEVELOPMENT_TEAM =

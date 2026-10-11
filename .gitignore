@@ -20,6 +20,9 @@ local.properties
 xcuserdata/
 *.xcuserstate
 iosApp/Pods/
+# The signing team ID, per machine. Never committed: see
+# iosApp/Configuration/Config.xcconfig.
+iosApp/Configuration/Local.xcconfig
 
 # OS
 .DS_Store
