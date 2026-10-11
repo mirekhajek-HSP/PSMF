@@ -40,6 +40,8 @@ Work on main. The owner prefers it to branches. Push after each gate.
   reports/2026-10-07-cards-clock-and-league-6.md   what changed; §10 "On
                                                    the phone" is the checklist
                                                    you adapt in Part 4
+  reports/2026-10-08-fixtures-tab-redesign.md      the Zápasy redesign; §9 is
+                                                   its phone checklist
   reports/2026-09-29-ios-testflight-readiness.md   this Mac's last session:
                                                    §8, and "First run on an
                                                    iPhone"
@@ -128,7 +130,10 @@ Expected, and what failure looks like:
   - The old match was against the invented 6-K, which is gone. It stays in
     the database and is offered nowhere: no Zápis badge, no Kominíci
     anywhere, an empty followed list. FAILURE: a crash, or an invented team.
-  - Zápasy shows twelve groups, 6-A to 6-L, 66 fixtures each.
+  - Zápasy opens on four select boxes with matches visible under them.
+    It now defaults to Nadcházející (today onwards). With Termín set to
+    Všechny termíny, the Skupina select offers 6. liga A to L, and each
+    group has 66 fixtures.
 
 ### GATE 3
   - the upgrade: pass or fail, with what was seen
@@ -136,7 +141,7 @@ Expected, and what failure looks like:
 
 ## PART 4 — the checklists, recorded step by step
 
-Two lists, both owed, both on this iPhone:
+Three lists, all owed, all on this iPhone:
 
   1. reports/2026-10-07-cards-clock-and-league-6.md §10 "On the phone",
      steps 5–23, adapted to iOS: send and save follow the iOS routes in
@@ -145,13 +150,20 @@ Two lists, both owed, both on this iPhone:
      iPhone", steps 6–28, which were never recorded one by one: fonts and
      Cyrillic, the language picker surviving a kill, the database surviving
      a kill, every send and save case, the CSV starting EF BB BF.
+  3. reports/2026-10-08-fixtures-tab-redesign.md §9 "On the phone", steps
+     2–10: the Zápasy redesign. Nothing in it has run on iOS, where the
+     select menus, the keyboard and the blur are a different implementation.
 
-Where they overlap, do the step once and record it under both. Every
+ZÁPASY NOW DEFAULTS TO NADCHÁZEJÍCÍ. Where a step from list 1 expects every
+fixture of a group (its step 5, "66 fixtures in 11 rounds"), set Termín to
+Všechny termíny first.
+
+Where they overlap, do the step once and record it under each. Every
 step gets PASS, FAIL or NOT RUN with what was seen. "Sort of worked" is a
 FAIL with a note.
 
 ### GATE 4
-  - both lists, every step recorded
+  - all three lists, every step recorded
   - push
 
 ## Do not
@@ -169,6 +181,6 @@ FAIL with a note.
 
 reports/<date>-ios-build-3.md, committed and pushed. Open with one
 sentence: did schema 4 → 6 survive the upgrade on a real iPhone? Then each
-gate against its criteria, the two checklists in full, every defect with
+gate against its criteria, the three checklists in full, every defect with
 steps to reproduce, and what is still unverified.
 ```
