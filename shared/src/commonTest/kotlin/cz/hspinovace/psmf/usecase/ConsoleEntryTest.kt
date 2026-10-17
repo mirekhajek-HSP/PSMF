@@ -36,9 +36,14 @@ class ConsoleEntryTest {
 
     private suspend fun matchWithLineups(added: FakeAddedPlayerRepository = FakeAddedPlayerRepository()): Match {
         val build =
-            BuildLineupEntry(TestLeague.repository(), added, FakeRememberedDateOfBirthRepository()) { "id-${++minted}" }
+            BuildLineupEntry(
+                TestLeague.repository(),
+                added,
+                FakeRememberedDateOfBirthRepository(),
+                FakeRememberedCardNumberRepository(),
+            ) { "id-${++minted}" }
         val plain = Match(MatchId("m1"), Fixtures.fixtureId, Fixtures.groupId)
-        val entry = assertNotNull(build(plain))
+        val entry = assertNotNull(build(plain)).everyoneCame()
         return plain.copy(
             homeLineup = assertNotNull(entry.home.toLineup()),
             awayLineup = assertNotNull(entry.away.toLineup()),
@@ -237,7 +242,7 @@ class ConsoleEntryTest {
                             teamId = Fixtures.homeTeamId,
                             firstName = "Petr",
                             surname = "Hlok",
-                            dateOfBirth = "21.1.1999",
+                            cardNumber = "59123",
                         ),
                     ),
                 )

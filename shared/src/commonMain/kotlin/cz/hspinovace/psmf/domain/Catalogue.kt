@@ -189,8 +189,11 @@ enum class PlayerOrigin {
  * the appearance, which is where the form puts it: the referee writes the
  * date of birth at the pitch, the form's own printed rule, and
  * `Appearance.reportedIdentification` still cannot be empty. A player
- * **added at the pitch** still needs a date of birth, because the referee
- * is the only source of one.
+ * **added at the pitch** may have no date of birth either, since 0.3.0: the
+ * referee writes what they have on the day -- the number from the player's
+ * card, or with no card the date of birth -- and **that lives on the
+ * appearance**, which is where the form puts it. It never reaches this
+ * record, and so never becomes an [RpNumber].
  */
 @Serializable
 data class Player(
@@ -221,10 +224,6 @@ data class Player(
     val discipline: DisciplinaryRecord? = null,
 ) {
     init {
-        require(origin != PlayerOrigin.ADDED_AT_PITCH || dateOfBirth != null) {
-            "${name.asWrittenOnReport} was added at the pitch with no date of birth. " +
-                "The referee is the only source of one, and it is all such a player has."
-        }
         require(origin != PlayerOrigin.ADDED_AT_PITCH || rpNumber == null) {
             "${name.asWrittenOnReport} was added at the pitch and carries an RP number. " +
                 "RP numbers are issued by PSMF and must never be entered by a user."
@@ -265,16 +264,18 @@ data class Player(
         /**
          * Someone who turned up and is not in the squad list.
          *
-         * Screen 3 collects **first name, surname and date of birth. No RP
-         * field is offered**, and this signature is what makes that true in
-         * the model rather than only in the UI.
+         * **No parameter here takes an RP number**, and that is what makes
+         * "a typed number never becomes the player's" true in the model and
+         * not only in the screen. What the referee copied from the player's
+         * card is the appearance's, not this record's; the date of birth is
+         * kept here only for a player with no card to copy from.
          */
         fun addedAtThePitch(
             id: PlayerId,
             ref: String,
             teamId: TeamId,
             name: PlayerName,
-            dateOfBirth: LocalDate,
+            dateOfBirth: LocalDate?,
             defaultJerseyNumber: JerseyNumber? = null,
         ): Player =
             Player(

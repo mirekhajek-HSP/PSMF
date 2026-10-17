@@ -2,11 +2,13 @@ package cz.hspinovace.psmf.export
 
 import cz.hspinovace.psmf.data.league.LeagueRepository
 import cz.hspinovace.psmf.data.player.AddedPlayerRepository
+import cz.hspinovace.psmf.domain.Appearance
 import cz.hspinovace.psmf.domain.AppearanceId
 import cz.hspinovace.psmf.domain.CardEvent
 import cz.hspinovace.psmf.domain.CardSubject
 import cz.hspinovace.psmf.domain.ConfirmingParty
 import cz.hspinovace.psmf.domain.Dismissal
+import cz.hspinovace.psmf.domain.IdentificationSource
 import cz.hspinovace.psmf.domain.Lineup
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.PlayerId
@@ -125,37 +127,56 @@ class BuildZouReport(
     ): Map<AppearanceId, ZouAppearance> =
         TeamSide.entries
             .mapNotNull { match.lineup(it) }
-            .flatMap { it.appearances }
-            .associate { appearance ->
-                appearance.id to
-                    ZouAppearance(
-                        jerseyNumber = appearance.jerseyNumber?.value,
-                        identification = appearance.reportedIdentification.value,
-                        name = names[appearance.playerId]?.asWrittenOnReport.orEmpty(),
-                    )
-            }
+            .flatMap { lineup -> lineup.appearances.map { lineup to it } }
+            .associate { (lineup, appearance) -> appearance.id to lineup.rowOf(appearance, names) }
 }
+
+private fun Lineup.rowOf(
+    appearance: Appearance,
+    names: Map<PlayerId, PlayerName>,
+): ZouAppearance =
+    ZouAppearance(
+        jerseyNumber = appearance.jerseyNumber?.value,
+        identification = appearance.reportedIdentification.value,
+        kind = appearance.reportedIdentification.source.asZouKind(),
+        name = names[appearance.playerId]?.asWrittenOnReport.orEmpty(),
+        captain = appearance.id == captain,
+        goalkeeper = appearance.id == goalkeeper,
+    )
+
+private fun IdentificationSource.asZouKind(): ZouIdentificationKind =
+    when (this) {
+        IdentificationSource.RP -> ZouIdentificationKind.LEAGUE_RP
+
+        IdentificationSource.RP_TYPED -> ZouIdentificationKind.TYPED_RP
+
+        IdentificationSource.DATE_OF_BIRTH -> ZouIdentificationKind.DATE_OF_BIRTH
+
+        // Not something the app produces; said as "other" rather than named.
+        IdentificationSource.BIRTH_NUMBER -> ZouIdentificationKind.OTHER
+    }
 
 private fun Lineup.toZou(
     teamName: String,
     names: Map<PlayerId, PlayerName>,
-): ZouLineup =
-    ZouLineup(
+): ZouLineup {
+    val rows = appearances.map { rowOf(it, names) }
+    // The paper form's order: the captain, then the goalkeeper, then the rest
+    // by shirt number. One person who is both is one row, first.
+    val leading = rows.filter { it.captain } + rows.filter { it.goalkeeper && !it.captain }
+    val rest = rows.filterNot { it.captain || it.goalkeeper }.sortedBy { it.jerseyNumber ?: Int.MAX_VALUE }
+    return ZouLineup(
         side = side.asZouSide(),
         teamName = teamName,
         // The snapshot, never a lookup: a kit rename must not rewrite this.
         kitLabel = kitLabel,
-        rows =
-            appearances
-                .map { appearance ->
-                    ZouAppearance(
-                        jerseyNumber = appearance.jerseyNumber?.value,
-                        identification = appearance.reportedIdentification.value,
-                        name = names[appearance.playerId]?.asWrittenOnReport.orEmpty(),
-                    )
-                    // By shirt number, as the block is written out.
-                }.sortedBy { it.jerseyNumber ?: Int.MAX_VALUE },
+        rows = leading + rest,
+        confirmation =
+            confirmation?.let {
+                ZouLineupConfirmation(by = it.by.value, at = it.at, asDeputy = it.asDeputy)
+            },
     )
+}
 
 private inline fun <reified T : CardEvent> Match.cardsInMatchOrder(): List<T> =
     cardEvents.filterIsInstance<T>().sortedBy { it.minute }

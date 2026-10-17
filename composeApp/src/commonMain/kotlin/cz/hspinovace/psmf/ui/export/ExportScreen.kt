@@ -40,6 +40,7 @@ import cz.hspinovace.psmf.resources.export_problem_confirmation_away
 import cz.hspinovace.psmf.resources.export_problem_confirmation_home
 import cz.hspinovace.psmf.resources.export_problem_confirmation_referee
 import cz.hspinovace.psmf.resources.export_problem_lineup
+import cz.hspinovace.psmf.resources.export_problem_lineup_confirmation
 import cz.hspinovace.psmf.resources.export_problem_officials
 import cz.hspinovace.psmf.resources.export_problem_result
 import cz.hspinovace.psmf.resources.export_problem_score_mismatch
@@ -275,6 +276,12 @@ private fun ReportProblem.describe(): String =
 
         is ReportProblem.MissingLineup -> {
             stringResource(Res.string.export_problem_lineup, side.mark())
+        }
+
+        // Listed, and never a reason the match could not start: a late one is
+        // allowed and carries its real time.
+        is ReportProblem.LineupNotConfirmed -> {
+            stringResource(Res.string.export_problem_lineup_confirmation, side.mark())
         }
 
         is ReportProblem.MissingConfirmation -> {

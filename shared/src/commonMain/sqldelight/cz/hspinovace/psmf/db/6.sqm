@@ -1,0 +1,106 @@
+-- Version 6 to version 7: a lineup knows its captain and goalkeeper and the
+-- captain's confirmation under it, a pitch-added player need not have a date
+-- of birth, and the number copied from a card is remembered.
+--
+-- (DECISIONS 2026-10-17, from the first iPhone test.)
+--
+-- WHAT AN EXISTING MATCH GETS
+--
+--   Captain and goalkeeper: NULL, for every lineup already written. That is
+--   the truth -- version 6 kept neither -- and nothing is invented to fill
+--   it: a captain nobody marked is not a captain, and a report must not
+--   say one was. The lineup screen asks for both the next time it is saved.
+--
+--   Presence: nothing changes and nothing is lost. A saved lineup already
+--   held only the players who were present, "absent" was never stored, so
+--   the switch from marking who stayed away to marking who came reads the
+--   same rows.
+--
+--   Confirmations: MOVED OR LEFT, by what the evidence says.
+--
+--   Version 6 had ONE record per captain, written by the tap on the lineup
+--   AND by the signature on the recap, so a captain who tapped before
+--   kickoff showed on the recap as confirmed and the report could reach
+--   CONFIRMED without either captain having seen it finished. Version 7 has
+--   two records. For a match that is NOT yet CONFIRMED, a captain's
+--   confirmation made before kickoff -- or on a match whose whistle never
+--   went -- can only have been the tap on the lineup, so it moves to its
+--   lineup, with its time and name, and the recap asks that captain again.
+--   For a match that IS CONFIRMED, nothing moves: it was signed under the
+--   old rules, its export must say what it said, and taking a signature away
+--   from a finished report would be rewriting it. Every other confirmation
+--   -- the referee's, and a captain's after kickoff -- stays where it is.
+--
+--   A confirmation with no lineup row for its side is left alone rather
+--   than moved to nothing.
+
+ALTER TABLE lineup_record ADD COLUMN captain_appearance_id TEXT;
+ALTER TABLE lineup_record ADD COLUMN goalkeeper_appearance_id TEXT;
+ALTER TABLE lineup_record ADD COLUMN confirmed_at TEXT;
+ALTER TABLE lineup_record ADD COLUMN confirmed_by TEXT;
+ALTER TABLE lineup_record ADD COLUMN confirmed_as_deputy INTEGER NOT NULL DEFAULT 0;
+
+-- date_of_birth was NOT NULL, because it was all a player added at the pitch
+-- had. One with a card has the number on the appearance instead. SQLite
+-- cannot relax a column in place, so the table is rebuilt, rows and all.
+CREATE TABLE added_player_record_7 (
+    id                    TEXT    NOT NULL PRIMARY KEY,
+    match_id              TEXT    NOT NULL,
+    team_id               TEXT    NOT NULL,
+    player_ref            TEXT    NOT NULL,
+    surname               TEXT    NOT NULL,
+    first_name            TEXT    NOT NULL,
+    date_of_birth         TEXT,
+    default_jersey_number INTEGER
+);
+
+INSERT INTO added_player_record_7 (
+    id, match_id, team_id, player_ref, surname, first_name, date_of_birth, default_jersey_number
+)
+SELECT id, match_id, team_id, player_ref, surname, first_name, date_of_birth, default_jersey_number
+FROM added_player_record;
+
+DROP TABLE added_player_record;
+ALTER TABLE added_player_record_7 RENAME TO added_player_record;
+
+-- New and empty: nobody has typed a card number yet.
+CREATE TABLE remembered_card_number (
+    player_id   TEXT NOT NULL PRIMARY KEY,
+    card_number TEXT NOT NULL
+);
+
+-- The lineup tap, moved to its lineup. Both statements pick out the same
+-- confirmations, so that what is copied is exactly what is removed.
+UPDATE lineup_record
+SET confirmed_at =
+        (SELECT c.confirmed_at FROM confirmation_record c
+         WHERE c.match_id = lineup_record.match_id AND c.party = lineup_record.side || '_CAPTAIN'),
+    confirmed_by =
+        (SELECT c.confirmed_by FROM confirmation_record c
+         WHERE c.match_id = lineup_record.match_id AND c.party = lineup_record.side || '_CAPTAIN'),
+    confirmed_as_deputy =
+        (SELECT c.as_deputy FROM confirmation_record c
+         WHERE c.match_id = lineup_record.match_id AND c.party = lineup_record.side || '_CAPTAIN')
+WHERE EXISTS (
+    SELECT 1
+    FROM confirmation_record c
+    JOIN match_record m ON m.id = c.match_id
+    WHERE c.match_id = lineup_record.match_id
+      AND c.party = lineup_record.side || '_CAPTAIN'
+      AND m.status <> 'CONFIRMED'
+      AND (m.kickoff_at IS NULL OR c.confirmed_at < m.kickoff_at)
+);
+
+DELETE FROM confirmation_record
+WHERE party IN ('HOME_CAPTAIN', 'AWAY_CAPTAIN')
+  AND EXISTS (
+        SELECT 1 FROM lineup_record l
+        WHERE l.match_id = confirmation_record.match_id
+          AND l.side || '_CAPTAIN' = confirmation_record.party
+      )
+  AND EXISTS (
+        SELECT 1 FROM match_record m
+        WHERE m.id = confirmation_record.match_id
+          AND m.status <> 'CONFIRMED'
+          AND (m.kickoff_at IS NULL OR confirmation_record.confirmed_at < m.kickoff_at)
+      );

@@ -42,21 +42,26 @@ class PlayerIdentificationTest {
     }
 
     @Test
-    fun aPlayerAddedAtThePitchCannotBeBuiltWithoutADateOfBirth() {
-        val failure =
-            assertFailsWith<IllegalArgumentException> {
-                Player(
-                    id = PlayerId("p1"),
-                    ref = "pitch-1",
-                    teamId = Fixtures.homeTeamId,
-                    name = PlayerName(PersonName.of("Novak"), PersonName.of("Jan")),
-                    rpNumber = null,
-                    dateOfBirth = null,
-                    birthNumber = null,
-                    origin = PlayerOrigin.ADDED_AT_PITCH,
-                )
-            }
-        assertTrue(failure.message!!.contains("no date of birth"))
+    fun aPlayerAddedAtThePitchMayHaveNoDateOfBirthBecauseTheAppearanceWritesWhatTheyHave() {
+        // DECISIONS 2026-10-17. They used to be refused: the referee was the
+        // only source of a date, and it was all such a player had. With a
+        // card they have their number instead, which is the appearance's --
+        // so the record can be as bare as any league player's. What it can
+        // never carry is an RP number, which another test here keeps true.
+        val added =
+            Player(
+                id = PlayerId("p1"),
+                ref = "pitch-1",
+                teamId = Fixtures.homeTeamId,
+                name = PlayerName(PersonName.of("Novak"), PersonName.of("Jan")),
+                rpNumber = null,
+                dateOfBirth = null,
+                birthNumber = null,
+                origin = PlayerOrigin.ADDED_AT_PITCH,
+            )
+
+        assertNull(added.identificationFor(registrationCardPresent = true))
+        assertNull(added.identificationFor(registrationCardPresent = false))
     }
 
     @Test
@@ -214,10 +219,14 @@ class ReportedIdentificationTest {
     }
 
     @Test
-    fun theThreeSourcesAreExactlyThoseTheFormAndRegulationsAllow() {
+    fun theSourcesAreExactlyThoseTheFormAndTheRefereeCanWrite() {
+        // The league's own RP number, the number a referee copied from the
+        // card (which is not PSMF's record, and says so), the date of birth,
+        // and a birth number that nothing produces until A28 is answered.
         assertEquals(
             listOf(
                 IdentificationSource.RP,
+                IdentificationSource.RP_TYPED,
                 IdentificationSource.DATE_OF_BIRTH,
                 IdentificationSource.BIRTH_NUMBER,
             ),

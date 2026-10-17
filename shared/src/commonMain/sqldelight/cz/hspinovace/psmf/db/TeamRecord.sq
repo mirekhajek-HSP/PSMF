@@ -57,6 +57,21 @@ CREATE TABLE remembered_date_of_birth (
     date_of_birth TEXT NOT NULL
 );
 
+-- The number a referee copied from a player's registration card into the
+-- Číslo RP column, remembered so the next match OFFERS it (DECISIONS
+-- 2026-10-17): typed once, offered next time, editable -- the same standing
+-- as the date of birth above.
+--
+-- **NOT THE PLAYER'S RP NUMBER, and nothing here may become one.** It is what a
+-- person typed, which may be wrong, kept on this device only as a pre-fill.
+-- The player record, the league data and jersey_override are never written
+-- from it (`RememberedCardNumberTest` keeps that true), and a report says
+-- what its appearance wrote on the day, not what is remembered here.
+CREATE TABLE remembered_card_number (
+    player_id   TEXT NOT NULL PRIMARY KEY,
+    card_number TEXT NOT NULL
+);
+
 -- ---------------------------------------------------------------------------
 
 selectFollowedTeams:
@@ -82,3 +97,9 @@ SELECT player_id, date_of_birth FROM remembered_date_of_birth;
 
 rememberDateOfBirth:
 INSERT OR REPLACE INTO remembered_date_of_birth (player_id, date_of_birth) VALUES (?, ?);
+
+selectRememberedCardNumbers:
+SELECT player_id, card_number FROM remembered_card_number;
+
+rememberCardNumber:
+INSERT OR REPLACE INTO remembered_card_number (player_id, card_number) VALUES (?, ?);

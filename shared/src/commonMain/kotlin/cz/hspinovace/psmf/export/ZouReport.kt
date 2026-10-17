@@ -72,7 +72,20 @@ data class ZouLineup(
      * current kits: a rename must not rewrite a report already written.
      */
     val kitLabel: String,
+    /**
+     * In the order the paper form has them: the captain first, then the
+     * goalkeeper, then everyone else by jersey number. One person who is
+     * both is a single row, first. A lineup written before 0.3.0 has no
+     * captain or goalkeeper and is simply in jersey order, as it always was.
+     */
     val rows: List<ZouAppearance>,
+    /**
+     * *Podpis kapitána před zahájením utkání*: the captain's confirmation
+     * under the lineup, before kickoff. Null until given, and always null on
+     * a lineup that has no marked captain. **Not the signature under the
+     * finished report**, which is in [ZouReport.confirmations].
+     */
+    val confirmation: ZouLineupConfirmation? = null,
 )
 
 @Serializable
@@ -83,9 +96,72 @@ data class ZouAppearance(
      * without their card, exactly as recorded on the day.
      */
     val identification: String,
+    /**
+     * **Which of the three that value is.** The form has one column and the
+     * TXT keeps it, but a number the referee copied from a card and a
+     * number PSMF's own data supplied are not the same kind of evidence, and
+     * a date of birth is neither.
+     */
+    @SerialName("identificationKind") val kind: ZouIdentificationKind,
     /** `Příjmení a jméno` — surname first, as the column is written. */
     val name: String,
-)
+    /** The one captain of this team in this match. */
+    val captain: Boolean = false,
+    /** The one goalkeeper. May be the same person as the captain. */
+    val goalkeeper: Boolean = false,
+) {
+    /**
+     * What the TXT writes after the name, in the form's own language:
+     * `kapitán`, `brankář`, or both for one person. Empty for everyone else.
+     */
+    val rolesWritten: String
+        get() =
+            listOfNotNull(
+                ZouLabels.Lineup.CAPTAIN
+                    .lowercase()
+                    .takeIf { captain },
+                ZouLabels.Lineup.GOALKEEPER
+                    .lowercase()
+                    .takeIf { goalkeeper },
+            ).joinToString(", ")
+}
+
+/**
+ * Where the value in the `Číslo RP` column came from.
+ *
+ * Serialised as stable ASCII identifiers, like every other key in the JSON;
+ * [written] is the Czech the CSV prints beside it.
+ */
+@Serializable
+enum class ZouIdentificationKind(
+    val written: String,
+) {
+    /** The number in PSMF's own league data. */
+    @SerialName("rp_league")
+    LEAGUE_RP(ZouLabels.Lineup.KIND_LEAGUE_RP),
+
+    /** The number the referee copied from the player's card on the day. */
+    @SerialName("rp_typed")
+    TYPED_RP(ZouLabels.Lineup.KIND_TYPED_RP),
+
+    /** The date of birth, for a player with no card: the form's printed rule. */
+    @SerialName("date_of_birth")
+    DATE_OF_BIRTH(ZouLabels.Lineup.KIND_DATE_OF_BIRTH),
+
+    /** Nothing the app produces today; here so that reading any stored value cannot fail. */
+    @SerialName("other")
+    OTHER(ZouLabels.Lineup.KIND_OTHER),
+}
+
+@Serializable
+data class ZouLineupConfirmation(
+    val by: String,
+    val at: Instant,
+    /** Only ever true for a confirmation written before 0.3.0, which let a deputy sign. */
+    val asDeputy: Boolean = false,
+) {
+    val byWritten: String get() = if (asDeputy) "$by ${ZouWords.DEPUTY}" else by
+}
 
 @Serializable
 data class ZouGoal(

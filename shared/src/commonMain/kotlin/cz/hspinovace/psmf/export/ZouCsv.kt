@@ -65,8 +65,29 @@ object ZouCsv {
     private fun StringBuilder.lineupBlock(lineup: ZouLineup) {
         row("${ZouLabels.Lineup.TEAM_NAME} (${lineup.side.mark})", lineup.teamName)
         row(ZouLabels.Lineup.KIT_COLOUR, lineup.kitLabel)
-        row(ZouLabels.Lineup.JERSEY_NUMBER, ZouLabels.Lineup.IDENTIFIER, ZouLabels.Lineup.PLAYER_NAME)
-        lineup.rows.forEach { row(it.jerseyNumber?.toString().orEmpty(), it.identification, it.name) }
+        row(
+            ZouLabels.Lineup.JERSEY_NUMBER,
+            ZouLabels.Lineup.IDENTIFIER,
+            ZouLabels.Lineup.PLAYER_NAME,
+            // After the form's own three, so that what PSMF's crew already
+            // reads in columns one to three is where it always was.
+            ZouLabels.Lineup.CAPTAIN,
+            ZouLabels.Lineup.GOALKEEPER,
+            ZouLabels.Lineup.KIND,
+        )
+        lineup.rows.forEach {
+            row(
+                it.jerseyNumber?.toString().orEmpty(),
+                it.identification,
+                it.name,
+                // Blank for everyone who is neither: a filterable column,
+                // not a column of "ne".
+                if (it.captain) ZouWords.YES else "",
+                if (it.goalkeeper) ZouWords.YES else "",
+                it.kind.written,
+            )
+        }
+        row(ZouLabels.Lineup.CAPTAIN_BEFORE_KICKOFF, lineup.confirmation?.byWritten.orEmpty())
         blank()
     }
 

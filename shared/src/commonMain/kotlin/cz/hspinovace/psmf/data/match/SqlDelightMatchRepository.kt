@@ -5,6 +5,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import cz.hspinovace.psmf.db.Appearance_record
 import cz.hspinovace.psmf.db.Card_record
 import cz.hspinovace.psmf.db.Goal_record
+import cz.hspinovace.psmf.db.Lineup_record
 import cz.hspinovace.psmf.db.MatchRecordQueries
 import cz.hspinovace.psmf.db.Match_record
 import cz.hspinovace.psmf.db.Period_break_record
@@ -28,6 +29,7 @@ import cz.hspinovace.psmf.domain.IdentificationSource
 import cz.hspinovace.psmf.domain.JerseyNumber
 import cz.hspinovace.psmf.domain.KitId
 import cz.hspinovace.psmf.domain.Lineup
+import cz.hspinovace.psmf.domain.LineupConfirmation
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.MatchResult
@@ -224,6 +226,14 @@ private fun MatchRecordQueries.writeLineups(match: Match) {
             kit_id = lineup.kitId.value,
             // The label as it stood on the day, not a lookup.
             kit_label = lineup.kitLabel,
+            captain_appearance_id = lineup.captain?.value,
+            goalkeeper_appearance_id = lineup.goalkeeper?.value,
+            // The captain's confirmation under the lineup, before kickoff:
+            // its own columns, because it is not the signature under the
+            // finished report and confirmation_record is that.
+            confirmed_at = lineup.confirmation?.at?.toString(),
+            confirmed_by = lineup.confirmation?.by?.value,
+            confirmed_as_deputy = (lineup.confirmation?.asDeputy == true).toLong(),
         )
         lineup.appearances.forEachIndexed { index, appearance ->
             insertAppearance(
@@ -340,6 +350,10 @@ private fun MatchRecordQueries.hydrate(row: Match_record): Match {
                     appearances = appearances.filter { it.side == lineupRow.side }.map { it.toDomain() },
                     kitId = KitId(lineupRow.kit_id),
                     kitLabel = lineupRow.kit_label,
+                    // NULL on a lineup written before version 7, and left so.
+                    captain = lineupRow.captain_appearance_id?.let { AppearanceId(it) },
+                    goalkeeper = lineupRow.goalkeeper_appearance_id?.let { AppearanceId(it) },
+                    confirmation = lineupRow.toConfirmation(),
                 )
         }
 
@@ -376,6 +390,16 @@ private fun MatchRecordQueries.hydrate(row: Match_record): Match {
                 // enum, which is declared in the order the three signature
                 // boxes appear on the form.
                 .sortedBy { it.party.ordinal },
+    )
+}
+
+private fun Lineup_record.toConfirmation(): LineupConfirmation? {
+    val at = confirmed_at ?: return null
+    val by = confirmed_by ?: return null
+    return LineupConfirmation(
+        at = Instant.parse(at),
+        by = PersonName.of(by),
+        asDeputy = confirmed_as_deputy == 1L,
     )
 }
 

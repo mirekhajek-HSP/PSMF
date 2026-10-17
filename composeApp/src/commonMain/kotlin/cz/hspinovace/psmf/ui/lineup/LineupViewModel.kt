@@ -3,10 +3,9 @@ package cz.hspinovace.psmf.ui.lineup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import cz.hspinovace.psmf.data.match.MatchRepository
-import cz.hspinovace.psmf.domain.Confirmation
-import cz.hspinovace.psmf.domain.ConfirmingParty
 import cz.hspinovace.psmf.domain.JerseyNumber
 import cz.hspinovace.psmf.domain.KitId
+import cz.hspinovace.psmf.domain.LineupConfirmation
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.PersonName
@@ -17,9 +16,11 @@ import cz.hspinovace.psmf.usecase.BuildLineupEntry
 import cz.hspinovace.psmf.usecase.LineupEntry
 import cz.hspinovace.psmf.usecase.LineupProblem
 import cz.hspinovace.psmf.usecase.NewPlayerRequest
+import cz.hspinovace.psmf.usecase.RememberCardNumber
 import cz.hspinovace.psmf.usecase.RememberDateOfBirth
 import cz.hspinovace.psmf.usecase.SaveLineup
 import cz.hspinovace.psmf.usecase.TeamLineupEntry
+import cz.hspinovace.psmf.usecase.parseCardNumber
 import cz.hspinovace.psmf.usecase.parseDateOfBirth
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -36,9 +37,6 @@ data class LineupUiState(
     /** Open only while the referee is adding someone; null otherwise. */
     val newPlayer: NewPlayerRequest? = null,
     val newPlayerRejected: Boolean = false,
-    /** Which team's captain is being asked to confirm, if any. */
-    val confirmingSide: TeamSide? = null,
-    val confirmedParties: Set<ConfirmingParty> = emptySet(),
     val problems: List<LineupProblem> = emptyList(),
     val showProblems: Boolean = false,
     /**
@@ -48,8 +46,6 @@ data class LineupUiState(
     val readyToContinue: Boolean = false,
 ) {
     val selected: TeamLineupEntry? get() = entry?.side(selectedSide)
-
-    fun confirmed(side: TeamSide): Boolean = side.captain() in confirmedParties
 
     fun problem(kind: LineupProblem): Boolean = showProblems && kind in problems
 
@@ -66,14 +62,15 @@ data class LineupUiState(
             ?.name
             ?.asWrittenOnReport
             .orEmpty()
-}
 
-/** Which confirmation belongs to which side of the report. */
-fun TeamSide.captain(): ConfirmingParty =
-    when (this) {
-        TeamSide.HOME -> ConfirmingParty.HOME_CAPTAIN
-        TeamSide.AWAY -> ConfirmingParty.AWAY_CAPTAIN
-    }
+    /** A team's own name, for a problem that is about the team and not a player. */
+    fun teamName(side: TeamSide): String =
+        entry
+            ?.side(side)
+            ?.team
+            ?.name
+            .orEmpty()
+}
 
 sealed interface LineupEvent {
     data class SideSelected(
@@ -81,12 +78,14 @@ sealed interface LineupEvent {
     ) : LineupEvent
 
     /**
-     * Tapping a player marks them **absent**, not present.
+     * Tapping a player marks them **present**, and tapping again takes it
+     * back (DECISIONS 2026-10-17, reversing 2026-08-29).
      *
-     * The squad is already known and most of it turns up, so the work is
-     * three to five taps rather than ten names (analysis section 5.1).
+     * The squad from psmf.cz is everyone who has played this season, and a
+     * forgotten tap should leave a name missing -- which the captain sees at
+     * once -- not a no-show on the report, where it counts as an appearance.
      */
-    data class AbsenceToggled(
+    data class PresenceToggled(
         val playerId: PlayerId,
     ) : LineupEvent
 
@@ -95,15 +94,23 @@ sealed interface LineupEvent {
         val raw: String,
     ) : LineupEvent
 
-    /** The player did not bring their registration card. */
+    /** The player did not bring their registration card, or did after all. */
     data class RegistrationCardToggled(
         val playerId: PlayerId,
     ) : LineupEvent
 
     /**
-     * The referee typed into a row's date-of-birth field: a player the
-     * league record cannot identify is fielded by writing it, on this
-     * screen. The whole field, not a keystroke.
+     * The referee typed into a row's `Číslo RP` field: the number copied from
+     * the player's card. The whole field, not a keystroke.
+     */
+    data class CardNumberTyped(
+        val playerId: PlayerId,
+        val raw: String,
+    ) : LineupEvent
+
+    /**
+     * The referee typed into a row's date-of-birth field: with no card, and
+     * none on file, a player is fielded by writing it. The whole field.
      */
     data class DateOfBirthTyped(
         val playerId: PlayerId,
@@ -112,6 +119,16 @@ sealed interface LineupEvent {
 
     data class KitSelected(
         val kitId: KitId,
+    ) : LineupEvent
+
+    /** The captain of the team on screen, from those present; null clears it. */
+    data class CaptainChosen(
+        val playerId: PlayerId?,
+    ) : LineupEvent
+
+    /** The goalkeeper of the team on screen. The same person may be both. */
+    data class GoalkeeperChosen(
+        val playerId: PlayerId?,
     ) : LineupEvent
 
     data object AddPlayerOpened : LineupEvent
@@ -124,27 +141,23 @@ sealed interface LineupEvent {
 
     data object NewPlayerSubmitted : LineupEvent
 
-    data class CaptainConfirmationOpened(
-        val side: TeamSide,
-    ) : LineupEvent
-
-    data object CaptainConfirmationDismissed : LineupEvent
-
-    data class CaptainConfirmed(
-        val side: TeamSide,
-        val playerId: PlayerId?,
-        val name: String,
-        val asDeputy: Boolean,
-    ) : LineupEvent
+    /**
+     * The marked captain's one tap under the team on screen, before kickoff:
+     * "Potvrzuje <name>". Nobody is picked and nothing is typed, and it is
+     * **not** the captain's signature under the finished report.
+     */
+    data object CaptainConfirms : LineupEvent
 
     data object ContinuePressed : LineupEvent
 }
 
 /**
- * Screen 3. The squad list, inverted.
+ * Screen 3. The squad list, marked with who came.
  *
  * Every change writes through, so a report on disk keeps up with the
- * screen — except while a block is momentarily invalid; see [SaveLineup].
+ * screen -- except while a block is not whole: a team is written once it
+ * has somebody present, a captain, a goalkeeper and an answer in every
+ * row's `Číslo RP`. See [SaveLineup].
  */
 @OptIn(ExperimentalTime::class)
 class LineupViewModel(
@@ -154,6 +167,7 @@ class LineupViewModel(
     private val saveLineup: SaveLineup,
     private val addPlayerToLineup: AddPlayerToLineup,
     private val rememberDateOfBirth: RememberDateOfBirth,
+    private val rememberCardNumber: RememberCardNumber,
     private val clock: Clock = Clock.System,
 ) : ViewModel() {
     private val _state = MutableStateFlow(LineupUiState())
@@ -174,12 +188,6 @@ class LineupViewModel(
                 loading = false,
                 entry = entry,
                 problems = entry?.problems().orEmpty(),
-                confirmedParties =
-                    loaded
-                        ?.confirmations
-                        ?.map { it.party }
-                        ?.toSet()
-                        .orEmpty(),
             )
     }
 
@@ -192,6 +200,14 @@ class LineupViewModel(
 
             is LineupEvent.KitSelected -> {
                 editTeam { it.copy(kitId = event.kitId) }
+            }
+
+            is LineupEvent.CaptainChosen -> {
+                editTeam { it.withCaptain(event.playerId) }
+            }
+
+            is LineupEvent.GoalkeeperChosen -> {
+                editTeam { it.copy(goalkeeper = event.playerId) }
             }
 
             LineupEvent.AddPlayerOpened -> {
@@ -210,16 +226,8 @@ class LineupViewModel(
                 submitNewPlayer()
             }
 
-            is LineupEvent.CaptainConfirmationOpened -> {
-                _state.update { it.copy(confirmingSide = event.side) }
-            }
-
-            LineupEvent.CaptainConfirmationDismissed -> {
-                _state.update { it.copy(confirmingSide = null) }
-            }
-
-            is LineupEvent.CaptainConfirmed -> {
-                confirm(event)
+            LineupEvent.CaptainConfirms -> {
+                confirm()
             }
 
             LineupEvent.ContinuePressed -> {
@@ -232,14 +240,18 @@ class LineupViewModel(
     }
 
     /**
-     * The four things done to one squad member's row. Split from [onEvent]
-     * once the number of event types alone pushed it over detekt's
-     * complexity limit, the same split the console made.
+     * The things done to one squad member's row. Split from [onEvent] once the
+     * number of event types alone pushed it over detekt's complexity limit,
+     * the same split the console made.
      */
     private fun handleRowEvent(event: LineupEvent): Boolean {
         when (event) {
-            is LineupEvent.AbsenceToggled -> {
-                editTeam { team -> team.withMember(event.playerId) { it.copy(absent = !it.absent) } }
+            is LineupEvent.PresenceToggled -> {
+                editTeam { team ->
+                    val now =
+                        team.members.firstOrNull { it.player.id == event.playerId }?.present ?: return@editTeam team
+                    team.withPresence(event.playerId, !now)
+                }
             }
 
             is LineupEvent.JerseyNumberChanged -> {
@@ -255,6 +267,15 @@ class LineupViewModel(
                     team.withMember(event.playerId) {
                         it.copy(registrationCardPresent = !it.registrationCardPresent)
                     }
+                }
+            }
+
+            is LineupEvent.CardNumberTyped -> {
+                editTeam { team -> team.withMember(event.playerId) { it.withCardNumberTyped(event.raw) } }
+                // Once it is a usable number, remembered on this device so the
+                // next match offers it. A pre-fill, and never the player's RP.
+                parseCardNumber(event.raw)?.let { number ->
+                    viewModelScope.launch { rememberCardNumber(event.playerId, number) }
                 }
             }
 
@@ -286,53 +307,51 @@ class LineupViewModel(
             return
         }
         val current = match ?: return
+        val team = _state.value.selected ?: return
         viewModelScope.launch {
             // Returns null only if the request was unusable, which the check
             // above has already ruled out -- but the use case is the
             // authority, not the form.
-            val updated = addPlayerToLineup(current, request)
-            if (updated == null) {
+            val added = addPlayerToLineup(current, team, request)
+            if (added == null) {
                 _state.update { it.copy(newPlayerRejected = true) }
                 return@launch
             }
-            match = updated
-            _state.update { it.copy(newPlayer = null, newPlayerRejected = false) }
-            // Rebuild rather than patch, so the new player joins the squad in
-            // the same shape as everyone else.
-            reload()
-        }
-    }
-
-    private fun confirm(event: LineupEvent.CaptainConfirmed) {
-        val current = match ?: return
-        val who = PersonName.orNull(event.name) ?: return
-        viewModelScope.launch {
-            val confirmed =
-                current.confirmedBy(
-                    Confirmation(
-                        party = event.side.captain(),
-                        at = clock.now(),
-                        confirmedBy = who,
-                        asDeputy = event.asDeputy,
-                    ),
-                )
-            matches.save(confirmed)
-            match = confirmed
-            _state.update {
-                it.copy(
-                    confirmingSide = null,
-                    confirmedParties = confirmed.confirmations.map { c -> c.party }.toSet(),
+            match = added.match
+            // The entry the screen holds, with the player in it -- not one
+            // rebuilt from the database, which has none of the marks that are
+            // not saved yet.
+            _state.update { state ->
+                val entry = state.entry?.with(added.team)
+                state.copy(
+                    entry = entry,
+                    problems = entry?.problems().orEmpty(),
+                    newPlayer = null,
+                    newPlayerRejected = false,
                 )
             }
         }
     }
 
     /**
+     * The marked captain's tap under this lineup.
+     *
+     * Records the captain's own name, as the report writes it, and the real
+     * time -- late or not. Nothing here touches the match's confirmations:
+     * that is the signature under the finished report, and the recap still
+     * asks for it (DECISIONS 2026-10-17).
+     */
+    private fun confirm() {
+        val captain = _state.value.selected?.markedCaptain ?: return
+        val who = PersonName.orNull(captain.player.name.asWrittenOnReport) ?: return
+        editTeam { it.copy(confirmation = LineupConfirmation(at = clock.now(), by = who)) }
+    }
+
+    /**
      * Writes both blocks, then lets the route move on.
      *
-     * Both, not just the one on screen: a team with nobody absent and every
-     * number already correct is never edited, so its block has never been
-     * written through.
+     * Both, not just the one on screen: a team that was not edited since it
+     * was last whole may never have been written through.
      */
     private fun commitBothLineups() {
         val entry = _state.value.entry
@@ -360,12 +379,5 @@ class LineupViewModel(
             val current = match ?: return@launch
             match = saveLineup(current, updated.side(_state.value.selectedSide))
         }
-    }
-
-    private suspend fun reload() {
-        val current = matches.load(matchId) ?: return
-        match = current
-        val entry = buildLineupEntry(current)
-        _state.update { it.copy(entry = entry, problems = entry?.problems().orEmpty()) }
     }
 }

@@ -5,6 +5,7 @@ import cz.hspinovace.psmf.data.league.JerseyOverridingLeagueRepository
 import cz.hspinovace.psmf.data.league.SeedLeagueRepository
 import cz.hspinovace.psmf.data.match.SqlDelightMatchRepository
 import cz.hspinovace.psmf.data.player.SqlDelightAddedPlayerRepository
+import cz.hspinovace.psmf.data.player.SqlDelightRememberedCardNumberRepository
 import cz.hspinovace.psmf.data.player.SqlDelightRememberedDateOfBirthRepository
 import cz.hspinovace.psmf.data.team.SqlDelightFollowedTeamRepository
 import cz.hspinovace.psmf.data.team.SqlDelightJerseyOverrideRepository
@@ -27,6 +28,7 @@ import cz.hspinovace.psmf.usecase.ObserveReportInProgress
 import cz.hspinovace.psmf.usecase.SaveLineup
 import cz.hspinovace.psmf.usecase.StartMatch
 import cz.hspinovace.psmf.usecase.StartOrResumeMatch
+import cz.hspinovace.psmf.usecase.everyoneCame
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import java.io.File
@@ -77,6 +79,7 @@ class PlaceholderMatchAfterTheUpgradeTest {
             val followed = SqlDelightFollowedTeamRepository(database)
             val overrides = SqlDelightJerseyOverrideRepository(database)
             val remembered = SqlDelightRememberedDateOfBirthRepository(database)
+            val rememberedNumbers = SqlDelightRememberedCardNumberRepository(database)
 
             // Before: 0.1.0 and the invented 6-K. A match under way at
             // Kominíci, the team followed, Růžička's number corrected.
@@ -84,10 +87,9 @@ class PlaceholderMatchAfterTheUpgradeTest {
             val opener = sixK.fixtures.first()
             val kominici = sixK.teams.single { it.ref == "kominici" }
             var match = assertNotNull(StartOrResumeMatch(placeholder, matches, newId)(opener.id))
-            match =
-                SaveLineup(
-                    matches,
-                )(match, assertNotNull(BuildLineupEntry(placeholder, added, remembered, newId)(match)))
+            val lineups =
+                assertNotNull(BuildLineupEntry(placeholder, added, remembered, rememberedNumbers, newId)(match))
+            match = SaveLineup(matches)(match, lineups.everyoneCame())
             match = StartMatch(matches)(match, Instant.parse("2026-09-06T08:00:00Z"))
             match = LogGoal(matches)(match, TeamSide.HOME, null, Minute.Played(5))
             assertEquals(MatchStatus.IN_PROGRESS, match.status)
@@ -113,7 +115,7 @@ class PlaceholderMatchAfterTheUpgradeTest {
             // Every screen's own loader says "not here" rather than throwing.
             assertNull(league.fixture(match.fixtureId))
             assertNull(BuildConsoleEntry(league, added)(match))
-            assertNull(BuildLineupEntry(league, added, remembered, newId)(match))
+            assertNull(BuildLineupEntry(league, added, remembered, rememberedNumbers, newId)(match))
             assertNull(BuildZouReport(league, added)(match))
             assertNull(StartOrResumeMatch(league, matches, newId)(opener.id))
             // And the report is exactly as it was: kept, not deleted.

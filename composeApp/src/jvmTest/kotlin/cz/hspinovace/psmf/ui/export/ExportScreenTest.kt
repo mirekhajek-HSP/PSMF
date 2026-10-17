@@ -23,6 +23,7 @@ import cz.hspinovace.psmf.export.ZouConfirmation
 import cz.hspinovace.psmf.export.ZouFormat
 import cz.hspinovace.psmf.export.ZouGoal
 import cz.hspinovace.psmf.export.ZouHeader
+import cz.hspinovace.psmf.export.ZouIdentificationKind
 import cz.hspinovace.psmf.export.ZouLineup
 import cz.hspinovace.psmf.export.ZouReport
 import cz.hspinovace.psmf.export.ZouResult
@@ -68,7 +69,7 @@ class ExportScreenTest {
                         side = ZouSide.HOME,
                         teamName = "Kominíci",
                         kitLabel = "modrá",
-                        rows = listOf(ZouAppearance(9, "900615", "Poupě Petr")),
+                        rows = listOf(ZouAppearance(9, "900615", ZouIdentificationKind.DATE_OF_BIRTH, "Poupě Petr")),
                     ),
                 ),
             goals = listOf(ZouGoal(ZouSide.HOME, "13´", null, null, "1:0")),

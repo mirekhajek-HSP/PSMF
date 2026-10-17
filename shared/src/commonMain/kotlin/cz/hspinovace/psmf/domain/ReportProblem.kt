@@ -36,6 +36,20 @@ sealed interface ReportProblem {
         val side: TeamSide,
     ) : ReportProblem
 
+    /**
+     * The captain marked in this lineup has not confirmed it (*podpis
+     * kapitána před zahájením utkání*). **Listed here, never a block on
+     * kickoff**, and a late confirmation clears it: it carries its real time.
+     *
+     * Only for a lineup that has a marked captain. One written before 0.3.0
+     * has none -- there is nobody it could be waiting for -- and a report
+     * that was fine to send must not stop being so because the app learned a
+     * new rule.
+     */
+    data class LineupNotConfirmed(
+        val side: TeamSide,
+    ) : ReportProblem
+
     data class MissingConfirmation(
         val party: ConfirmingParty,
     ) : ReportProblem
@@ -52,6 +66,9 @@ fun Match.reportProblems(): List<ReportProblem> =
         if (officials == null) add(ReportProblem.MissingOfficials)
         if (homeLineup == null) add(ReportProblem.MissingLineup(TeamSide.HOME))
         if (awayLineup == null) add(ReportProblem.MissingLineup(TeamSide.AWAY))
+        TeamSide.entries
+            .filter { side -> lineup(side)?.let { it.captain != null && it.confirmation == null } == true }
+            .forEach { add(ReportProblem.LineupNotConfirmed(it)) }
 
         // "No cards" is an affirmation the referee makes by striking the boxes
         // through. A report that simply never mentioned cards is incomplete,

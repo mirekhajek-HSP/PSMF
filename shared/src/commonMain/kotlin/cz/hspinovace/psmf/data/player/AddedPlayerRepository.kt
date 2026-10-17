@@ -56,9 +56,9 @@ class SqlDelightAddedPlayerRepository(
                 player_ref = player.ref,
                 surname = player.name.surname.value,
                 first_name = player.name.firstName.value,
-                // Non-null by construction: addedAtThePitch requires one,
-                // because it is the only identification such a player has.
-                date_of_birth = requireNotNull(player.dateOfBirth).toString(),
+                // Null for a player with a card: the number copied from it is
+                // the appearance's, and this record has nowhere to keep one.
+                date_of_birth = player.dateOfBirth?.toString(),
                 default_jersey_number = player.defaultJerseyNumber?.value?.toLong(),
             )
         }
@@ -86,6 +86,6 @@ private fun Added_player_record.toDomain(): Player =
         ref = player_ref,
         teamId = TeamId(team_id),
         name = PlayerName(surname = PersonName.of(surname), firstName = PersonName.of(first_name)),
-        dateOfBirth = LocalDate.parse(date_of_birth),
+        dateOfBirth = date_of_birth?.let { LocalDate.parse(it) },
         defaultJerseyNumber = default_jersey_number?.let { JerseyNumber(it.toInt()) },
     )

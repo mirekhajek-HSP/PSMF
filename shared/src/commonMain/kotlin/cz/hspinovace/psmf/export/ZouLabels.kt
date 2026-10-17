@@ -48,6 +48,24 @@ object ZouLabels {
         const val PLAYER_NAME = "Příjmení a jméno"
         const val CAPTAIN_CONFIRMS =
             "Kapitáni potvrzují, že všichni hráči startují oprávněně"
+
+        /**
+         * How the report says who is who. **Not transcribed from the form**:
+         * nobody has seen how the paper form marks them (DECISIONS
+         * 2026-10-17), so these are the app's own plain Czech words.
+         */
+        const val CAPTAIN = "Kapitán"
+        const val GOALKEEPER = "Brankář"
+
+        /** Under each lineup: the captain's confirmation before kickoff. */
+        const val CAPTAIN_BEFORE_KICKOFF = "Podpis kapitána před zahájením utkání"
+
+        /** What the CSV says of a row's `Číslo RP`; see `ZouIdentificationKind`. */
+        const val KIND = "Druh údaje"
+        const val KIND_LEAGUE_RP = "RP z ligových dat"
+        const val KIND_TYPED_RP = "RP opsané z průkazu"
+        const val KIND_DATE_OF_BIRTH = "datum narození"
+        const val KIND_OTHER = "jiný údaj"
     }
 
     /** Page 2 goals. Analysis section 2.5. */

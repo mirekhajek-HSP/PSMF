@@ -54,11 +54,14 @@ fun PsmfTextField(
     capitalization: KeyboardCapitalization = KeyboardCapitalization.None,
     imeAction: ImeAction = ImeAction.Next,
     shape: Shape = OutlinedTextFieldDefaults.shape,
+    enabled: Boolean = true,
 ) {
     val registry = LocalFieldRegistry.current
     val place = remember { FieldPlace() }
-    DisposableEffect(registry, place) {
-        registry?.add(place)
+    // Only while it can be typed in: a disabled field is not "a field" to
+    // tap inside of, and a tap on the space it holds is a tap outside.
+    DisposableEffect(registry, place, enabled) {
+        if (enabled) registry?.add(place)
         onDispose { registry?.remove(place) }
     }
 
@@ -68,6 +71,9 @@ fun PsmfTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier.onGloballyPositioned { place.coordinates = it },
+        // A disabled field takes no focus and no tap, so no keyboard: it is
+        // how a row that is laid out but not yet in use stays out of the way.
+        enabled = enabled,
         label = label,
         supportingText = supportingText,
         isError = isError,

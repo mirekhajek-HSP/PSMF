@@ -54,8 +54,14 @@ object ZouText {
             ),
         )
         lineup.rows.forEach {
-            appendLine(row(it.jerseyNumber?.toString().orEmpty(), it.identification, it.name))
+            // The form's single column, as ever: the TXT does not say which
+            // kind of value it is. The roles come after the name, in words,
+            // so that one person who is both reads as both.
+            val name = if (it.rolesWritten.isEmpty()) it.name else "${it.name}  (${it.rolesWritten})"
+            appendLine(row(it.jerseyNumber?.toString().orEmpty(), it.identification, name))
         }
+        appendLine()
+        field(ZouLabels.Lineup.CAPTAIN_BEFORE_KICKOFF, lineup.confirmation?.byWritten.orNotGiven())
         appendLine()
     }
 

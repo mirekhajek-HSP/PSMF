@@ -17,6 +17,12 @@ import kotlin.jvm.JvmInline
 //
 // They are not two cases of one thing. One is a foreign key into somebody
 // else's system; the other is a fallback a human writes at a pitch.
+//
+// A THIRD THING, since DECISIONS 2026-10-17: the number a referee copies from
+// a player's registration card into the `Číslo RP` column, as the captain does
+// on paper. It is what was WRITTEN THAT DAY and it lives on the appearance as
+// IdentificationSource.RP_TYPED. It is never an RpNumber, never reaches the
+// player or league data, and nothing presents it as PSMF's record.
 
 /**
  * `Číslo RP` — the registration card number, five digits in the worked
@@ -62,8 +68,18 @@ value class BirthNumber(
 /** Which of the three kinds of value ended up in the `Číslo RP` column. */
 @Serializable
 enum class IdentificationSource {
-    /** The league-issued registration number. */
+    /** The league-issued registration number, from league data. */
     RP,
+
+    /**
+     * The number the referee copied from the player's registration card
+     * into the column, **as written on the day** (DECISIONS 2026-10-17).
+     *
+     * Not an [RpNumber] and never converted into one: it is what a person
+     * typed, which may be wrong, and PSMF's own record is not touched by it.
+     * The export says which of the two a row's number is.
+     */
+    RP_TYPED,
 
     /**
      * Written in the RP column when the player has no card with them:
@@ -105,6 +121,15 @@ data class ReportedIdentification(
 
         fun of(birthNumber: BirthNumber): ReportedIdentification =
             ReportedIdentification(birthNumber.value, IdentificationSource.BIRTH_NUMBER)
+
+        /**
+         * What a referee copied from a registration card, as written.
+         *
+         * Takes a string and gives back a *reported identification*, never
+         * an [RpNumber]: there is no path from here to the player record.
+         */
+        fun typedFromCard(digits: String): ReportedIdentification =
+            ReportedIdentification(digits, IdentificationSource.RP_TYPED)
 
         /**
          * A date of birth as the form writes it: **YYMMDD**.

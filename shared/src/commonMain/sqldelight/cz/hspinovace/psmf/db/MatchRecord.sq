@@ -59,6 +59,20 @@ CREATE TABLE lineup_record (
     -- data must not rewrite a match played last month. The report reads
     -- this column and never kit_id.
     kit_label   TEXT NOT NULL,
+    -- The one captain and the one goalkeeper of this team in this match, as
+    -- appearance ids, possibly the same one. NULL for a lineup written
+    -- before version 7, and never filled in for one: an upgrade must not
+    -- invent a captain. See 6.sqm.
+    captain_appearance_id    TEXT,
+    goalkeeper_appearance_id TEXT,
+    -- The captain's confirmation under the lineup, before kickoff -- NOT the
+    -- signature under the finished report, which is confirmation_record.
+    -- NULL until given; a late one carries its real time.
+    confirmed_at        TEXT,
+    confirmed_by        TEXT,
+    -- Only ever 1 for a confirmation moved here from a version 6 database,
+    -- which let a deputy sign. Nothing writes it now.
+    confirmed_as_deputy INTEGER NOT NULL DEFAULT 0,
     PRIMARY KEY (match_id, side)
 );
 
@@ -75,7 +89,8 @@ CREATE TABLE appearance_record (
     -- NOT NULL, and stored rather than derived at export time. If a player
     -- later gains an RP number, an old report must not retroactively change
     -- what it says -- the same principle as report versioning (section 5.3).
-    -- RP / DATE_OF_BIRTH / BIRTH_NUMBER.
+    -- RP (from league data) / RP_TYPED (copied from the card by the referee,
+    -- which is NOT PSMF's record) / DATE_OF_BIRTH / BIRTH_NUMBER.
     identification_value  TEXT    NOT NULL,
     identification_source TEXT    NOT NULL
 );
@@ -132,7 +147,9 @@ CREATE TABLE power_play_record (
 -- failure the read-only squad list exists to prevent.
 --
 -- THERE IS NO rp_number COLUMN AND THERE MUST NOT BE ONE. RP numbers are
--- issued by PSMF. Nothing a user types can become one.
+-- issued by PSMF. Nothing a user types can become one -- including the number
+-- copied from the player's card, which is what the appearance wrote that day
+-- (appearance_record, source RP_TYPED) and is not stored here at all.
 CREATE TABLE added_player_record (
     id                    TEXT    NOT NULL PRIMARY KEY,
     match_id              TEXT    NOT NULL,
@@ -140,8 +157,10 @@ CREATE TABLE added_player_record (
     player_ref            TEXT    NOT NULL,
     surname               TEXT    NOT NULL,
     first_name            TEXT    NOT NULL,
-    -- NOT NULL: it is the only identification such a player has.
-    date_of_birth         TEXT    NOT NULL,
+    -- Only for a player with no card to copy a number from: the form's own
+    -- printed rule. NULL for one who has a card, whose number is on the
+    -- appearance. Was NOT NULL before version 7.
+    date_of_birth         TEXT,
     default_jersey_number INTEGER
 );
 
@@ -240,8 +259,11 @@ deleteMatch:
 DELETE FROM match_record WHERE id = ?;
 
 insertLineup:
-INSERT OR REPLACE INTO lineup_record (match_id, side, team_id, kit_id, kit_label)
-VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO lineup_record (
+    match_id, side, team_id, kit_id, kit_label,
+    captain_appearance_id, goalkeeper_appearance_id,
+    confirmed_at, confirmed_by, confirmed_as_deputy
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectLineups:
 SELECT * FROM lineup_record WHERE match_id = ?;

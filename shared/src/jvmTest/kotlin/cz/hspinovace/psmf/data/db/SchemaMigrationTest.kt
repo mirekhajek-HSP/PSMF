@@ -2,16 +2,39 @@ package cz.hspinovace.psmf.data.db
 
 import cz.hspinovace.psmf.data.match.MatchRepository
 import cz.hspinovace.psmf.data.match.SqlDelightMatchRepository
+import cz.hspinovace.psmf.data.player.SqlDelightAddedPlayerRepository
 import cz.hspinovace.psmf.db.PsmfDatabase
+import cz.hspinovace.psmf.domain.AppearanceId
+import cz.hspinovace.psmf.domain.Confirmation
+import cz.hspinovace.psmf.domain.ConfirmingParty
+import cz.hspinovace.psmf.domain.Fixtures
+import cz.hspinovace.psmf.domain.Lineup
+import cz.hspinovace.psmf.domain.LineupConfirmation
 import cz.hspinovace.psmf.domain.Match
+import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
+import cz.hspinovace.psmf.domain.PersonName
+import cz.hspinovace.psmf.domain.Player
+import cz.hspinovace.psmf.domain.PlayerId
+import cz.hspinovace.psmf.domain.PlayerName
 import cz.hspinovace.psmf.domain.PowerPlay
 import cz.hspinovace.psmf.domain.TeamSide
+import cz.hspinovace.psmf.domain.reportProblems
+import cz.hspinovace.psmf.export.BuildZouReport
 import cz.hspinovace.psmf.export.CompleteReport
+import cz.hspinovace.psmf.export.NoAddedPlayers
+import cz.hspinovace.psmf.export.ZouLabels
+import cz.hspinovace.psmf.export.ZouText
+import cz.hspinovace.psmf.export.ZouWords
+import cz.hspinovace.psmf.usecase.BuildLineupEntry
+import cz.hspinovace.psmf.usecase.FakeRememberedCardNumberRepository
+import cz.hspinovace.psmf.usecase.FakeRememberedDateOfBirthRepository
+import cz.hspinovace.psmf.usecase.LineupEntry
 import cz.hspinovace.psmf.usecase.LogGoal
 import cz.hspinovace.psmf.usecase.UndoLastEvent
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.LocalDate
 import java.io.File
 import java.sql.Connection
 import java.sql.DriverManager
@@ -21,6 +44,7 @@ import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Instant
 
@@ -103,12 +127,18 @@ class SchemaMigrationTest {
     private suspend fun beforeTheUpdate(
         file: File,
         block: suspend (MatchRepository) -> Unit,
+    ) = beforeTheUpdateIn(file) { block(SqlDelightMatchRepository(it)) }
+
+    /** [beforeTheUpdate] for a test that has to write to more than the reports. */
+    private suspend fun beforeTheUpdateIn(
+        file: File,
+        block: suspend (PsmfDatabase) -> Unit,
     ) {
         val scratch = File.createTempFile("psmf-scratch-", ".db").also { it.delete() }
         temporaryFiles += scratch
         val driver = DatabaseDriverFactory("jdbc:sqlite:${scratch.absolutePath}").create()
         try {
-            block(SqlDelightMatchRepository(PsmfDatabase(driver)))
+            block(PsmfDatabase(driver))
         } finally {
             driver.close()
         }
@@ -154,10 +184,16 @@ class SchemaMigrationTest {
     private suspend fun <T> afterTheUpdate(
         file: File,
         block: suspend (MatchRepository) -> T,
+    ): T = afterTheUpdateIn(file) { block(SqlDelightMatchRepository(it)) }
+
+    /** [afterTheUpdate] for a test that has to read more than the reports. */
+    private suspend fun <T> afterTheUpdateIn(
+        file: File,
+        block: suspend (PsmfDatabase) -> T,
     ): T {
         val driver = DatabaseDriverFactory("jdbc:sqlite:${file.absolutePath}").create()
         try {
-            return block(SqlDelightMatchRepository(PsmfDatabase(driver)))
+            return block(PsmfDatabase(driver))
         } finally {
             driver.close()
         }
@@ -299,6 +335,191 @@ class SchemaMigrationTest {
             assertEquals(report, assertNotNull(restored, "the report did not survive 5.sqm"))
         }
 
+    /**
+     * **0.2.1 to 0.3.0 on a referee's phone, with three matches on it.**
+     *
+     * Version 6 is what 0.2.1 (3) shipped. A lineup knows its captain and
+     * goalkeeper from version 7 on, the captain's confirmation under it has
+     * a place of its own, and a pitch-added player may have no date of birth.
+     * One match is under way, one finished and not signed, one signed; all
+     * three have to open afterwards, and each has to be what it was.
+     */
+    @Test
+    fun threeMatchesWrittenByTheLastReleaseAllOpenAndMeanWhatTheyMeant() =
+        runTest {
+            val database = databaseAtVersion(6)
+            val inProgress = oldMatch("m-play", MatchStatus.IN_PROGRESS, listOf(lineupTapHome, lineupTapAwayByADeputy))
+            val unsigned = oldMatch("m-done", MatchStatus.FINISHED, listOf(lineupTapHome, signedAwayAtTheRecap))
+            val signed =
+                oldMatch(
+                    "m-signed",
+                    MatchStatus.CONFIRMED,
+                    listOf(lineupTapHome, signedAwayAtTheRecap, signedByTheReferee),
+                )
+            val addedAtThePitch = pitchAddedPlayer()
+
+            beforeTheUpdateIn(database) { db ->
+                val repository = SqlDelightMatchRepository(db)
+                listOf(inProgress, unsigned, signed).forEach { repository.save(it) }
+                SqlDelightAddedPlayerRepository(db).add(inProgress.id, addedAtThePitch)
+            }
+
+            assertEquals(6, userVersion(database))
+            assertFalse("captain_appearance_id" in columns(database, "lineup_record"), "6.db already had the columns")
+
+            val restored =
+                afterTheUpdate(database) { repository ->
+                    listOf(
+                        inProgress,
+                        unsigned,
+                        signed,
+                    ).map { assertNotNull(repository.load(it.id), "${it.id} is gone") }
+                }
+            val (restoredPlay, restoredDone, restoredSigned) = restored
+
+            assertEquals(current, userVersion(database), "6.sqm did not run")
+
+            // THE LINEUPS: every player is still there and still present, and
+            // nobody was given a captain or a goalkeeper they never had.
+            listOf(restoredPlay, restoredDone, restoredSigned).forEach { match ->
+                listOfNotNull(match.homeLineup, match.awayLineup).forEach { lineup ->
+                    assertNull(lineup.captain, "an upgrade invented a captain")
+                    assertNull(lineup.goalkeeper, "an upgrade invented a goalkeeper")
+                }
+            }
+            assertEquals(inProgress.homeLineup?.appearances, restoredPlay.homeLineup?.appearances)
+            assertEquals(inProgress.awayLineup?.appearances, restoredPlay.awayLineup?.appearances)
+            val entry = presenceOf(restoredPlay)
+            assertEquals(
+                inProgress.homeLineup
+                    ?.appearances
+                    ?.map { it.playerId }
+                    ?.toSet(),
+                entry.home.present
+                    .map { it.player.id }
+                    .toSet(),
+                "marking who came silently removed somebody from the lineup",
+            )
+
+            // IN PROGRESS, the captains tapped before the whistle: those taps
+            // were the lineup's, so they moved to it, with their times, their
+            // names and the deputy -- and the recap asks both captains again.
+            assertEquals(
+                LineupConfirmation(Instant.parse("2026-08-31T18:50:00Z"), PersonName.of("Novak")),
+                restoredPlay.homeLineup?.confirmation,
+            )
+            assertEquals(
+                LineupConfirmation(Instant.parse("2026-08-31T18:52:00Z"), PersonName.of("Lepis"), asDeputy = true),
+                restoredPlay.awayLineup?.confirmation,
+            )
+            assertEquals(emptyList(), restoredPlay.confirmations)
+
+            // FINISHED, not signed: the home captain's early tap moved, and
+            // the away captain's, which came after the whistle at the recap,
+            // is exactly where it was.
+            assertNotNull(restoredDone.homeLineup?.confirmation)
+            assertNull(restoredDone.awayLineup?.confirmation)
+            assertEquals(listOf(signedAwayAtTheRecap), restoredDone.confirmations)
+
+            // CONFIRMED: nothing moved. It was signed under the old rules and
+            // its export says what it said; taking a signature away from a
+            // finished report would be rewriting it. Equal in every field.
+            assertEquals(signed, restoredSigned)
+            assertEquals(signed.reportProblems(), restoredSigned.reportProblems())
+            assertEquals(MatchStatus.CONFIRMED, restoredSigned.status)
+
+            // The player who was added at the pitch, with the date of birth
+            // the old table insisted on, is still there with it.
+            val players =
+                afterTheUpdateIn(database) { SqlDelightAddedPlayerRepository(it).forMatch(inProgress.id) }
+            assertEquals(listOf(addedAtThePitch), players)
+        }
+
+    @Test
+    fun aReportWrittenBeforeCaptainsIsExportedWithOnlyNewFieldsEmpty() =
+        runTest {
+            val database = databaseAtVersion(6)
+            val signed =
+                oldMatch(
+                    "m-signed",
+                    MatchStatus.CONFIRMED,
+                    listOf(lineupTapHome, signedAwayAtTheRecap, signedByTheReferee),
+                )
+            beforeTheUpdate(database) { it.save(signed) }
+
+            val restored = assertNotNull(afterTheUpdate(database) { it.load(signed.id) })
+
+            val build = BuildZouReport(CompleteReport.league(), NoAddedPlayers())
+            val before = assertNotNull(build(signed))
+            val after = assertNotNull(build(restored))
+            assertEquals(before, after)
+            // The new fields exist, and are empty: no captain, no goalkeeper,
+            // no confirmation under either lineup.
+            after.lineups.forEach { lineup ->
+                assertNull(lineup.confirmation)
+                assertTrue(lineup.rows.none { it.captain || it.goalkeeper })
+            }
+            assertContains(ZouText.format(after), "${ZouLabels.Lineup.CAPTAIN_BEFORE_KICKOFF}: ${ZouWords.NOT_GIVEN}")
+        }
+
+    private val lineupTapHome =
+        Confirmation(ConfirmingParty.HOME_CAPTAIN, Instant.parse("2026-08-31T18:50:00Z"), PersonName.of("Novak"), false)
+
+    private val lineupTapAwayByADeputy =
+        Confirmation(ConfirmingParty.AWAY_CAPTAIN, Instant.parse("2026-08-31T18:52:00Z"), PersonName.of("Lepis"), true)
+
+    private val signedAwayAtTheRecap =
+        Confirmation(ConfirmingParty.AWAY_CAPTAIN, Instant.parse("2026-08-31T20:55:00Z"), PersonName.of("Lepis"), false)
+
+    private val signedByTheReferee =
+        Confirmation(ConfirmingParty.REFEREE, Instant.parse("2026-08-31T21:00:00Z"), PersonName.of("Jiri Vlk"), false)
+
+    /**
+     * A match as 0.2.1 wrote it: the shared lineups, kickoff at 19:00, no
+     * goals or cards (their ids would have to be unique per match as well),
+     * and the confirmations it was given. Appearance ids are made unique,
+     * because `appearance_record` is keyed on the id alone.
+     */
+    private fun oldMatch(
+        id: String,
+        status: MatchStatus,
+        confirmations: List<Confirmation>,
+    ): Match {
+        fun Lineup.unique() = copy(appearances = appearances.map { it.copy(id = AppearanceId("$id-${it.id.value}")) })
+        return Match(
+            id = MatchId(id),
+            fixtureId = Fixtures.fixtureId,
+            groupId = Fixtures.groupId,
+            status = status,
+            officials = Fixtures.officials,
+            homeLineup = Fixtures.homeLineup.unique(),
+            awayLineup = Fixtures.awayLineup.unique(),
+            kickoffAt = Instant.parse("2026-08-31T19:00:00Z"),
+            confirmations = confirmations,
+        )
+    }
+
+    /** Who 0.2.1 could write: a name and the date of birth, which its table insisted on. */
+    private fun pitchAddedPlayer(): Player =
+        Player.addedAtThePitch(
+            id = PlayerId("added-1"),
+            ref = "pitch-added-1",
+            teamId = Fixtures.homeTeamId,
+            name = PlayerName(PersonName.of("Hlok"), PersonName.of("Petr")),
+            dateOfBirth = LocalDate(1999, 1, 21),
+        )
+
+    /** What the lineup screen would build from the match as it now reads. */
+    private suspend fun presenceOf(match: Match): LineupEntry =
+        assertNotNull(
+            BuildLineupEntry(
+                CompleteReport.league(),
+                NoAddedPlayers(),
+                FakeRememberedDateOfBirthRepository(),
+                FakeRememberedCardNumberRepository(),
+            ) { "id" }(match),
+        )
+
     @Test
     fun theSnapshottedColumnsSurviveAndAreNotRederived() =
         runTest {
@@ -352,6 +573,7 @@ class SchemaMigrationTest {
             assertContains(tableNames(database), "followed_team")
             assertContains(tableNames(database), "jersey_override")
             assertContains(tableNames(database), "remembered_date_of_birth")
+            assertContains(tableNames(database), "remembered_card_number")
         }
 
     /**

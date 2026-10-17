@@ -5,6 +5,142 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-17 · The lineup, as built: who came, two roles, the number from the card, one tap (prompt 13, Part 2)
+
+**The session's calls, carrying out the owner's and my entries below.** The
+five the prompt asked for come first.
+
+**1. Rows do not move when marked, and it costs height.** A row that opened
+under the thumb would push the next name away after every tap, so every row
+lays out the same controls -- the jersey field, the card-number field, the
+"no card" button -- and an unmarked one draws them disabled and invisible
+rather than leaving a gap. (Drawn, not given a reserved height: a height that
+is right at one font scale is wrong at the next. A test measures it at 1.0 and
+at 1.5.) The price is a squad row about 160 dp tall whether or not it came, so
+twenty names are about 3,200 dp; the count is pinned at the top so it stays in
+view the whole way. "Nemá průkaz" is the same thumb one control over, and it
+must not move the next name either, so the two fields a row can ask for each
+carry one line of supporting text -- *z průkazu, 4–7 číslic* under the card
+number, *např. 18.5.1992* (then the date as it read it) under the date of
+birth -- and each is short enough to stay one line at 360 dp, where a hint a
+few characters longer took a second line and the row grew by it (a test sets
+it at that width and fails by one line when the hint is lengthened). A very
+large system font can still wrap one of them. The compact form of a date
+(`18051992`) is still read and is no longer advertised: the longer hint is
+what wrapped. **Reverses if** a referee finds the blank space
+worse than the jump, in which case rows open and the list scrolls to keep the
+next name where it was: the thing this ruled out.
+
+**2. The captain and the goalkeeper are two pick-lists, not a mark on every
+row.** Each lists the players marked present and nobody else, and one person
+may be both. Marking each row would have put two more controls in the rows the
+referee is working down. Taking a player's mark back vacates a role they held,
+so a role is never held by someone who did not come. Both are needed before a
+team's block is written, named in the problems list with the team's name.
+
+**3. How the paper form marks them is not known, so the report says it in
+words.** The TXT writes `(kapitán)`, `(brankář)` or `(kapitán, brankář)` after
+the name; the CSV has a column for each, `ano` or blank; the JSON has
+`captain` and `goalkeeper` booleans. The captain is the first row, then the
+goalkeeper, then the rest by jersey number, and one person who is both is one
+row. A photograph of a real form (TODO) decides whether the words stay.
+
+**4. A number from a card is four to seven digits.** Five is what every
+example on the form has; a date of birth is six, and a typed number can be
+told apart from one by its kind (below) rather than its length. Under four
+is likelier a jersey number typed into the wrong box than a card number, and
+the field beside it is the jersey. Over seven is refused by no one: a real
+number a digit or two longer than the examples must not be turned away at the
+pitch by an app that guessed. Spaces are dropped (`59 001`); a letter, a dot or
+a dash is not a number from a card. No length check can tell a wrong digit from
+a right one, so the field says only the rule, in the line under it (*z průkazu,
+4–7 číslic*), and draws it red when what was typed is not that; the rule is in
+words because a colour alone is not read by everyone.
+**Reverses if** PSMF's numbering turns out to be shorter or longer than this.
+
+**5. The upgrade does not invent, and does not undo.** Version 6 → 7
+(`6.sqm`, `SchemaMigrationTest`, three matches built the way 0.2.1 wrote them):
+
+- **Presence:** nothing changes and nothing is lost. A saved lineup only ever
+  held the players who were present, so the switch from marking who stayed away
+  to marking who came reads the same rows.
+- **Captain and goalkeeper:** `NULL` for every lineup already written, and a
+  lineup read back says so. An upgrade does not give a report a captain nobody
+  marked.
+- **Confirmations -- the one that needed a call.** 0.2.1 had one record per
+  captain, written by the lineup's tap and by the recap's signature alike. For
+  a match **not yet CONFIRMED**, a captain's confirmation made before kickoff,
+  or on a match whose whistle never went, can only have been the lineup's tap:
+  it moves to its lineup with its name, its time and its deputy mark, and the
+  recap asks that captain again. For a match that **is CONFIRMED** nothing
+  moves: it was signed under the old rules, its export must say what it said,
+  and taking a signature from a finished report is rewriting it. A confirmation
+  with no lineup to move to is left alone. **Reverses if** the lift is judged
+  riskier than leaving them: it is one `UPDATE` and one `DELETE` in `6.sqm`.
+- **Pitch-added players:** the table is rebuilt so a date of birth may be
+  absent, rows and all.
+- **What the export says:** the same, plus new fields. The captain's
+  confirmation under each lineup, and the roles, are empty. The *kind* of each
+  row's number is present and true, because it comes from a stored column that
+  has always been there; a literal reading of "only new fields that are empty"
+  would drop it, and it would then be absent from exactly the reports where it
+  is most useful.
+
+**The number from the card.**
+
+- It lives on the appearance as what was written that day
+  (`IdentificationSource.RP_TYPED`). It never becomes the player's `RpNumber`,
+  is never written into league data or `jersey_override`, and nothing presents
+  it as PSMF's record: the lineup shows a league number as read-only text and a
+  typed one as an input. `RememberedCardNumberTest` and the model both keep it
+  so: `Player.addedAtThePitch` has no parameter for a number, and the typed
+  one is a `ReportedIdentification`, which is not an `RpNumber`.
+- Remembered on the device for the next match, as the date of birth is
+  (`remembered_card_number`): typed once, offered next time, editable, and a
+  row already written keeps what it wrote even if the remembered one changes.
+- **No rodné číslo** as a field, a hint or a label, in the screen or in the
+  export. The old `BIRTH_NUMBER` source still exists in the model for
+  A28's sake and is exported as "other"; nothing produces it.
+- JSON and CSV say which of three each value is: the league's RP, the RP as
+  typed, or the date of birth (`rp_league`, `rp_typed`, `date_of_birth`; the
+  CSV in Czech). The TXT keeps the form's single column.
+
+**"Nemá průkaz" turns the same row to the date of birth.** With a card, and no
+number from the league, the row asks for the number; with no card, it shows the
+league's own date of birth if there is one and asks for it if there is not. A
+player the league has an RP number for shows it, read-only, until they say they
+have no card.
+
+**Adding a player takes surname, first name, and the number from the card or,
+with a switch for no card, the date of birth.** Their record may now have no
+date of birth, because the number is the appearance's. Adding works on the
+entry the screen holds and not on one rebuilt from the database: a block is
+only written once it is whole, so a referee who has marked eight players and
+not yet chosen a captain has marks that exist nowhere else.
+
+**The captain's tap under the lineup is its own record.** "Potvrzuje <name>",
+no picking and no deputy switch, written on the lineup with its real time --
+late or not -- and **not** counted as the signature under the finished report.
+A different captain withdraws it: it said that the person who was captain then
+confirmed this lineup. A later change to the lineup does not withdraw it, as a
+late player added to the paper after it was signed does not either.
+`LineupNotConfirmed` is listed by the export, like every problem it lists, so
+it **does stop the report being sent** until the tap is given -- and it never
+stops anyone starting the match. It is raised only for a lineup that has a
+marked captain: an older one has nobody it could be waiting for, and a report
+that was fine to send must not stop being so because the app learned a rule.
+**Reverses if** a missing tap should be a warning and not a block on sending.
+
+**Marks are written once the block is whole.** Presence, a captain, a
+goalkeeper and an answer in every row's `Číslo RP`. Until then the marks live
+on the screen, as a duplicate jersey number always did. Killing the app between
+the first tap and the last loses them, which is a minute's work and nothing a
+captain has signed.
+
+**Reverses if** none of the above; each has its own condition.
+
+---
+
 ## 2026-10-17 · The keyboard goes away, and the way back is always there (prompt 13, Part 1)
 
 **Mine, the session's calls on the tester's points 1 and 2.** Both were

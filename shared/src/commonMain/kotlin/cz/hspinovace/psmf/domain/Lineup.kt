@@ -1,6 +1,7 @@
 package cz.hspinovace.psmf.domain
 
 import kotlinx.serialization.Serializable
+import kotlin.time.Instant
 
 /**
  * One player in one lineup: a single row of a team's block on page 1.
@@ -74,10 +75,35 @@ data class Lineup(
      * needs to know *which* kit is selected. The report never asks.
      */
     val kitLabel: String,
+    /**
+     * The one captain of this team in this match, among [appearances], and
+     * the one goalkeeper, who may be the same person.
+     *
+     * **Null on a lineup written before 0.3.0, and never filled in for one**
+     * (DECISIONS 2026-10-17): older reports have no captain or goalkeeper
+     * and must not be given one by an upgrade. A lineup the app writes now
+     * has both, because a block without them is not saved.
+     */
+    val captain: AppearanceId? = null,
+    val goalkeeper: AppearanceId? = null,
+    /**
+     * The captain's confirmation under the lineup, *before kickoff*
+     * (*podpis kapitána před zahájením utkání*). **Not the captain's
+     * signature under the finished report** -- that is a [Confirmation] on
+     * the match, and the two are separate records because the form has them
+     * sign twice. A late one is allowed and carries its real time.
+     */
+    val confirmation: LineupConfirmation? = null,
 ) {
     init {
         require(kitLabel.isNotBlank()) {
             "Barva dresů cannot be blank: the ZoU cannot be generated without it."
+        }
+        require(captain == null || appearance(captain) != null) {
+            "The captain is not in this lineup."
+        }
+        require(goalkeeper == null || appearance(goalkeeper) != null) {
+            "The goalkeeper is not in this lineup."
         }
         val duplicateNumbers =
             appearances
@@ -138,6 +164,9 @@ data class Lineup(
             teamId: TeamId,
             appearances: List<Appearance>,
             kit: Kit,
+            captain: AppearanceId? = null,
+            goalkeeper: AppearanceId? = null,
+            confirmation: LineupConfirmation? = null,
         ): Lineup =
             Lineup(
                 side = side,
@@ -145,6 +174,24 @@ data class Lineup(
                 appearances = appearances,
                 kitId = kit.id,
                 kitLabel = kit.label,
+                captain = captain,
+                goalkeeper = goalkeeper,
+                confirmation = confirmation,
             )
     }
 }
+
+/**
+ * The captain's one tap under a team's lineup: who confirmed, and when.
+ *
+ * The name is the marked captain's, as it stands on the report -- nobody is
+ * picked from a list at this step. [asDeputy] is only ever true for one read
+ * back from a report written before 0.3.0, which let a deputy sign and keeps
+ * its `(zást.)` (DECISIONS 2026-10-17); nothing offers it now.
+ */
+@Serializable
+data class LineupConfirmation(
+    val at: Instant,
+    val by: PersonName,
+    val asDeputy: Boolean = false,
+)

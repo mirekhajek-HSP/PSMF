@@ -1,10 +1,17 @@
 package cz.hspinovace.psmf.usecase
 
+import cz.hspinovace.psmf.domain.Appearance
+import cz.hspinovace.psmf.domain.AppearanceId
 import cz.hspinovace.psmf.domain.Fixtures
+import cz.hspinovace.psmf.domain.IdentificationSource
 import cz.hspinovace.psmf.domain.JerseyNumber
+import cz.hspinovace.psmf.domain.Lineup
+import cz.hspinovace.psmf.domain.LineupConfirmation
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
+import cz.hspinovace.psmf.domain.PersonName
 import cz.hspinovace.psmf.domain.PlayerOrigin
+import cz.hspinovace.psmf.domain.ReportedIdentification
 import cz.hspinovace.psmf.domain.TeamSide
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -13,31 +20,40 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import kotlin.time.Instant
 
 private fun match() = Match(MatchId("m1"), Fixtures.fixtureId, Fixtures.groupId)
 
 /**
- * Building the editable lineup, and — the half that bites — rebuilding it
+ * Building the editable lineup, and -- the half that bites -- rebuilding it
  * from what was saved.
  *
- * A stored `Lineup` holds only the players who turned up, so absence on
- * the way back in is "not in the saved lineup". Reading that backwards
- * would mark a full squad absent the second time the screen opened.
+ * A stored `Lineup` holds only the players who turned up, so a player is
+ * present exactly when the saved lineup has them. Reading that wrongly would
+ * lose the marks the referee gave on the second visit to the screen.
  */
 class BuildLineupEntryTest {
     private var minted = 0
 
-    private fun build(added: FakeAddedPlayerRepository = FakeAddedPlayerRepository()) =
-        BuildLineupEntry(TestLeague.repository(), added, FakeRememberedDateOfBirthRepository()) { "id-${++minted}" }
+    private fun build(
+        added: FakeAddedPlayerRepository = FakeAddedPlayerRepository(),
+        numbers: FakeRememberedCardNumberRepository = FakeRememberedCardNumberRepository(),
+    ) = BuildLineupEntry(TestLeague.repository(), added, FakeRememberedDateOfBirthRepository(), numbers) {
+        "id-${++minted}"
+    }
 
     @Test
-    fun aFreshMatchStartsWithEverybodyPresent() =
+    fun aFreshMatchStartsWithNobodyPresent() =
         runTest {
+            // DECISIONS 2026-10-17: the lineup marks who came.
             val entry = assertNotNull(build()(match()))
 
-            assertEquals(TestLeague.homeSquad.size, entry.home.present.size)
-            assertEquals(0, entry.home.absentCount)
-            assertEquals(0, entry.away.absentCount)
+            assertEquals(TestLeague.homeSquad.size, entry.home.members.size)
+            assertEquals(0, entry.home.present.size)
+            assertEquals(0, entry.away.present.size)
+            assertNull(entry.home.captain)
+            assertNull(entry.home.goalkeeper)
+            assertNull(entry.home.confirmation)
         }
 
     @Test
@@ -60,30 +76,91 @@ class BuildLineupEntryTest {
         }
 
     @Test
-    fun reopeningARecordedLineupMarksTheMissingPlayersAbsent() =
+    fun reopeningARecordedLineupHasExactlyThePlayersWhoWerePresent() =
         runTest {
-            // THE TRAP. Read this backwards and a full squad comes back
-            // marked absent on the second visit to the screen.
-            val absentee = TestLeague.homeSquad.first()
+            val came = TestLeague.homeSquad.first()
+            val first = assertNotNull(build()(match()))
+            val saved =
+                assertNotNull(
+                    first.home
+                        .everyoneCame(captain = came.id, goalkeeper = came.id)
+                        .withPresence(TestLeague.homeSquad.last().id, false)
+                        .toLineup(),
+                )
+
+            val entry = assertNotNull(build()(match().copy(homeLineup = saved)))
+
+            assertEquals(TestLeague.homeSquad.size - 1, entry.home.present.size)
+            assertFalse(
+                entry.home.members
+                    .single { it.player.id == TestLeague.homeSquad.last().id }
+                    .present,
+            )
+            // The other team was never recorded, so nobody there is marked.
+            assertEquals(0, entry.away.present.size)
+        }
+
+    @Test
+    fun theCaptainTheGoalkeeperAndTheConfirmationComeBackWithTheLineup() =
+        runTest {
+            val captain = TestLeague.homeSquad[0]
+            val goalkeeper = TestLeague.homeSquad[1]
+            val confirmation =
+                LineupConfirmation(Instant.parse("2026-10-17T17:05:00Z"), PersonName.of(captain.name.asWrittenOnReport))
             val saved =
                 assertNotNull(
                     build()(match())!!
                         .home
-                        .withMember(absentee.id) { it.copy(absent = true) }
+                        .everyoneCame(captain = captain.id, goalkeeper = goalkeeper.id)
+                        .copy(confirmation = confirmation)
                         .toLineup(),
                 )
-            val recorded = match().copy(homeLineup = saved)
 
-            val entry = assertNotNull(build()(recorded))
+            val entry = assertNotNull(build()(match().copy(homeLineup = saved)))
 
-            assertTrue(
-                entry.home.members
-                    .single { it.player.id == absentee.id }
-                    .absent,
+            assertEquals(captain.id, entry.home.captain)
+            assertEquals(goalkeeper.id, entry.home.goalkeeper)
+            assertEquals(confirmation, entry.home.confirmation)
+        }
+
+    @Test
+    fun aLineupWrittenBeforeThisVersionHasNoCaptainAndIsNotGivenOne() =
+        runTest {
+            // DECISIONS 2026-10-17: older reports have no captain or goalkeeper
+            // and must not be given one. Read back, the entry says so, and the
+            // referee is asked for both the next time the block is saved.
+            val who = TestLeague.homeSquad.first()
+            val old =
+                Lineup(
+                    side = TeamSide.HOME,
+                    teamId = Fixtures.homeTeamId,
+                    appearances =
+                        listOf(
+                            Appearance(
+                                AppearanceId("old-1"),
+                                who.id,
+                                JerseyNumber(9),
+                                ReportedIdentification("900615", IdentificationSource.DATE_OF_BIRTH),
+                            ),
+                        ),
+                    kitId = Fixtures.homePrimaryKit.id,
+                    kitLabel = Fixtures.homePrimaryKit.label,
+                )
+
+            val entry = assertNotNull(build()(match().copy(homeLineup = old)))
+
+            // Present: it only ever held the players who were there.
+            assertEquals(listOf(who.id), entry.home.present.map { it.player.id })
+            assertNull(entry.home.captain)
+            assertNull(entry.home.goalkeeper)
+            assertEquals(
+                listOf(LineupProblem.NoCaptain(TeamSide.HOME), LineupProblem.NoGoalkeeper(TeamSide.HOME)),
+                entry.home.problems(),
             )
-            assertEquals(TestLeague.homeSquad.size - 1, entry.home.present.size)
-            // The other team was never recorded, so it is still all present.
-            assertEquals(0, entry.away.absentCount)
+            // And what the old row wrote stands: a date of birth, with no card.
+            val row = entry.home.members.single { it.player.id == who.id }
+            assertEquals("900615", row.identification?.value)
+            assertFalse(row.registrationCardPresent)
         }
 
     @Test
@@ -92,7 +169,7 @@ class BuildLineupEntryTest {
             // Goals and cards are attributed to an appearance id. Minting a
             // new one on reload would orphan every event of the first half.
             val first = assertNotNull(build()(match()))
-            val saved = assertNotNull(first.home.toLineup())
+            val saved = assertNotNull(first.home.everyoneCame().toLineup())
             val recorded = match().copy(homeLineup = saved)
 
             val second = assertNotNull(build()(recorded))
@@ -110,6 +187,7 @@ class BuildLineupEntryTest {
                 assertNotNull(
                     build()(match())!!
                         .home
+                        .everyoneCame()
                         .withMember(player.id) { it.copy(jerseyNumber = JerseyNumber(77)) }
                         .toLineup(),
                 )
@@ -125,7 +203,7 @@ class BuildLineupEntryTest {
         }
 
     @Test
-    fun aPitchAddedPlayerJoinsTheSquadOfTheirOwnTeam() =
+    fun aPitchAddedPlayerJoinsTheSquadOfTheirOwnTeamButIsNotMarkedPresent() =
         runTest {
             val added = FakeAddedPlayerRepository()
             val player = assertNotNull(AddPlayerAtThePitch(added) { "added-1" }(match(), request()))
@@ -134,11 +212,12 @@ class BuildLineupEntryTest {
 
             assertTrue(entry.home.members.any { it.player.id == player.id })
             assertFalse(entry.away.members.any { it.player.id == player.id })
-            // Present by default, like everyone else -- they are standing there.
+            // Like everyone else: present when they are marked, and not
+            // before. Adding them *to the lineup* is what marks them.
             assertFalse(
                 entry.home.members
                     .single { it.player.id == player.id }
-                    .absent,
+                    .present,
             )
         }
 
@@ -159,11 +238,15 @@ class BuildLineupEntryTest {
 private fun request(
     firstName: String = "Petr",
     surname: String = "Hlok",
+    cardNumber: String = "59123",
+    noCard: Boolean = false,
     dateOfBirth: String = "21.1.1999",
 ) = NewPlayerRequest(
     teamId = Fixtures.homeTeamId,
     firstName = firstName,
     surname = surname,
+    cardNumber = cardNumber,
+    noCard = noCard,
     dateOfBirth = dateOfBirth,
 )
 
@@ -172,8 +255,12 @@ private fun request(
  *
  * RP numbers are issued by PSMF. There is no parameter for one on
  * [NewPlayerRequest], none on [AddPlayerAtThePitch], and none on
- * `Player.addedAtThePitch` — so there is no path from a keyboard to an
+ * `Player.addedAtThePitch` -- so there is no path from a keyboard to an
  * `RpNumber` anywhere in the app, and this test is what keeps it that way.
+ *
+ * What the referee copies from the player's card is not that: it is written
+ * on the appearance, as what was written that day, and the player record
+ * never sees it.
  */
 class AddPlayerAtThePitchTest {
     private var minted = 0
@@ -182,7 +269,7 @@ class AddPlayerAtThePitchTest {
         AddPlayerAtThePitch(repository) { "added-${++minted}" }
 
     @Test
-    fun addsAPlayerWithANamenAndADateOfBirthAndNothingElse() =
+    fun addsAPlayerWithANameAndNothingElseOnTheirRecordWhenTheyHaveACard() =
         runTest {
             val repository = FakeAddedPlayerRepository()
 
@@ -192,8 +279,20 @@ class AddPlayerAtThePitchTest {
             assertEquals(PlayerOrigin.ADDED_AT_PITCH, player.origin)
             assertNull(player.rpNumber)
             assertNull(player.birthNumber)
+            // The number from the card is the appearance's, not this record's.
+            assertNull(player.dateOfBirth)
+        }
+
+    @Test
+    fun withNoCardTheDateOfBirthIsKeptAsTheOnlyIdentificationTheyHave() =
+        runTest {
+            val repository = FakeAddedPlayerRepository()
+
+            val player = assertNotNull(addPlayer(repository)(match(), request(noCard = true)))
+
             // The worked example's row: 990121 among five-digit RP numbers.
-            assertEquals("990121", player.identificationFor(registrationCardPresent = true)?.value)
+            assertEquals("990121", player.identificationFor(registrationCardPresent = false)?.value)
+            assertNull(player.rpNumber)
         }
 
     @Test
@@ -228,17 +327,25 @@ class AddPlayerAtThePitchTest {
             val repository = FakeAddedPlayerRepository()
 
             assertNull(addPlayer(repository)(match(), request(surname = "")))
-            assertNull(addPlayer(repository)(match(), request(dateOfBirth = "nonsense")))
+            assertNull(addPlayer(repository)(match(), request(cardNumber = "12")))
+            assertNull(addPlayer(repository)(match(), request(noCard = true, dateOfBirth = "nonsense")))
             assertEquals(emptyList(), repository.forMatch(MatchId("m1")))
         }
 
     @Test
     fun theFormReportsProblemsInTheOrderItShowsTheFields() {
         assertEquals(
-            listOf(NewPlayerProblem.SURNAME, NewPlayerProblem.FIRST_NAME, NewPlayerProblem.DATE_OF_BIRTH),
+            listOf(NewPlayerProblem.SURNAME, NewPlayerProblem.FIRST_NAME, NewPlayerProblem.CARD_NUMBER),
             NewPlayerRequest(teamId = Fixtures.homeTeamId).problems(),
         )
+        // With no card the date of birth is what is asked for instead -- and
+        // the number, which is no longer wanted, is not nagged about.
+        assertEquals(
+            listOf(NewPlayerProblem.SURNAME, NewPlayerProblem.FIRST_NAME, NewPlayerProblem.DATE_OF_BIRTH),
+            NewPlayerRequest(teamId = Fixtures.homeTeamId, noCard = true).problems(),
+        )
         assertTrue(request().problems().isEmpty())
+        assertTrue(request(noCard = true).problems().isEmpty())
     }
 
     @Test
@@ -261,10 +368,11 @@ class SaveLineupTest {
                 TestLeague.repository(),
                 FakeAddedPlayerRepository(),
                 FakeRememberedDateOfBirthRepository(),
+                FakeRememberedCardNumberRepository(),
             ) {
                 "id-${++minted}"
             }(match),
-        )
+        ).everyoneCame()
 
     @Test
     fun aValidBlockIsWrittenThroughImmediately() =
@@ -299,6 +407,20 @@ class SaveLineupTest {
         }
 
     @Test
+    fun aBlockWithNoCaptainOrNoGoalkeeperIsNotWrittenEither() =
+        runTest {
+            val matches = FakeMatchRepository(listOf(match()))
+            val entry = entryFor(match())
+
+            val noCaptain = SaveLineup(matches)(match(), entry.home.withCaptain(null))
+            val noGoalkeeper = SaveLineup(matches)(match(), entry.home.copy(goalkeeper = null))
+
+            assertNull(noCaptain.homeLineup)
+            assertNull(noGoalkeeper.homeLineup)
+            assertEquals(0, matches.saves)
+        }
+
+    @Test
     fun theTwoTeamsAreWrittenIndependently() =
         runTest {
             val matches = FakeMatchRepository(listOf(match()))
@@ -316,11 +438,14 @@ class SaveLineupTest {
 /**
  * RULE: **a player added at the pitch is present, whenever they are added.**
  *
- * Absence is derived from "not in the saved lineup", which cannot tell
- * somebody who did not turn up from somebody who was added after the
- * lineup was saved. Every earlier test added a player to a match with no
- * lineup recorded yet — the one case where the ambiguity cannot arise —
- * which is exactly why a device found this and they did not.
+ * A player is present when the saved lineup has them, and somebody who has
+ * just been typed in is in no saved lineup. Every earlier test added a player
+ * to a match with no lineup recorded yet -- the one case where nothing is
+ * saved to disagree with -- which is why a device found this and they did not.
+ *
+ * And **adding works on what the screen holds**, because a block is only
+ * written once it is whole: a referee who has marked eight players and not
+ * named a captain has marks that are nowhere but on the screen.
  */
 class AddPlayerToLineupTest {
     private var minted = 0
@@ -330,71 +455,120 @@ class AddPlayerToLineupTest {
         added: FakeAddedPlayerRepository,
     ): AddPlayerToLineup {
         val newId = NewId { "id-${++minted}" }
-        val build = BuildLineupEntry(TestLeague.repository(), added, FakeRememberedDateOfBirthRepository(), newId)
-        return AddPlayerToLineup(AddPlayerAtThePitch(added, newId), build, SaveLineup(matches))
+        return AddPlayerToLineup(AddPlayerAtThePitch(added, newId), SaveLineup(matches), newId)
     }
 
-    private suspend fun matchWithAnAbsence(matches: FakeMatchRepository): Match {
-        val added = FakeAddedPlayerRepository()
-        val entry =
-            assertNotNull(
-                BuildLineupEntry(TestLeague.repository(), added, FakeRememberedDateOfBirthRepository()) {
-                    "seed-${++minted}"
-                }(match()),
-            )
-        val withAbsence =
-            entry.home.withMember(TestLeague.homeSquad.first().id) { it.copy(absent = true) }
-        return SaveLineup(matches)(match(), withAbsence)
-    }
+    private suspend fun entryFor(added: FakeAddedPlayerRepository = FakeAddedPlayerRepository()) =
+        assertNotNull(
+            BuildLineupEntry(
+                TestLeague.repository(),
+                added,
+                FakeRememberedDateOfBirthRepository(),
+                FakeRememberedCardNumberRepository(),
+            ) {
+                "seed-${++minted}"
+            }(match()),
+        )
 
     @Test
-    fun aPlayerAddedAfterTheLineupWasSavedIsStillPresent() =
+    fun aPlayerAddedAfterTheLineupWasSavedIsPresent() =
         runTest {
-            // THE BUG. Marking two absences saves a lineup; the player added
-            // next was not in it, so the rebuild called them absent.
             val matches = FakeMatchRepository(listOf(match()))
             val added = FakeAddedPlayerRepository()
-            val started = matchWithAnAbsence(matches)
+            val team = entryFor(added).home.everyoneCame()
+            val started = SaveLineup(matches)(match(), team)
 
-            val updated = assertNotNull(useCase(matches, added)(started, request()))
+            val result = assertNotNull(useCase(matches, added)(started, team, request()))
 
             val player = added.forMatch(MatchId("m1")).single()
-            val entry =
+            assertTrue(
+                result.team.members
+                    .single { it.player.id == player.id }
+                    .present,
+            )
+            // Written through: the lineup a restart reads has them in it.
+            val reopened =
                 assertNotNull(
                     BuildLineupEntry(
                         TestLeague.repository(),
                         added,
                         FakeRememberedDateOfBirthRepository(),
-                    ) { "x" }(updated),
+                        FakeRememberedCardNumberRepository(),
+                    ) { "x" }(result.match),
                 )
-            val member = entry.home.members.single { it.player.id == player.id }
-            assertFalse(member.absent, "A player added at the pitch came back marked absent")
+            val member = reopened.home.members.single { it.player.id == player.id }
+            assertTrue(member.present, "A player added at the pitch came back unmarked")
             assertTrue(member.addedAtThePitch)
         }
 
     @Test
-    fun theAbsenceThatWasAlreadyRecordedIsNotUndone() =
+    fun marksThatAreNotSavedYetSurviveAddingSomebody() =
+        runTest {
+            // THE REASON IT WORKS ON THE SCREEN'S ENTRY. Two players marked, no
+            // captain yet, so nothing is on disk -- and adding a third must
+            // not throw the two away by rebuilding from a disk that has none.
+            val matches = FakeMatchRepository(listOf(match()))
+            val added = FakeAddedPlayerRepository()
+            val first = TestLeague.homeSquad[0]
+            val second = TestLeague.homeSquad[1]
+            val marked = entryFor(added).home.withPresence(first.id, true).withPresence(second.id, true)
+
+            val result = assertNotNull(useCase(matches, added)(match(), marked, request()))
+
+            assertEquals(3, result.team.present.size)
+            assertTrue(
+                result.team.members
+                    .single { it.player.id == first.id }
+                    .present,
+            )
+            assertTrue(
+                result.team.members
+                    .single { it.player.id == second.id }
+                    .present,
+            )
+            // Nothing was whole, so nothing was written.
+            assertNull(result.match.homeLineup)
+            assertEquals(0, matches.saves)
+        }
+
+    @Test
+    fun theNumberFromTheCardGoesOnTheAppearanceAndNeverOnThePlayer() =
         runTest {
             val matches = FakeMatchRepository(listOf(match()))
             val added = FakeAddedPlayerRepository()
-            val started = matchWithAnAbsence(matches)
-            val absentee = TestLeague.homeSquad.first()
+            val team = entryFor(added).home.everyoneCame()
+            val started = SaveLineup(matches)(match(), team)
 
-            val updated = assertNotNull(useCase(matches, added)(started, request()))
+            val result = assertNotNull(useCase(matches, added)(started, team, request(cardNumber = "59 123")))
 
-            val entry =
-                assertNotNull(
-                    BuildLineupEntry(
-                        TestLeague.repository(),
-                        added,
-                        FakeRememberedDateOfBirthRepository(),
-                    ) { "x" }(updated),
-                )
-            assertTrue(
-                entry.home.members
-                    .single { it.player.id == absentee.id }
-                    .absent,
-            )
+            val player = added.forMatch(MatchId("m1")).single()
+            assertNull(player.rpNumber)
+            assertNull(player.dateOfBirth)
+            val written =
+                assertNotNull(result.match.homeLineup)
+                    .appearances
+                    .single { it.playerId == player.id }
+                    .reportedIdentification
+            assertEquals(ReportedIdentification("59123", IdentificationSource.RP_TYPED), written)
+        }
+
+    @Test
+    fun withNoCardTheDateOfBirthIsWhatTheAppearanceWrites() =
+        runTest {
+            val matches = FakeMatchRepository(listOf(match()))
+            val added = FakeAddedPlayerRepository()
+            val team = entryFor(added).home.everyoneCame()
+            val started = SaveLineup(matches)(match(), team)
+
+            val result = assertNotNull(useCase(matches, added)(started, team, request(noCard = true)))
+
+            val player = added.forMatch(MatchId("m1")).single()
+            val written =
+                assertNotNull(result.match.homeLineup)
+                    .appearances
+                    .single { it.playerId == player.id }
+                    .reportedIdentification
+            assertEquals(ReportedIdentification("990121", IdentificationSource.DATE_OF_BIRTH), written)
         }
 
     @Test
@@ -402,21 +576,32 @@ class AddPlayerToLineupTest {
         runTest {
             val matches = FakeMatchRepository(listOf(match()))
             val added = FakeAddedPlayerRepository()
-            val started = matchWithAnAbsence(matches)
+            val team = entryFor(added).home.everyoneCame()
 
-            assertNull(useCase(matches, added)(started, request(surname = "")))
+            assertNull(useCase(matches, added)(match(), team, request(surname = "")))
+            assertEquals(emptyList(), added.forMatch(MatchId("m1")))
+        }
+
+    @Test
+    fun aRequestForTheOtherTeamIsRefused() =
+        runTest {
+            val matches = FakeMatchRepository(listOf(match()))
+            val added = FakeAddedPlayerRepository()
+            val away = entryFor(added).away
+
+            assertNull(useCase(matches, added)(match(), away, request()))
             assertEquals(emptyList(), added.forMatch(MatchId("m1")))
         }
 }
 
 /**
- * RULE: **Continue commits both blocks, including the one nobody touched.**
+ * RULE: **Continue commits both blocks, including the one nobody touched
+ * since it was last written.**
  *
- * Write-through happens on edit, and a team with nobody absent and every
- * number already right is never edited. Without this its block is never
- * written, and the console opens with nobody on that side to tap — which
- * is exactly what a device showed and what every earlier test missed,
- * because each of them saved the side it was asserting on.
+ * Write-through happens on edit. Without this the console opens with nobody
+ * on a side whose block was never written -- which is exactly what a device
+ * showed and what every earlier test missed, because each of them saved the
+ * side it was asserting on.
  */
 class SaveBothLineupsTest {
     private var minted = 0
@@ -427,6 +612,7 @@ class SaveBothLineupsTest {
                 TestLeague.repository(),
                 FakeAddedPlayerRepository(),
                 FakeRememberedDateOfBirthRepository(),
+                FakeRememberedCardNumberRepository(),
             ) {
                 "id-${++minted}"
             }(match),
@@ -436,7 +622,7 @@ class SaveBothLineupsTest {
     fun bothBlocksAreWrittenEvenWhenNeitherWasEdited() =
         runTest {
             val matches = FakeMatchRepository(listOf(match()))
-            val entry = entryFor(match())
+            val entry = entryFor(match()).everyoneCame()
 
             val updated = SaveLineup(matches)(match(), entry)
 
@@ -446,10 +632,10 @@ class SaveBothLineupsTest {
         }
 
     @Test
-    fun everyPlayerIsInTheirBlockBecauseNobodyWasMarkedAbsent() =
+    fun everyPlayerWhoCameIsInTheirBlock() =
         runTest {
             val matches = FakeMatchRepository(listOf(match()))
-            val updated = SaveLineup(matches)(match(), entryFor(match()))
+            val updated = SaveLineup(matches)(match(), entryFor(match()).everyoneCame())
 
             assertEquals(TestLeague.homeSquad.size, updated.homeLineup?.appearances?.size)
             assertEquals(TestLeague.awaySquad.size, updated.awayLineup?.appearances?.size)
@@ -459,12 +645,24 @@ class SaveBothLineupsTest {
     fun anEditOnOneSideDoesNotLoseTheOther() =
         runTest {
             val matches = FakeMatchRepository(listOf(match()))
-            val entry = entryFor(match())
-            val edited = entry.with(entry.home.withMember(TestLeague.homeSquad.first().id) { it.copy(absent = true) })
+            val entry = entryFor(match()).everyoneCame()
+            val edited = entry.with(entry.home.withPresence(TestLeague.homeSquad[1].id, false))
 
             val updated = SaveLineup(matches)(match(), edited)
 
             assertEquals(TestLeague.homeSquad.size - 1, updated.homeLineup?.appearances?.size)
             assertEquals(TestLeague.awaySquad.size, updated.awayLineup?.appearances?.size)
+        }
+
+    @Test
+    fun nothingMarkedWritesNothing() =
+        runTest {
+            val matches = FakeMatchRepository(listOf(match()))
+
+            val updated = SaveLineup(matches)(match(), entryFor(match()))
+
+            assertNull(updated.homeLineup)
+            assertNull(updated.awayLineup)
+            assertEquals(0, matches.saves)
         }
 }
