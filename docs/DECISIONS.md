@@ -5,6 +5,185 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-17 · From the first iPhone test: Číslo RP takes the number on the card, the lineup marks who came, and the score comes from the goals
+
+**Owner's decisions**, on points the tester raised after using 0.2.1 (3) on
+an iPhone. Each one reverses something recorded earlier.
+
+**1. The referee may type the number from the player's card into `Číslo
+RP`.** This narrows the rule that an RP number is never user-editable. That
+rule was written when PSMF were expected to supply RP numbers (A1/A2). They
+have not, the psmf.cz data has none, and on paper the captain copies the
+number from the card by hand. What stays true:
+
+- A league-issued `RpNumber`, where the data has one, is still never typed or
+  edited.
+- A typed number is what was written in that row on that day. It lives on
+  the appearance. It is never written back to the player or to league data,
+  and never presented as PSMF's record.
+- A date of birth stays as the fallback for a player with no card, which is
+  the form's printed rule.
+- **No rodné číslo.** The tester says the column takes the RP number or the
+  RČ, never a date of birth. That is evidence for A28, not an answer to it.
+  RČ is a national identifier with much heavier obligations, and it stays out
+  until a real report shows it is what gets written.
+
+**2. The lineup marks who came, not who stayed away** (reverses 2026-08-29
+and analysis §5.1). The squad from psmf.cz is everyone who has played this
+season. That is about 11 a team after round five, and it only grows. Marking
+absentees meant a forgotten tap put a no-show on the report, where it counts
+as an appearance: entry fees and the season statistics go by appearances.
+Marking who came turns the same slip into a missing name, which the captain
+sees at once. It costs a few taps.
+
+**3. The score on the recap comes from the goals and is not edited there.**
+This reverses DEMO_SCOPE §6 ("still editable") and the 2026-08-31 half-time
+entry ("leave it editable — a goal can be logged late"). That reason goes
+away, because a goal can now carry its own minute (two entries down). The
+score PSMF types onto the website can then never disagree with the goal list
+their crew retypes.
+
+**Reverses if:** PSMF supply RP numbers, which shrinks (1) back to the
+exception. A referee finds marking who came slower than it is worth over a
+full season's squad (2). A case appears where the result legitimately
+differs from the goals, such as a forfeit decided at the pitch (3).
+
+---
+
+## 2026-10-17 · The captain and the goalkeeper are marked in the lineup, and a captain confirms twice
+
+**Mine, from the tester's points and a defect found reading the code.**
+
+**The goalkeeper is a gap in the analysis.** §2.5 lists the lineup columns
+and has no goalkeeper. But PSMF publish one for every played match: psmf.cz
+lineups put the goalkeeper before a dash, which the importer already reads.
+So the report their crew retypes must say who it was. The tester says the
+paper form has the captain on the first row and the goalkeeper on the second.
+**Not yet seen on a real form**; a photo settles it (TODO).
+
+Decided:
+
+- Each lineup marks one captain and one goalkeeper among the players present,
+  possibly the same person.
+- The report lists the captain first, then the goalkeeper, then everyone
+  else.
+- Every format says unambiguously who is which.
+
+**The deputy switch goes.** The captain is whoever is marked captain for this
+match, and that is how a stand-in shows up on paper anyway. Old reports keep
+their `(zást.)`.
+
+**A captain confirms twice, because the form has them sign twice:** under
+the lineup before kickoff (*podpis kapitána před zahájením utkání*), and at
+the end (*Podpis kapitána*).
+
+The app records one confirmation per party, so the lineup's tap is the same
+record the recap reads. After the lineup, the recap already shows both
+captains as confirmed. A report can therefore become CONFIRMED without either
+captain having seen it finished.
+
+"One captain per team confirms" (owner, 2026-08-31) stays true. Reading it as
+"one confirmation per captain" was the error.
+
+What follows:
+
+- **A late change withdraws the final confirmations.** This covers a change
+  after them to anything the captains attest: the header, the lineups, the
+  goals, the cards and the whistles. The referee is told before it is saved.
+  Taking back the "no cards" affirmation is one such change.
+- **The referee's own words are excluded.** The assessment, the commentary
+  and the team notes stay editable until export (A6) and touch no
+  confirmation.
+- **Names come from what is already recorded:** the captain from the lineup,
+  the referee from the header. Nobody types a name at the signatures.
+
+**Reverses if:** a real form shows a different order, or PSMF say the
+`(zást.)` mark or the pre-match signature is something they act on.
+
+---
+
+## 2026-10-17 · A whistle can be taken back, a goal can carry its own minute, and the clock shows seconds
+
+**Mine, from the tester's points. None of them is a stoppage during play.**
+
+- **Taking back a whistle.** A mis-tapped kickoff, end of half, start of the
+  next half or final whistle can be taken back and pressed again. Removing a
+  boundary that should not exist creates no pause: the clock is still derived
+  from the instants that remain. Nothing edits an instant, which is the
+  "adjust" that CLAUDE.md forbids. A kickoff taken back is simply pressed
+  again, later.
+- **A goal with its own minute**, for one the referee forgot. It is entered
+  the way a card's minute is, and the one-tap goal stays one tap. The goal
+  list, `Stav` and the half-time score follow the minute written, not the
+  order of recording. Undo still goes by recording order. No goal at `60´+`:
+  the form has none after the whistle.
+- **The console clock reads minutes and seconds**, so it can be compared with
+  the referee's stopwatch. The event log and the report keep the form's
+  minutes. The Scoreboard KDoc argued for minutes only, for fear of implying
+  a precision the report lacks. The report never shows the seconds, so the
+  argument does not reach it.
+
+**Open, for the referee visit:** at 12:40 of play the app writes `12´`. A
+referee reading 12:40 on a stopwatch might write `13´`. Showing seconds makes
+the question visible. It is not changed here.
+
+**Reverses if:** a referee takes back a whistle by accident in practice.
+
+---
+
+## 2026-10-17 · A forged report: what a captain's PIN can and cannot do — open
+
+**Analysis for the owner. Nothing is built.**
+
+**The worry** (tester and owner): someone from the bench installs the app and
+records the same fixture with a different score. They tap all three
+signatures and email it to PSMF as the original. The tester suggested a code
+that only the captain knows.
+
+**Paper has the same hole.** The form is a public download, nobody checks a
+signature, and a photographed report is an accepted channel. What stops a
+forgery today:
+
+- the real referee's report arrives as well;
+- the delegation says which team's referee it should be;
+- the paper original must follow (A5).
+
+**A code only helps if someone who knows the right answer checks it.** The
+referee's phone has no server and nothing to compare against, so it accepts
+any PIN. The forger's copy of the app does the same. A PIN the captain
+invents at the pitch is therefore a tap with extra steps. Shipping the right
+answers inside the app does not work either: a four- to six-digit PIN can be
+recovered from its hash in seconds.
+
+**What would work, cheapest first:**
+
+1. **Make a duplicate visible.** Today the export carries no report ID, no
+   fixture ID and nothing about the device that made it. Add those, with the
+   moments the whistles were pressed. Two reports for one fixture then become
+   something PSMF notices at once, and the one from the referee the
+   delegation names is the real one. It detects rather than prevents. It
+   needs no identity and no work at PSMF, and it is a small prompt.
+2. **A code PSMF issue and PSMF check.** Each team leader gets a code from
+   PSMF; `vedouci@psmf.cz` already reaches them. The captain types it at the
+   final signature. The report carries it encrypted to a PSMF key built into
+   the app, so neither the referee nor anyone forwarding the email can read
+   it. Only PSMF can check a guess. This is real protection with still no
+   accounts in the app, but it needs a crypto library, and PSMF must issue and
+   check the codes. That is a conversation with PSMF, not a feature. The same
+   scheme works for referees.
+3. **Accounts and a server** that knows the delegation. This contradicts
+   §2.12 and needs the backend, which waits for A1/A2.
+
+**For the demo and the pilot: none of them.** A pilot runs with PSMF's
+knowledge and with known referees. Option 1 is the next step when the export
+is next touched. Option 2 goes to PSMF alongside A7, once a pilot is on the
+table.
+
+**Reverses if:** PSMF say a forged report has happened, or ask for
+protection before a pilot.
+
+---
+
 ## 2026-10-08 · Zápasy: no single-day picker, a line that says what the list is narrowed to, and no quick return
 
 **The session's calls under `prompts/12` Part 2**, carrying out the owner's

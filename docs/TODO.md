@@ -1,11 +1,34 @@
 # TODO
 
-Grouped by what blocks what, not by size. Last updated 2026-10-08.
+Grouped by what blocks what, not by size. Last updated 2026-10-17.
 
 ---
 
 ## Next
 
+- [ ] **Prompt 13: the report after the first iPhone test**, 0.3.0 (4).
+      `prompts/13-report-flow-after-iphone-test.md`. The tester's eighteen
+      points from 0.2.1 (3) on an iPhone: the keyboard, the way back, the
+      lineup (who came, captain and goalkeeper, the RP number from the card),
+      a goal's own minute, taking back a whistle, the signatures. The
+      owner's decisions and mine: DECISIONS, 2026-10-17.
+- [ ] **Prompt 11's report stops at Gate 1 in git** (`de6c4e6`). Build 3
+      reached TestFlight and was tested, so Parts 2–4 ran: the archive, the
+      upload, the upgrade over build 1, the three checklists. None of that is
+      committed. Ask the Mac session to finish the report and push it. **The
+      question it answers: did schema 4 → 6 survive the upgrade on a real
+      iPhone?**
+- [ ] **A photo of a real, filled-in ZoU.** It settles three things at once:
+      A28 (what goes in `Číslo RP`; the tester says RP or RČ, never a date of
+      birth), whether the captain and the goalkeeper really sit on rows 1
+      and 2, and how the form marks them.
+- [ ] **A forged report** (DECISIONS 2026-10-17). Nothing for the demo. The
+      next step, when the export is next touched: a report ID, the fixture ID
+      and the device in every export, so that a duplicate is visible. A code
+      that PSMF issue and check goes to PSMF with A7.
+- [ ] **At 12:40 of play, `12´` or `13´`?** The app writes 12´. For the
+      referee visit. Prompt 13 puts the seconds on screen, which makes the
+      question visible.
 - [x] **Prompt 10: red cards, the clock, league 6, build 0.2.0 (2).** Done
       2026-10-08, `c8bafd4`. Verified independently from a clean, uncached
       build: 436 shared JVM · 383 Android host · 194 UI · 23 importer tests,
@@ -32,7 +55,9 @@ Grouped by what blocks what, not by size. Last updated 2026-10-08.
       loading flash, 0.2.1 (3).
 - [ ] **The debug APK is 47,639 bytes over 70 MB** (0.2.1: 70,047,639).
       `materialIconsExtended`, below, is the 31 MB answer.
-- [ ] **Prompt 11: the next TestFlight build on the Mac, now 0.2.1 (3).**
+- [x] **Prompt 11: the next TestFlight build on the Mac, 0.2.1 (3).** Ran
+      2026-10-11; the build reached TestFlight and was tested. Its report
+      is unfinished (above).
       `prompts/11-ios-build-2.md`. The first database migration ever to run
       on iOS (schema 4 → 6), so the iPhone must update **over** build 1 with
       a match recorded in it. Also moves the team ID into a git-ignored
@@ -77,7 +102,8 @@ Grouped by what blocks what, not by size. Last updated 2026-10-08.
       2026-09-30 the app launched and "seemed fine"; the itemised checks (fonts in
       three languages, picker persistence, database survives a kill, every send
       and save case, the CSV's `EF BB BF`) have not been recorded one by one.
-- [ ] **Keep the team ID out of the repository** — in prompt 11, Part 0.
+- [x] **Keep the team ID out of the repository** — done in prompt 11,
+      Part 0 (`c860e87`): a git-ignored `iosApp/Configuration/Local.xcconfig`.
       Selecting the team made Xcode
       write `DEVELOPMENT_TEAM` into `project.pbxproj`, which is left modified and
       uncommitted on the Mac. Moving it into a git-ignored local `.xcconfig` would

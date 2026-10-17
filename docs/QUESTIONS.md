@@ -62,6 +62,10 @@ The entire no-accounts premise rests on the answer being no.
 > potřeba — zda stačí prosté potvrzení na displeji, nebo je nutné něco
 > průkaznějšího.
 
+**2026-10-17:** a related worry, a forged duplicate report, is analysed in
+DECISIONS 2026-10-17. If a pilot is discussed, raise it here: a code PSMF
+issue to team leaders and check themselves.
+
 ### A8 · What export format suits you? — `sent`
 Determines what actually gets built as the deliverable.
 
@@ -156,6 +160,12 @@ The analysis assumes date of birth on the strength of the form and its worked
 example.
 
 **Largest legal exposure in the project. Settled by one photograph.**
+
+**2026-10-17:** the tester, who plays in the league, says the column takes
+the RP number or the RČ, never a date of birth. That is evidence, not an
+answer, and one photograph still settles it. Meanwhile the app takes the RP
+number from the card, keeps the date of birth as the fallback, and has no RČ
+(DECISIONS 2026-10-17).
 
 ### A29 · Photographs — deferred
 Showing player photos for identity verification is a material escalation —
