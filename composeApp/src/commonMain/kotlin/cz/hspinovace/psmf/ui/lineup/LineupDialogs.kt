@@ -8,12 +8,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,6 +37,8 @@ import cz.hspinovace.psmf.resources.lineup_date_of_birth_hint
 import cz.hspinovace.psmf.resources.lineup_error_new_player
 import cz.hspinovace.psmf.resources.lineup_first_name
 import cz.hspinovace.psmf.resources.lineup_surname
+import cz.hspinovace.psmf.ui.common.KeyboardDismissal
+import cz.hspinovace.psmf.ui.common.PsmfTextField
 import cz.hspinovace.psmf.ui.format.asFullDate
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.NewPlayerRequest
@@ -64,50 +64,55 @@ fun AddPlayerDialog(
         onDismissRequest = { onEvent(LineupEvent.AddPlayerDismissed) },
         title = { Text(stringResource(Res.string.lineup_add_player_title)) },
         text = {
-            Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
-            ) {
-                Text(
-                    text = stringResource(Res.string.lineup_add_player_note),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                // Surname first: it is how the ZoU column is written, and how
-                // the captain will read the name out.
-                DialogField(
-                    label = stringResource(Res.string.lineup_surname),
-                    value = request.surname,
-                    onValueChange = { onEvent(LineupEvent.NewPlayerEdited(request.copy(surname = it))) },
-                    capitalise = true,
-                )
-                DialogField(
-                    label = stringResource(Res.string.lineup_first_name),
-                    value = request.firstName,
-                    onValueChange = { onEvent(LineupEvent.NewPlayerEdited(request.copy(firstName = it))) },
-                    capitalise = true,
-                )
-                DialogField(
-                    label = stringResource(Res.string.lineup_date_of_birth),
-                    value = request.dateOfBirth,
-                    onValueChange = { onEvent(LineupEvent.NewPlayerEdited(request.copy(dateOfBirth = it))) },
-                    supporting = stringResource(Res.string.lineup_date_of_birth_hint),
-                    numeric = true,
-                )
-
-                // Echoed back so a mistyped date is visible before it becomes
-                // six digits in the Číslo RP column.
-                request.parsedDateOfBirth?.let {
-                    Text(it.asFullDate(), style = MaterialTheme.typography.bodyLarge)
-                }
-
-                if (rejected) {
+            // A dialog is a window of its own: the screen's keyboard rules do
+            // not reach into it.
+            KeyboardDismissal {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
+                ) {
                     Text(
-                        text = stringResource(Res.string.lineup_error_new_player),
+                        text = stringResource(Res.string.lineup_add_player_note),
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+
+                    // Surname first: it is how the ZoU column is written, and how
+                    // the captain will read the name out.
+                    DialogField(
+                        label = stringResource(Res.string.lineup_surname),
+                        value = request.surname,
+                        onValueChange = { onEvent(LineupEvent.NewPlayerEdited(request.copy(surname = it))) },
+                        capitalise = true,
+                    )
+                    DialogField(
+                        label = stringResource(Res.string.lineup_first_name),
+                        value = request.firstName,
+                        onValueChange = { onEvent(LineupEvent.NewPlayerEdited(request.copy(firstName = it))) },
+                        capitalise = true,
+                    )
+                    DialogField(
+                        label = stringResource(Res.string.lineup_date_of_birth),
+                        value = request.dateOfBirth,
+                        onValueChange = { onEvent(LineupEvent.NewPlayerEdited(request.copy(dateOfBirth = it))) },
+                        supporting = stringResource(Res.string.lineup_date_of_birth_hint),
+                        numeric = true,
+                        imeAction = ImeAction.Done,
+                    )
+
+                    // Echoed back so a mistyped date is visible before it becomes
+                    // six digits in the Číslo RP column.
+                    request.parsedDateOfBirth?.let {
+                        Text(it.asFullDate(), style = MaterialTheme.typography.bodyLarge)
+                    }
+
+                    if (rejected) {
+                        Text(
+                            text = stringResource(Res.string.lineup_error_new_player),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
                 }
             }
         },
@@ -132,19 +137,16 @@ private fun DialogField(
     capitalise: Boolean = false,
     numeric: Boolean = false,
     supporting: String? = null,
+    imeAction: ImeAction = ImeAction.Next,
 ) {
-    OutlinedTextField(
+    PsmfTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
         supportingText = supporting?.let { { Text(it) } },
-        singleLine = true,
-        keyboardOptions =
-            KeyboardOptions(
-                capitalization = if (capitalise) KeyboardCapitalization.Words else KeyboardCapitalization.None,
-                keyboardType = if (numeric) KeyboardType.Number else KeyboardType.Text,
-                imeAction = ImeAction.Next,
-            ),
+        capitalization = if (capitalise) KeyboardCapitalization.Words else KeyboardCapitalization.None,
+        keyboardType = if (numeric) KeyboardType.Number else KeyboardType.Text,
+        imeAction = imeAction,
         modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
     )
 }

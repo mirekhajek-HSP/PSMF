@@ -9,11 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -45,6 +43,7 @@ import cz.hspinovace.psmf.resources.header_referee
 import cz.hspinovace.psmf.resources.header_time
 import cz.hspinovace.psmf.ui.common.ActionRow
 import cz.hspinovace.psmf.ui.common.PrimaryAction
+import cz.hspinovace.psmf.ui.common.PsmfTextField
 import cz.hspinovace.psmf.ui.common.ReadOnlyField
 import cz.hspinovace.psmf.ui.common.Section
 import cz.hspinovace.psmf.ui.format.asClockTime
@@ -132,6 +131,7 @@ private fun OfficialsSection(
                         null
                     }
                 },
+            imeAction = ImeAction.Next,
         )
         LicensedHireToggle(
             label = stringResource(Res.string.header_licensed_hire_referee),
@@ -146,6 +146,9 @@ private fun OfficialsSection(
             error =
                 stringResource(Res.string.header_error_name_not_latin)
                     .takeIf { state.problem(HeaderProblem.AssistantNameNotLatin) },
+            // The last field of the form, unless the other-team field below
+            // is showing: that one is, and this one then says Next.
+            imeAction = if (state.otherTeamSelected) ImeAction.Next else ImeAction.Done,
         )
         LicensedHireToggle(
             label = stringResource(Res.string.header_licensed_hire_assistant),
@@ -199,6 +202,7 @@ private fun DelegatingTeamSection(
                 value = state.entry.delegatingTeam,
                 onValueChange = { onEvent(MatchHeaderEvent.DelegatingTeamTyped(it)) },
                 error = null,
+                imeAction = ImeAction.Done,
             )
         }
 
@@ -218,19 +222,16 @@ private fun NameField(
     value: String,
     onValueChange: (String) -> Unit,
     error: String?,
+    imeAction: ImeAction,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) {
-        OutlinedTextField(
+        PsmfTextField(
             value = value,
             onValueChange = onValueChange,
             label = { Text(label) },
-            singleLine = true,
             isError = error != null,
-            keyboardOptions =
-                KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Words,
-                    imeAction = ImeAction.Next,
-                ),
+            capitalization = KeyboardCapitalization.Words,
+            imeAction = imeAction,
             modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
         )
         if (error != null) {

@@ -10,10 +10,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -21,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -33,6 +32,7 @@ import cz.hspinovace.psmf.resources.lineup_jersey
 import cz.hspinovace.psmf.resources.lineup_no_card
 import cz.hspinovace.psmf.resources.lineup_rp_column
 import cz.hspinovace.psmf.resources.lineup_suspension_warning
+import cz.hspinovace.psmf.ui.common.PsmfTextField
 import cz.hspinovace.psmf.ui.format.asFullDate
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.SquadMemberEntry
@@ -104,16 +104,18 @@ private fun DateOfBirthField(
     onEvent: (LineupEvent) -> Unit,
 ) {
     val parsed = member.typedDateOfBirth
-    OutlinedTextField(
+    PsmfTextField(
         value = member.dateOfBirthTyped,
         onValueChange = { onEvent(LineupEvent.DateOfBirthTyped(member.player.id, it)) },
         label = { Text(stringResource(Res.string.lineup_date_of_birth)) },
         supportingText = {
             Text(parsed?.asFullDate() ?: stringResource(Res.string.lineup_date_of_birth_hint))
         },
-        singleLine = true,
         isError = missingIdentification || (member.dateOfBirthTyped.isNotBlank() && parsed == null),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardType = KeyboardType.Number,
+        // Each row is its own little edit, made by exception; the next field
+        // down the list is another player's.
+        imeAction = ImeAction.Done,
         modifier =
             Modifier
                 .fillMaxWidth()
@@ -225,7 +227,7 @@ private fun JerseyNumberField(
     duplicateNumber: Boolean,
     onEvent: (LineupEvent) -> Unit,
 ) {
-    OutlinedTextField(
+    PsmfTextField(
         value =
             member.jerseyNumber
                 ?.value
@@ -233,9 +235,9 @@ private fun JerseyNumberField(
                 .orEmpty(),
         onValueChange = { onEvent(LineupEvent.JerseyNumberChanged(member.player.id, it)) },
         label = { Text(stringResource(Res.string.lineup_jersey)) },
-        singleLine = true,
         isError = duplicateNumber,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardType = KeyboardType.Number,
+        imeAction = ImeAction.Done,
         modifier = Modifier.width(JERSEY_FIELD_WIDTH).heightIn(min = PsmfDimens.minTouchTarget),
     )
 }

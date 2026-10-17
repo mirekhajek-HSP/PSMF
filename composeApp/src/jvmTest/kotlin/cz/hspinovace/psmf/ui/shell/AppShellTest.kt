@@ -213,16 +213,59 @@ class AppShellTest {
         }
 
     @Test
-    fun theFirstStepOfAReportOffersNoBackButton() =
+    fun theFirstStepOfAReportOffersBackAndItLeavesForTheFixtureList() =
         runComposeUiTest {
-            // It is the root of its tab; the tab bar is the way out.
+            // The tester on an iPhone: "Hlavička zápisu -- chybí tlačítko
+            // zpět". This used to be asserted the other way round, because
+            // the header is the root of its tab and the tab bar was the way
+            // out. iOS has no system back button, and the tab bar does not
+            // say it means *leave this report*.
+            val navigator = AppNavigator()
+            navigator.openReport(Destination.MatchHeader(MATCH))
+            withLanguage("cs") {
+                setContent { Harness(navigator) }
+
+                onNodeWithText("MatchHeader").assertIsDisplayed()
+                onNodeWithText("Zpět").assertIsDisplayed()
+                onNodeWithText("Zpět").performClick()
+
+                onNodeWithText("FIXTURES").assertIsDisplayed()
+            }
+        }
+
+    @Test
+    fun aReportResumedAtTheConsoleGoesBackToTheLineupNotOutOfTheReport() =
+        runComposeUiTest {
+            // A report resumed from the fixture list is opened at the
+            // console, so its stack used to be the console alone, and back
+            // from it left the report instead of going to the lineup.
             val navigator = AppNavigator()
             navigator.openReport(Destination.Console(MATCH))
             withLanguage("cs") {
                 setContent { Harness(navigator) }
 
                 onNodeWithText("25´").assertIsDisplayed()
+                onNodeWithText("Zpět").assertIsDisplayed()
+                onNodeWithText("Zpět").performClick()
+
+                onNodeWithText("Lineup").assertIsDisplayed()
+            }
+        }
+
+    @Test
+    fun theRootsOfTheOtherTabsStayWithoutABackButton() =
+        runComposeUiTest {
+            // The tab bar is the way out of a tab's first screen; only a
+            // step *of a report* is a place that has a "before".
+            val navigator = AppNavigator()
+            withLanguage("cs") {
+                setContent { Harness(navigator) }
+
                 onNodeWithText("Zpět").assertDoesNotExist()
+                listOf("Zápis", "Týmy", "Nastavení", "Zápasy").forEach { tab ->
+                    onNodeWithText(tab).performClick()
+                    onNodeWithText("Zpět").assertDoesNotExist()
+                }
             }
         }
 

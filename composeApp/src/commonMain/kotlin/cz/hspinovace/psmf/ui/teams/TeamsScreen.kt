@@ -23,7 +23,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
 import cz.hspinovace.psmf.domain.TeamId
 import cz.hspinovace.psmf.resources.Res
 import cz.hspinovace.psmf.resources.fixtures_error_title
@@ -44,6 +44,7 @@ import cz.hspinovace.psmf.resources.teams_no_matches
 import cz.hspinovace.psmf.resources.teams_search
 import cz.hspinovace.psmf.resources.teams_squad_size
 import cz.hspinovace.psmf.resources.teams_unfollow
+import cz.hspinovace.psmf.ui.common.PsmfTextField
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.TeamCard
 import cz.hspinovace.psmf.usecase.TeamDirectory
@@ -85,11 +86,11 @@ fun TeamsScreen(
     LaunchedEffect(state.query) { listState.scrollToItem(0) }
 
     Column(modifier = modifier.fillMaxSize()) {
-        OutlinedTextField(
+        PsmfTextField(
             value = state.query,
             onValueChange = { onEvent(TeamsEvent.QueryChanged(it)) },
             label = { Text(stringResource(Res.string.teams_search)) },
-            singleLine = true,
+            imeAction = ImeAction.Search,
             modifier =
                 Modifier
                     .fillMaxWidth()

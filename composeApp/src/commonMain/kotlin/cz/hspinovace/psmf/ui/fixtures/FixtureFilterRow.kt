@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.DropdownMenuItem
@@ -53,6 +52,7 @@ import cz.hspinovace.psmf.resources.fixtures_filter_league
 import cz.hspinovace.psmf.resources.fixtures_filter_team
 import cz.hspinovace.psmf.resources.fixtures_filter_whole_league
 import cz.hspinovace.psmf.resources.header_pitch
+import cz.hspinovace.psmf.ui.common.PsmfTextField
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.DateWindow
 import cz.hspinovace.psmf.usecase.FilterOptions
@@ -146,12 +146,13 @@ fun FixtureFilterRow(
             onSelect = { change(filter.copy(dates = it)) },
         )
 
-        OutlinedTextField(
+        PsmfTextField(
             value = filter.teamQuery,
             onValueChange = { change(filter.copy(teamQuery = it)) },
             label = { Text(stringResource(Res.string.fixtures_filter_team)) },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            // The list narrows as the referee types, so Search has nothing
+            // left to do but put the keyboard away.
+            imeAction = ImeAction.Search,
             modifier =
                 Modifier
                     .fillMaxWidth()

@@ -136,6 +136,14 @@ tasks.withType<Test>().configureEach {
             .dir("src/commonMain/composeResources/font")
             .asFile.absolutePath,
     )
+    // KeyboardTest reads the UI sources to prove that no text field bypasses
+    // the one wrapper that knows the keyboard rules.
+    systemProperty(
+        "psmf.sourceDirectory",
+        layout.projectDirectory
+            .dir("src/commonMain/kotlin")
+            .asFile.absolutePath,
+    )
 }
 
 compose.resources {

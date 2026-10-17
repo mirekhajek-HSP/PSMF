@@ -11,12 +11,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -24,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import cz.hspinovace.psmf.resources.Res
@@ -42,6 +41,7 @@ import cz.hspinovace.psmf.resources.teams_rp_and_dob_missing
 import cz.hspinovace.psmf.resources.teams_rp_missing
 import cz.hspinovace.psmf.resources.teams_rp_number
 import cz.hspinovace.psmf.resources.teams_unfollow
+import cz.hspinovace.psmf.ui.common.PsmfTextField
 import cz.hspinovace.psmf.ui.common.Section
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.RosterRow
@@ -243,11 +243,10 @@ private fun JerseyField(
     onEvent: (TeamRosterEvent) -> Unit,
 ) {
     val invalid = state.isInError(row.player.id)
-    OutlinedTextField(
+    PsmfTextField(
         value = state.fieldText(row.player.id, row.jerseyNumber),
         onValueChange = { onEvent(TeamRosterEvent.JerseyNumberChanged(row.player.id, it)) },
         label = { Text(stringResource(Res.string.lineup_jersey)) },
-        singleLine = true,
         isError = invalid,
         supportingText =
             if (invalid) {
@@ -255,7 +254,9 @@ private fun JerseyField(
             } else {
                 null
             },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardType = KeyboardType.Number,
+        // One number at a time, edited by exception: not a form to walk down.
+        imeAction = ImeAction.Done,
         shape = RoundedCornerShape(PsmfDimens.labelGap),
         modifier = Modifier.width(JERSEY_FIELD_WIDTH).heightIn(min = PsmfDimens.minTouchTarget),
     )

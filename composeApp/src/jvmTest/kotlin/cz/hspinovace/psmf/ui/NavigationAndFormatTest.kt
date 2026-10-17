@@ -203,7 +203,68 @@ class AppNavigatorTest {
 
         // Adopting does not change tab -- the app still opens on fixtures.
         assertEquals(Tab.FIXTURES, navigator.state.value.tab)
-        assertEquals(listOf(Destination.Console(m1)), navigator.stack(Tab.REPORT))
+        assertEquals(Destination.Console(m1), navigator.stack(Tab.REPORT).last())
+    }
+
+    @Test
+    fun aReportOpenedAtTheConsoleGoesBackThroughTheLineupAndTheHeader() {
+        // From a fixture row the app opens a report where the work is, which
+        // is the console for a match under way. The stack used to be that
+        // console alone, so back from it left the report: the lineup and the
+        // header were not behind it, and the referee could not get to them
+        // without going out and in again.
+        val navigator = AppNavigator()
+        navigator.openReport(Destination.Console(m1))
+
+        assertTrue(navigator.back())
+        assertEquals(Destination.Lineup(m1), navigator.state.value.current)
+        assertTrue(navigator.back())
+        assertEquals(Destination.MatchHeader(m1), navigator.state.value.current)
+        // And only then out of the report, to the fixture list.
+        assertTrue(navigator.back())
+        assertEquals(Tab.FIXTURES, navigator.state.value.tab)
+    }
+
+    @Test
+    fun aFinishedReportOpenedAtTheRecapWalksBackThroughEveryStepBeforeIt() {
+        val navigator = AppNavigator()
+        navigator.openReport(Destination.Recap(m1))
+
+        val walked =
+            buildList {
+                while (navigator.state.value.tab == Tab.REPORT && navigator.back()) {
+                    add(navigator.state.value.current)
+                }
+            }
+
+        assertEquals(
+            listOf(
+                Destination.Assessment(m1),
+                Destination.Console(m1),
+                Destination.Lineup(m1),
+                Destination.MatchHeader(m1),
+                Destination.Fixtures,
+            ),
+            walked,
+        )
+    }
+
+    @Test
+    fun theStepsBehindAResumedReportAreThoseOfThatReportAlone() {
+        // Piling a second match's steps under the first would make back walk
+        // into someone else's report.
+        val navigator = AppNavigator()
+        navigator.openReport(Destination.Console(m1))
+        navigator.openReport(Destination.Console(m2))
+
+        assertEquals(
+            listOf(
+                Destination.MatchHeader(m2),
+                Destination.Lineup(m2),
+                Destination.Console(m2),
+            ),
+            navigator.stack(Tab.REPORT),
+        )
     }
 
     @Test
@@ -214,10 +275,9 @@ class AppNavigatorTest {
 
         navigator.adoptReport(Destination.Console(m2))
 
-        assertEquals(
-            listOf(Destination.Console(m1), Destination.Assessment(m1)),
-            navigator.stack(Tab.REPORT),
-        )
+        assertEquals(Destination.Assessment(m1), navigator.state.value.current)
+        assertEquals(m1, navigator.stack(Tab.REPORT).last().matchId)
+        assertTrue(navigator.stack(Tab.REPORT).all { it.matchId == m1 })
     }
 
     @Test

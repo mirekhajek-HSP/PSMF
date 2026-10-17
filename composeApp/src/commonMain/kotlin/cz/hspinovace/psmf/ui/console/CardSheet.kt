@@ -7,18 +7,17 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import cz.hspinovace.psmf.domain.Dismissal
 import cz.hspinovace.psmf.resources.Res
@@ -42,6 +41,8 @@ import cz.hspinovace.psmf.resources.card_save
 import cz.hspinovace.psmf.resources.card_save_sends_off
 import cz.hspinovace.psmf.resources.card_second_yellow_hint
 import cz.hspinovace.psmf.resources.card_title
+import cz.hspinovace.psmf.ui.common.KeyboardDismissal
+import cz.hspinovace.psmf.ui.common.PsmfTextField
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.CardColour
 import cz.hspinovace.psmf.usecase.CardDraft
@@ -73,59 +74,65 @@ fun CardSheet(
         onDismissRequest = { onEvent(ConsoleEvent.CardDismissed) },
         title = { Text(stringResource(Res.string.card_title)) },
         text = {
-            Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
-            ) {
-                if (draft.appearance == null) {
-                    // Someone with no jersey number: the worked example
-                    // cards a deputy captain by name alone.
-                    Field(
-                        label = stringResource(Res.string.card_person),
-                        value = draft.namedPerson,
-                        onValueChange = { onEvent(ConsoleEvent.CardEdited(draft.copy(namedPerson = it))) },
-                        error =
-                            stringResource(Res.string.card_error_subject).takeIf {
-                                state.cardProblem(CardProblem.NO_SUBJECT)
-                            },
-                    )
-                }
-
-                ColourChips(draft, onEvent)
-
-                if (draft.isRed) {
-                    DismissalChips(draft, state, onEvent)
-                    if (state.cardProblem(CardProblem.NO_DISMISSAL_KIND)) {
-                        Problem(stringResource(Res.string.card_error_dismissal))
+            // A dialog is a window of its own: the screen's keyboard rules do
+            // not reach into it.
+            KeyboardDismissal {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
+                ) {
+                    if (draft.appearance == null) {
+                        // Someone with no jersey number: the worked example
+                        // cards a deputy captain by name alone.
+                        Field(
+                            label = stringResource(Res.string.card_person),
+                            value = draft.namedPerson,
+                            onValueChange = { onEvent(ConsoleEvent.CardEdited(draft.copy(namedPerson = it))) },
+                            error =
+                                stringResource(Res.string.card_error_subject).takeIf {
+                                    state.cardProblem(CardProblem.NO_SUBJECT)
+                                },
+                        )
                     }
-                }
-                if (state.cardSendsOff) {
-                    // Not a block: the referee decides. But they must not
-                    // discover afterwards that this was a dismissal.
+
+                    ColourChips(draft, onEvent)
+
+                    if (draft.isRed) {
+                        DismissalChips(draft, state, onEvent)
+                        if (state.cardProblem(CardProblem.NO_DISMISSAL_KIND)) {
+                            Problem(stringResource(Res.string.card_error_dismissal))
+                        }
+                    }
+                    if (state.cardSendsOff) {
+                        // Not a block: the referee decides. But they must not
+                        // discover afterwards that this was a dismissal.
+                        Text(
+                            text = stringResource(Res.string.card_second_yellow_hint),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
+
+                    MinuteRow(draft, state, onEvent)
+
+                    Field(
+                        label = stringResource(Res.string.card_reason),
+                        value = draft.reason,
+                        onValueChange = { onEvent(ConsoleEvent.CardEdited(draft.copy(reason = it))) },
+                        error =
+                            stringResource(Res.string.card_error_reason).takeIf {
+                                state.cardProblem(CardProblem.NO_REASON)
+                            },
+                        // The last field of the sheet.
+                        imeAction = ImeAction.Done,
+                    )
                     Text(
-                        text = stringResource(Res.string.card_second_yellow_hint),
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.error,
+                        text = stringResource(Res.string.card_reason_note),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-
-                MinuteRow(draft, state, onEvent)
-
-                Field(
-                    label = stringResource(Res.string.card_reason),
-                    value = draft.reason,
-                    onValueChange = { onEvent(ConsoleEvent.CardEdited(draft.copy(reason = it))) },
-                    error =
-                        stringResource(Res.string.card_error_reason).takeIf {
-                            state.cardProblem(CardProblem.NO_REASON)
-                        },
-                )
-                Text(
-                    text = stringResource(Res.string.card_reason_note),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
         },
         confirmButton = {
@@ -265,16 +272,16 @@ private fun Field(
     onValueChange: (String) -> Unit,
     error: String?,
     numeric: Boolean = false,
+    imeAction: ImeAction = ImeAction.Next,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) {
-        OutlinedTextField(
+        PsmfTextField(
             value = value,
             onValueChange = onValueChange,
             label = { Text(label) },
-            singleLine = true,
             isError = error != null,
-            keyboardOptions =
-                KeyboardOptions(keyboardType = if (numeric) KeyboardType.Number else KeyboardType.Text),
+            keyboardType = if (numeric) KeyboardType.Number else KeyboardType.Text,
+            imeAction = imeAction,
             modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
         )
         if (error != null) Problem(error)

@@ -9,15 +9,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import cz.hspinovace.psmf.domain.TeamSide
@@ -34,6 +33,7 @@ import cz.hspinovace.psmf.resources.assessment_waiting_time
 import cz.hspinovace.psmf.resources.assessment_yes
 import cz.hspinovace.psmf.ui.common.ActionRow
 import cz.hspinovace.psmf.ui.common.PrimaryAction
+import cz.hspinovace.psmf.ui.common.PsmfTextField
 import cz.hspinovace.psmf.ui.common.Section
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.TeamAssessmentDraft
@@ -74,11 +74,15 @@ fun AssessmentScreen(
                 title = stringResource(Res.string.assessment_commentary),
                 note = stringResource(Res.string.assessment_commentary_note),
             ) {
-                OutlinedTextField(
+                PsmfTextField(
                     value = state.draft.commentary,
                     onValueChange = { onEvent(AssessmentEvent.CommentaryEdited(it)) },
                     modifier = Modifier.fillMaxWidth().heightIn(min = COMMENTARY_HEIGHT),
+                    singleLine = false,
                     minLines = COMMENTARY_LINES,
+                    // Several lines: the return key is a new line here and the
+                    // way off it is a tap elsewhere or a scroll.
+                    imeAction = ImeAction.Default,
                 )
             }
 
@@ -160,12 +164,13 @@ private fun NumberField(
     value: String,
     onValueChange: (String) -> Unit,
 ) {
-    OutlinedTextField(
+    PsmfTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardType = KeyboardType.Number,
+        // Down the page to the commentary, which is the last field.
+        imeAction = ImeAction.Next,
         modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
     )
 }

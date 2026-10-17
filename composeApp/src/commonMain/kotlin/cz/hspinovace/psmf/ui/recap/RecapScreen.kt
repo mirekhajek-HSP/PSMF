@@ -9,12 +9,10 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -23,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import cz.hspinovace.psmf.domain.ConfirmingParty
@@ -51,7 +50,9 @@ import cz.hspinovace.psmf.resources.recap_result
 import cz.hspinovace.psmf.resources.recap_result_note
 import cz.hspinovace.psmf.resources.recap_signatures
 import cz.hspinovace.psmf.ui.common.ActionRow
+import cz.hspinovace.psmf.ui.common.KeyboardDismissal
 import cz.hspinovace.psmf.ui.common.PrimaryAction
+import cz.hspinovace.psmf.ui.common.PsmfTextField
 import cz.hspinovace.psmf.ui.common.Section
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.ResultDraft
@@ -143,6 +144,7 @@ private fun ResultSection(
             away = draft.fullTimeAway,
             onHome = { onEvent(RecapEvent.ResultEdited(draft.copy(fullTimeHome = it))) },
             onAway = { onEvent(RecapEvent.ResultEdited(draft.copy(fullTimeAway = it))) },
+            last = true,
         )
     }
 }
@@ -154,6 +156,7 @@ private fun ScoreRow(
     away: String,
     onHome: (String) -> Unit,
     onAway: (String) -> Unit,
+    last: Boolean = false,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) {
         Text(label, style = MaterialTheme.typography.bodyLarge)
@@ -161,9 +164,9 @@ private fun ScoreRow(
             horizontalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            ScoreField(home, onHome)
+            ScoreField(home, onHome, ImeAction.Next)
             Text(":", style = MaterialTheme.typography.titleLarge)
-            ScoreField(away, onAway)
+            ScoreField(away, onAway, if (last) ImeAction.Done else ImeAction.Next)
         }
     }
 }
@@ -172,12 +175,13 @@ private fun ScoreRow(
 private fun ScoreField(
     value: String,
     onValueChange: (String) -> Unit,
+    imeAction: ImeAction,
 ) {
-    OutlinedTextField(
+    PsmfTextField(
         value = value,
         onValueChange = onValueChange,
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardType = KeyboardType.Number,
+        imeAction = imeAction,
         modifier = Modifier.width(SCORE_FIELD_WIDTH).heightIn(min = PsmfDimens.minTouchTarget),
     )
 }
@@ -262,36 +266,40 @@ private fun ConfirmationDialog(
         onDismissRequest = { onEvent(RecapEvent.ConfirmationDismissed) },
         title = { Text(party.label()) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing)) {
-                OutlinedTextField(
-                    value = state.confirmingName,
-                    onValueChange = { onEvent(RecapEvent.ConfirmingNameChanged(it)) },
-                    label = { Text(stringResource(Res.string.recap_confirm_name)) },
-                    singleLine = true,
-                    isError = state.confirmingRejected,
-                    modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
-                )
-                if (party != ConfirmingParty.REFEREE) {
-                    // Captaincy may be delegated: the worked example has a
-                    // deputy signing as `Lepiš (zást.)`.
-                    Row(
+            // A dialog is a window of its own: the screen's keyboard rules do
+            // not reach into it.
+            KeyboardDismissal {
+                Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing)) {
+                    PsmfTextField(
+                        value = state.confirmingName,
+                        onValueChange = { onEvent(RecapEvent.ConfirmingNameChanged(it)) },
+                        label = { Text(stringResource(Res.string.recap_confirm_name)) },
+                        isError = state.confirmingRejected,
+                        imeAction = ImeAction.Done,
                         modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
-                        horizontalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Switch(
-                            checked = state.confirmingAsDeputy,
-                            onCheckedChange = { onEvent(RecapEvent.ConfirmingDeputyChanged(it)) },
-                        )
-                        Text(stringResource(Res.string.recap_deputy), modifier = Modifier.weight(1f))
-                    }
-                }
-                if (state.confirmingRejected) {
-                    Text(
-                        text = stringResource(Res.string.recap_confirm_error),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.error,
                     )
+                    if (party != ConfirmingParty.REFEREE) {
+                        // Captaincy may be delegated: the worked example has a
+                        // deputy signing as `Lepiš (zást.)`.
+                        Row(
+                            modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
+                            horizontalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Switch(
+                                checked = state.confirmingAsDeputy,
+                                onCheckedChange = { onEvent(RecapEvent.ConfirmingDeputyChanged(it)) },
+                            )
+                            Text(stringResource(Res.string.recap_deputy), modifier = Modifier.weight(1f))
+                        }
+                    }
+                    if (state.confirmingRejected) {
+                        Text(
+                            text = stringResource(Res.string.recap_confirm_error),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
                 }
             }
         },

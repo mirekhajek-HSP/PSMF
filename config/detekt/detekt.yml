@@ -26,6 +26,12 @@ complexity:
     # assistant, hire flag and delegating team. See analysis section 2.5.
     functionThreshold: 8
     constructorThreshold: 12
+    # A widget wraps one that is wider still -- Material's own text field
+    # takes more than twenty parameters -- and says "label, an error, a
+    # keyboard" by naming the ones that differ. What the rule is for is a
+    # long list of things every caller must supply, and that is still
+    # counted: two parameters here have no default.
+    ignoreDefaultParameters: true
 
 style:
   ReturnCount:

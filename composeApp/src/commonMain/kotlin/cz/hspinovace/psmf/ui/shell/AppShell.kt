@@ -5,11 +5,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -31,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -42,6 +47,8 @@ import cz.hspinovace.psmf.resources.tab_report
 import cz.hspinovace.psmf.resources.tab_report_in_progress
 import cz.hspinovace.psmf.resources.tab_settings
 import cz.hspinovace.psmf.resources.tab_teams
+import cz.hspinovace.psmf.ui.common.DismissKeyboardWhenChanged
+import cz.hspinovace.psmf.ui.common.KeyboardDismissal
 import cz.hspinovace.psmf.ui.navigation.NavigationState
 import cz.hspinovace.psmf.ui.navigation.Tab
 import cz.hspinovace.psmf.ui.theme.PsmfBrand
@@ -54,7 +61,17 @@ import org.jetbrains.compose.resources.stringResource
  *
  * Takes state and callbacks and nothing else, so a test can drive the whole
  * shell without a dependency graph. `App` is where this meets Koin.
+ *
+ * **The keyboard is the shell's business, so that every screen gets the same
+ * treatment** (prompt 13, Part 1; `KeyboardDismissal`). It goes when the
+ * referee taps anywhere that is not a text field, starts to scroll, or leaves
+ * the step; and while it is up the screen is padded by its height, so the
+ * field being typed in and the button below it are above it rather than
+ * under it. The tab bar steps aside while it is up: it is not what a referee
+ * typing a name wants, and on a small phone it is the difference between two
+ * fields and three.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AppShell(
     navigation: NavigationState,
@@ -65,26 +82,34 @@ fun AppShell(
     modifier: Modifier = Modifier,
     content: @Composable (Modifier) -> Unit,
 ) {
-    Scaffold(
-        modifier = modifier,
-        topBar = {
-            ShellTopBar(
-                title = title,
-                // Back is offered for a step *within* a tab. Leaving a tab
-                // is what the tab bar and the system gesture are for.
-                canGoBack = navigation.canGoBackWithinTab,
-                onBack = onBack,
-            )
-        },
-        bottomBar = {
-            PsmfNavigationBar(
-                selected = navigation.tab,
-                reportInProgress = reportInProgress,
-                onSelect = onSelectTab,
-            )
-        },
-    ) { padding ->
-        content(Modifier.padding(padding))
+    val keyboardUp = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+
+    KeyboardDismissal(modifier = modifier.imePadding()) {
+        DismissKeyboardWhenChanged(navigation.current)
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            topBar = {
+                ShellTopBar(
+                    title = title,
+                    // Back on every step of a report, and on a drill-down
+                    // within a tab. Leaving a tab from its first screen is
+                    // what the tab bar and the system gesture are for.
+                    canGoBack = navigation.offersBack,
+                    onBack = onBack,
+                )
+            },
+            bottomBar = {
+                if (!keyboardUp) {
+                    PsmfNavigationBar(
+                        selected = navigation.tab,
+                        reportInProgress = reportInProgress,
+                        onSelect = onSelectTab,
+                    )
+                }
+            },
+        ) { padding ->
+            content(Modifier.padding(padding))
+        }
     }
 }
 

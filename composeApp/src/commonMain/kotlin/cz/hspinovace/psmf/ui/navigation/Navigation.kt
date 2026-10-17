@@ -131,6 +131,19 @@ data class NavigationState(
 
     /** Whether there is a previous screen *within* the current tab. */
     val canGoBackWithinTab: Boolean get() = stacks.getValue(tab).size > 1
+
+    /**
+     * Whether the title bar offers Zpět.
+     *
+     * Every step of a report does, including the first. The header is the
+     * root of the report tab's stack, and when this said only "is there
+     * something below me in the tab" it was the one screen of the wizard
+     * with no way back: iOS has no system back button, and the tab bar does
+     * not say it means *leave this report* (the tester's point 2). The roots
+     * of Zápasy, Týmy and Nastavení stay without it -- the tab bar is how
+     * you leave those, and there is nothing in them that was left.
+     */
+    val offersBack: Boolean get() = canGoBackWithinTab || current.matchId != null
 }
 
 /**
@@ -190,6 +203,12 @@ class AppNavigator {
      * of the last. Entering the one already open only switches tab — the
      * referee tapped the row to get back to their report, not to be
      * rewound to its resume point.
+     *
+     * **The stack starts with the steps that come before the one opened.** A
+     * match under way opens on the console, and its stack used to be the
+     * console alone, so back from it left the report instead of going to the
+     * lineup. Only the last step is ever composed, so the ones beneath it
+     * cost nothing but the history that back walks through.
      */
     fun openReport(destination: Destination) {
         require(destination.tab == Tab.REPORT) { "$destination is not part of the report" }
@@ -198,7 +217,7 @@ class AppNavigator {
             val alreadyOpen = stack.any { it.matchId == destination.matchId }
             state.copy(
                 tab = Tab.REPORT,
-                stacks = state.stacks + (Tab.REPORT to if (alreadyOpen) stack else listOf(destination)),
+                stacks = state.stacks + (Tab.REPORT to if (alreadyOpen) stack else destination.stepsUpToHere()),
             )
         }
     }
@@ -222,7 +241,7 @@ class AppNavigator {
             if (state.stacks.getValue(Tab.REPORT) != listOf(Destination.NoReport)) {
                 state
             } else {
-                state.copy(stacks = state.stacks + (Tab.REPORT to listOf(destination)))
+                state.copy(stacks = state.stacks + (Tab.REPORT to destination.stepsUpToHere()))
             }
         }
     }
@@ -258,6 +277,25 @@ class AppNavigator {
 
     private fun List<Destination>.pushing(destination: Destination): List<Destination> =
         if (lastOrNull() == destination) this else this + destination
+
+    /**
+     * The report's steps in the order the form is worked, up to and including
+     * this one -- or this one alone if it is not a step of a report.
+     */
+    private fun Destination.stepsUpToHere(): List<Destination> {
+        val match = matchId ?: return listOf(this)
+        val steps =
+            listOf(
+                Destination.MatchHeader(match),
+                Destination.Lineup(match),
+                Destination.Console(match),
+                Destination.Assessment(match),
+                Destination.Recap(match),
+                Destination.Export(match),
+            )
+        val here = steps.indexOf(this)
+        return if (here < 0) listOf(this) else steps.take(here + 1)
+    }
 
     private companion object {
         val ROOTS: Map<Tab, List<Destination>> =

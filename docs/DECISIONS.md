@@ -5,6 +5,85 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-17 · The keyboard goes away, and the way back is always there (prompt 13, Part 1)
+
+**Mine, the session's calls on the tester's points 1 and 2.** Both were
+checked on the Android emulator at HEAD (0.2.1) before anything was changed,
+and both are there too: a keyboard opened for one field stayed open after a
+tap on the page and after a scroll (`mInputShown=true` both times), and the
+header had no Zpět.
+
+**One place makes a text field: `PsmfTextField`.** Thirteen call sites made
+a field (one of them a pick-list), three of them chose an action key, and
+nothing in the app ever let go of focus. A rule each field must remember is broken by the
+next field, so the rule is in the wrapper and `KeyboardTest` fails the build
+if a field is made any other way (a count of raw `OutlinedTextField(` calls
+per file: the wrapper's one, and the fixture filter's select box, which is a
+read-only field that opens a menu and raises no keyboard).
+
+**What ends a keyboard, everywhere:**
+
+- **A tap that is not in a text field**, a button, chip or switch included.
+  The obvious way to write this, a tap handler on the parent, never hears a
+  tap a child has consumed, and every control consumes its own: the keyboard
+  would stay over the screen the referee had moved on from. So the handler
+  listens in the first and last pass and consumes nothing, and asks "is the
+  tap inside a field?" from the fields' own positions. It does not ask which
+  field has focus: a tap on a second field and the focus change it causes
+  arrive in one dispatch, and the order they are noticed in is not a thing to
+  build on.
+- **The start of a scroll** by a finger. Not a fling carrying on, and not the
+  list scrolling itself to keep the focused field in view.
+- **Leaving the step or the tab**, by any route: the tap, the system back, or
+  the screen moving on by itself.
+- **The action key.** `Next` moves to the next field. `Done`, `Search`, `Go`
+  and `Send` drop focus and the keyboard. The platform's `Search` does
+  nothing at all, which is what the fixtures and Týmy search boxes had. The
+  last field of a form says Done; a field edited by itself (a jersey number
+  in a roster row, a date of birth in a lineup row) says Done; the multi-line
+  commentary keeps its return key.
+- **A number pad has no action key on iOS**, so for it the three above are the
+  only ways. That is what "dismissable without a return key" comes to.
+
+A dialog is a window of its own and the screen's handler never hears a tap in
+it, so each dialog's body carries its own (`KeyboardDismissal`).
+
+**The screen is padded by the keyboard's height** (`imePadding`) and **the tab
+bar steps aside while it is up**. Edge-to-edge means Android does not resize
+the window, and before this a field low on a screen sat under the keyboard.
+On a small phone the tab bar is the difference between two fields and three.
+Checked on the emulator for the lineup's lowest row and for the add-player
+dialog; what an iPhone does is on the Mac checklist.
+
+**Zpět on every step of a report, the first included, and a report opened
+part-way keeps the steps before it.** The header is the root of the report
+tab's stack, so it had no Zpět, and a report opened from the fixture list at
+the console had a stack of the console alone, so back left the report. The
+stack is now built from the header up to the step opened. Only the last step
+is ever composed, so the ones beneath cost a list entry each. The roots of
+Zápasy, Týmy and Nastavení still have no Zpět: the tab bar is how you leave
+them, and nothing in them was left. Android's system back and the button are
+the same call.
+
+**Detekt's `LongParameterList` now counts only parameters with no default.**
+`PsmfTextField` takes twelve, as Material's own field takes twenty-odd, and
+all but two have a default. What the rule is for, a long list every caller
+must supply, is still counted.
+
+**Dead ends found** (the prompt asked for a list): the header (fixed); every
+report resumed at the console or the recap, and the one adopted after the app
+was killed, which had no Zpět at all on that screen (fixed, same cause);
+Týmy when its load fails, which shows a message and no retry, and is left by
+switching tab and coming back, which reloads (**not changed**); the empty
+report tab, whose one button goes to Zápasy (a root, not a dead end).
+
+**Reverses if:** a referee finds the tab bar's absence while typing
+disorienting, which is a line in `AppShell`. A scroll that drops the
+keyboard turns out to be too eager over a long lineup, in which case dropping
+it on a scroll only past some distance is one condition in `KeyboardDismissal`.
+
+---
+
 ## 2026-10-17 · From the first iPhone test: Číslo RP takes the number on the card, the lineup marks who came, and the score comes from the goals
 
 **Owner's decisions**, on points the tester raised after using 0.2.1 (3) on
