@@ -211,6 +211,8 @@ private fun MatchRecordQueries.writeHeader(match: Match) {
         kickoff_sequence = match.kickoffSequence?.toLong(),
         finished_at = match.finishedAt?.toString(),
         finished_sequence = match.finishedSequence?.toLong(),
+        home_note = assessment.home.note,
+        away_note = assessment.away.note,
     )
 }
 
@@ -438,6 +440,7 @@ private fun Match_record.toAssessment() =
                 waitingTimeMinutes = home_waiting.toInt(),
                 shirtsProperlyNumbered = home_shirts?.let { it == 1L },
                 uniformKitColour = home_kit?.let { it == 1L },
+                note = home_note,
             ),
         away =
             TeamAssessment(
@@ -445,6 +448,7 @@ private fun Match_record.toAssessment() =
                 waitingTimeMinutes = away_waiting.toInt(),
                 shirtsProperlyNumbered = away_shirts?.let { it == 1L },
                 uniformKitColour = away_kit?.let { it == 1L },
+                note = away_note,
             ),
         commentary = commentary,
     )

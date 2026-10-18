@@ -47,20 +47,19 @@ sealed interface UndoStep {
  * says: the final whistle, then the last period's start, then its end, then
  * the kickoff.
  *
- * **A confirmed report's whistles are not offered**: they were signed under,
- * and changing the clock under a signature is for the part of the app that
- * knows how to withdraw one.
+ * **A signed report's whistles are offered like any other**, and taking one
+ * back takes the signatures back with it: the whistles are among the things
+ * the captains attest ([afterAChangeFrom]). The console says so before it
+ * asks.
  */
 fun Match.nextUndoStep(): UndoStep? {
     val eventSequence = (goals + cardEvents).mapNotNull { it.sequence }.maxOrNull()
     val whistle = latestSequencedWhistle()
-    val step =
-        when {
-            whistle != null && (eventSequence == null || whistle.first > eventSequence) -> whistle.second
-            eventSequence != null || timeline().isNotEmpty() -> UndoStep.Event
-            else -> earliestPressedWhistleWithNoSequence()
-        }
-    return step?.takeUnless { it is UndoStep.TakesBackWhistle && status == MatchStatus.CONFIRMED }
+    return when {
+        whistle != null && (eventSequence == null || whistle.first > eventSequence) -> whistle.second
+        eventSequence != null || timeline().isNotEmpty() -> UndoStep.Event
+        else -> earliestPressedWhistleWithNoSequence()
+    }
 }
 
 private fun Match.latestSequencedWhistle(): Pair<Int, UndoStep.TakesBackWhistle>? {

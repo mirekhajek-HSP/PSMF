@@ -11,6 +11,7 @@ import cz.hspinovace.psmf.domain.Minute
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.UndoStep
 import cz.hspinovace.psmf.domain.isPastTheFinalWhistle
+import cz.hspinovace.psmf.domain.isSigned
 import cz.hspinovace.psmf.domain.nextUndoStep
 import cz.hspinovace.psmf.usecase.BuildConsoleEntry
 import cz.hspinovace.psmf.usecase.CardDraft
@@ -53,6 +54,13 @@ data class ConsoleUiState(
      * yes: taking it back changes the clock, so it asks first.
      */
     val takeBack: UndoStep.TakesBackWhistle? = null,
+    /** The report has its final confirmations: a change to what they attest takes them back. */
+    val signed: Boolean = false,
+    /**
+     * A change waiting for the referee to say yes, because the report is signed
+     * and the change would take the signatures back (prompt 13, part 4).
+     */
+    val withdrawing: ConsoleEvent? = null,
     /** The final whistle has gone and the referee is moving on. */
     val readyToContinue: Boolean = false,
 ) {
@@ -139,6 +147,11 @@ sealed interface ConsoleEvent {
 
     data object TakeBackDismissed : ConsoleEvent
 
+    /** Yes: take the signatures back and make the change that was waiting. */
+    data object WithdrawalConfirmed : ConsoleEvent
+
+    data object WithdrawalDismissed : ConsoleEvent
+
     data object ContinuePressed : ConsoleEvent
 }
 
@@ -169,6 +182,12 @@ class ConsoleViewModel(
     val state: StateFlow<ConsoleUiState> = _state.asStateFlow()
 
     private var match: Match? = null
+
+    /** True only while a change the referee has just agreed to is being made. */
+    private var withdrawalAgreed = false
+
+    /** The report is signed and this change would take the signatures back: ask before making it. */
+    private val asksFirst: Boolean get() = match?.isSigned == true && !withdrawalAgreed
 
     init {
         viewModelScope.launch { reload() }
@@ -208,7 +227,29 @@ class ConsoleViewModel(
                 _state.update { it.copy(readyToContinue = true) }
             }
 
-            // Handled by handleLifecycleEvent, which already returned.
+            // The dialog that asked has already said, when it applies, that the
+            // signatures go with the whistle: one question, not two.
+            ConsoleEvent.TakeBackConfirmed -> {
+                _state.update { it.copy(takeBack = null) }
+                record { undoLastEvent(it) }
+            }
+
+            // Either question answered No: only one of them is ever open.
+            ConsoleEvent.TakeBackDismissed, ConsoleEvent.WithdrawalDismissed -> {
+                _state.update { it.copy(takeBack = null, withdrawing = null) }
+            }
+
+            ConsoleEvent.WithdrawalConfirmed -> {
+                val pending = _state.value.withdrawing
+                _state.update { it.copy(withdrawing = null) }
+                if (pending != null) {
+                    withdrawalAgreed = true
+                    onEvent(pending)
+                    withdrawalAgreed = false
+                }
+            }
+
+            // Handled by the lifecycle and goal handlers, which already returned.
             else -> {}
         }
     }
@@ -222,7 +263,7 @@ class ConsoleViewModel(
     private fun handleLifecycleEvent(event: ConsoleEvent): Boolean {
         when (event) {
             ConsoleEvent.StartPressed -> {
-                record { startMatch(it, clock.now()) }
+                _state.guarded(asksFirst, event) { record { startMatch(it, clock.now()) } }
             }
 
             ConsoleEvent.FinishPressed -> {
@@ -230,11 +271,11 @@ class ConsoleViewModel(
             }
 
             ConsoleEvent.EndPeriodPressed -> {
-                record { endPeriod(it, clock.now()) }
+                _state.guarded(asksFirst, event) { record { endPeriod(it, clock.now()) } }
             }
 
             ConsoleEvent.StartNextPeriodPressed -> {
-                record { startNextPeriod(it, clock.now()) }
+                _state.guarded(asksFirst, event) { record { startNextPeriod(it, clock.now()) } }
             }
 
             // Undo takes back the last thing recorded -- a goal, a card, or a
@@ -251,18 +292,9 @@ class ConsoleViewModel(
                     }
 
                     UndoStep.Event -> {
-                        record { undoLastEvent(it) }
+                        _state.guarded(asksFirst, event) { record { undoLastEvent(it) } }
                     }
                 }
-            }
-
-            ConsoleEvent.TakeBackConfirmed -> {
-                _state.update { it.copy(takeBack = null) }
-                record { undoLastEvent(it) }
-            }
-
-            ConsoleEvent.TakeBackDismissed -> {
-                _state.update { it.copy(takeBack = null) }
             }
 
             else -> {
@@ -281,14 +313,25 @@ class ConsoleViewModel(
      * already chosen and the minute left to write.
      */
     private fun handleGoalEvent(event: ConsoleEvent): Boolean {
+        val tapped = { side: TeamSide, scorer: AppearanceId? ->
+            val entry = _state.value.entry
+            if (entry != null && entry.status.isPastTheFinalWhistle) {
+                _state.update { it.withGoalOpened(GoalDraft(side, scorer)) }
+            } else if (entry != null) {
+                val now = clock.now()
+                val minute = _state.value.minuteAt(now)
+                _state.guarded(asksFirst, event) {
+                    record { logGoal(it, side, scorer, minute, now, entry.halfLengthMinutes) }
+                }
+            }
+        }
         when (event) {
             is ConsoleEvent.GoalScoredBy -> {
-                val side = _state.value.sideOf(event.appearanceId) ?: return true
-                goalOrSheet(side, event.appearanceId)
+                _state.value.sideOf(event.appearanceId)?.let { tapped(it, event.appearanceId) }
             }
 
             is ConsoleEvent.GoalWithNoScorer -> {
-                goalOrSheet(event.side, null)
+                tapped(event.side, null)
             }
 
             is ConsoleEvent.GoalWithMinuteOpened -> {
@@ -314,20 +357,6 @@ class ConsoleViewModel(
         return true
     }
 
-    private fun goalOrSheet(
-        side: TeamSide,
-        scorer: AppearanceId?,
-    ) {
-        val entry = _state.value.entry ?: return
-        if (entry.status.isPastTheFinalWhistle) {
-            _state.update { it.withGoalOpened(GoalDraft(side, scorer)) }
-        } else {
-            val now = clock.now()
-            val minute = _state.value.minuteAt(now)
-            record { logGoal(it, side, scorer, minute, now, entry.halfLengthMinutes) }
-        }
-    }
-
     private fun submitGoal() {
         val draft = _state.value.goal ?: return
         val entry = _state.value.entry ?: return
@@ -339,10 +368,12 @@ class ConsoleViewModel(
             return
         }
         val current = match ?: return
-        viewModelScope.launch {
-            match = logGoal(current, draft.side, draft.scorer, minute, now, entry.halfLengthMinutes)
-            _state.update { it.copy(goal = null, goalProblems = emptyList()) }
-            reload()
+        _state.guarded(asksFirst, ConsoleEvent.GoalSubmitted) {
+            viewModelScope.launch {
+                match = logGoal(current, draft.side, draft.scorer, minute, now, entry.halfLengthMinutes)
+                _state.update { it.copy(goal = null, goalProblems = emptyList()) }
+                reload()
+            }
         }
     }
 
@@ -355,12 +386,14 @@ class ConsoleViewModel(
         }
         val current = match ?: return
         val halfLength = _state.value.entry?.halfLengthMinutes ?: Minute.HALF_LENGTH
-        viewModelScope.launch {
-            // A second yellow records both cards; a dismissal starts ten
-            // minutes of play from the minute written. See LogCard.
-            match = logCard(current, draft, clock.now(), halfLength) ?: current
-            _state.update { it.copy(card = null, cardProblems = emptyList()) }
-            reload()
+        _state.guarded(asksFirst, ConsoleEvent.CardSubmitted) {
+            viewModelScope.launch {
+                // A second yellow records both cards; a dismissal starts ten
+                // minutes of play from the minute written. See LogCard.
+                match = logCard(current, draft, clock.now(), halfLength) ?: current
+                _state.update { it.copy(card = null, cardProblems = emptyList()) }
+                reload()
+            }
         }
     }
 
@@ -375,7 +408,7 @@ class ConsoleViewModel(
     private suspend fun reload() {
         val current = matches.load(matchId) ?: return
         match = current
-        _state.update { it.copy(loading = false, entry = buildConsoleEntry(current)) }
+        _state.update { it.copy(loading = false, entry = buildConsoleEntry(current), signed = current.isSigned) }
     }
 }
 
@@ -415,3 +448,16 @@ private fun ConsoleUiState.withCardOpened(
             ),
         cardProblems = emptyList(),
     )
+
+/**
+ * Makes [change], **or asks first** when [askFirst]: the report is signed and
+ * the change would take the signatures back. The dialog says so, and nothing is
+ * saved until it is answered.
+ */
+private fun MutableStateFlow<ConsoleUiState>.guarded(
+    askFirst: Boolean,
+    event: ConsoleEvent,
+    change: () -> Unit,
+) {
+    if (askFirst) update { it.copy(withdrawing = event) } else change()
+}

@@ -18,6 +18,7 @@ import cz.hspinovace.psmf.domain.PlayerName
 import cz.hspinovace.psmf.domain.Team
 import cz.hspinovace.psmf.domain.TeamId
 import cz.hspinovace.psmf.domain.TeamSide
+import cz.hspinovace.psmf.domain.afterAChangeFrom
 import kotlinx.datetime.LocalDate
 
 /**
@@ -218,7 +219,7 @@ class SaveLineup(
             when (entry.side) {
                 TeamSide.HOME -> match.copy(homeLineup = lineup)
                 TeamSide.AWAY -> match.copy(awayLineup = lineup)
-            }
+            }.afterAChangeFrom(match)
         matches.save(updated)
         return updated
     }

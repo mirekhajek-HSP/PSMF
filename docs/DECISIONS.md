@@ -5,6 +5,95 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-18 · The assessment and the recap: a note per team, a result from the goals, three taps, and what takes a signature back (prompt 13, Part 4)
+
+**1. A note per team.** In *Hodnocení*, under each team's ratings: optional, for
+a complaint or a protest the team's captain asks the referee to note. **The
+referee types it**, being the only recorder. It is exported in the commentary
+block, labelled per team in fixed Czech (*Poznámka týmu D*, *Poznámka týmu H*),
+as a row per team in the CSV and a `note` field per team in the JSON. Both
+lines are always written -- *—* when there is none -- so that a reader can tell
+"none was given" from "left out". It is **never a readiness problem**, and no
+signature attests it: it stays editable until export, like the commentary.
+Stored in two new columns of the unreleased schema 7 (`home_note`, `away_note`),
+empty for every match already written. **Reverses if** the note should say whose
+it is: it is labelled by team, not by the captain, because the referee types it.
+
+**2. The result comes from the goals.** The recap **shows** *poločas* and
+*Konečný výsledek* and a line says where a goal is corrected (the console: Undo,
+or a goal at its own minute). `Match.resultFromGoals()` is the one derivation:
+full time is the goals; half time is the goals at a minute no later than `30´+`,
+whenever they were written, or -- for a match that never reached the break -- the
+score so far. Removed as dead: `ScoreDisagreesWithGoals`, `MissingResult`,
+`ResultDraft`, `RecordResult`, `ResultProblem`, the recap's four score fields,
+and the export screen's two strings for them. **Old reports (the call the brief
+left to me):**
+
+- **A report that is CONFIRMED keeps what it says.** `resultForReport()` reads
+  the typed result stored on a CONFIRMED report, so its export is what it was
+  when it was signed, even if its goals add up to something else.
+- **Any other old report says what its goals say**, and the typed result stored
+  on it is dead data: still in the table, never read, never deleted. Why: nothing
+  can edit a typed number any more, so one that disagrees with the goals could
+  never be corrected in the app; the goals are what was recorded; and keeping the
+  typed one would bring back exactly the disagreement this removes. A referee who
+  had deliberately typed a result their goals did not make adds the missing goal in
+  the console, which Part 3 made possible after the whistle.
+- A report that is signed under the new rules has no typed result and says its
+  goals; nothing can change its goals without taking the signatures back (4).
+
+**3. Three taps, under names already known.** The home captain, the away captain
+and the referee each confirm by one tap on a button that **shows the name it signs
+with**: the captain marked in that team's lineup, the referee from the header.
+Nothing is typed and there is no deputy switch (`Confirmation.asDeputy` stays in
+the model for what 0.2.1 wrote). These are the **final** confirmations, separate
+from Part 2's tap under the lineup, and all three make the report CONFIRMED.
+A team with no captain marked -- a match upgraded from 0.2.1 -- has no button, only
+what to do (go back to the lineups and mark one): there is nothing to type instead,
+because the point is that the name is the lineup's. **The report shows both of each
+captain's confirmations, each with its time**: under each lineup (*Podpis kapitána
+před zahájením utkání*) and in the signatures at the end, in the TXT, as a name and
+a time cell in the CSV, and as instants in the JSON. The times in the TXT and CSV
+are **Prague time whatever the phone's zone is**, because the report is Czech and
+a time that read two ways would make one report say two things. For a CONFIRMED
+report written before 0.3.0 the TXT gains that time after each name: it was stored
+all along, and the names are unchanged. **Reverses if** a referee has to sign for a
+captain who is not the one marked: the captain is changed in the lineup, which
+takes the signatures back (4).
+
+**4. Taking things back.**
+
+- **The "no cards" affirmation can be withdrawn** (*Vzít zpět*): the block is
+  *not accounted for* again -- not "none", not "some" -- which is what it was
+  before the referee said anything and what the readiness check then asks about.
+- **What the signatures attest** is the header, the lineups (not the captain's
+  own confirmation under one, which is a signature and not content), the goals,
+  the cards with that affirmation, and the whistles. **A change to any of them
+  takes every final confirmation back**, and a CONFIRMED report is FINISHED again
+  and the recap asks for the three once more. The signatures given so far are
+  taken back when only some were given: they attested an older report. A save
+  that changes nothing a signature attests -- the assessment, the commentary, a
+  team note, the same lineup written again -- leaves them where they are, and so
+  does a change that is refused. One function, `afterAChangeFrom`, which every use
+  case that changes the report passes through, so that no path forgets it.
+- **The assessment, the commentary and the team notes stay editable until export
+  without touching a signature** (A6).
+- **The referee is told before it is saved.** Where there is one moment to ask --
+  a goal, a card, an Undo, a whistle, the affirmation withdrawn -- a question says
+  that the report is signed and the change takes the signatures back, and nothing
+  is saved until it is answered. **The header and the lineups save as you type**,
+  so there is no moment to ask: a notice at the top of each says it before the
+  first edit, and the first edit takes the signatures back. **Reverses if** a
+  referee loses signatures by editing a name by accident: then those two screens
+  get an explicit *edit the signed report* step first, which would make the most
+  common edit (a typo) one tap longer.
+- **This reverses a Gate 3 decision**: a signed report's whistles were not
+  offered. They are now, like the other things the signatures attest, and the
+  question that names the whistle says in its own words that the signatures go
+  with it: one dialog, not two.
+
+---
+
 ## 2026-10-18 · The console: a goal at its own minute, a whistle taken back, minutes and seconds (prompt 13, Part 3)
 
 **1. A goal with its own minute.** The one-tap goal is still one tap, at the

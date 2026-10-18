@@ -1,8 +1,14 @@
 package cz.hspinovace.psmf.export
 
 import cz.hspinovace.psmf.domain.Fixtures
+import cz.hspinovace.psmf.domain.GoalEvent
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
+import cz.hspinovace.psmf.domain.MatchResult
+import cz.hspinovace.psmf.domain.MatchStatus
+import cz.hspinovace.psmf.domain.Minute
+import cz.hspinovace.psmf.domain.Score
+import cz.hspinovace.psmf.domain.TeamSide
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertContains
@@ -93,21 +99,48 @@ class BuildZouReportTest {
     @Test
     fun aDrawSaysSoInWords() =
         runTest {
+            // The result is the goals', so a draw is a match whose goals are level.
             val drawn =
                 CompleteReport.match.copy(
-                    result =
-                        cz.hspinovace.psmf.domain.MatchResult(
-                            halfTime =
-                                cz.hspinovace.psmf.domain
-                                    .Score(1, 1),
-                            fullTime =
-                                cz.hspinovace.psmf.domain
-                                    .Score(2, 2),
+                    goals =
+                        listOf(
+                            GoalEvent(Minute.Played(5), TeamSide.AWAY, null, Score(0, 1)),
+                            GoalEvent(Minute.Played(10), TeamSide.HOME, null, Score(1, 1)),
                         ),
                 )
             val report = assertNotNull(BuildZouReport(CompleteReport.league(), NoAddedPlayers())(drawn))
 
             assertEquals(ZouWords.DRAW, assertNotNull(report.result).winner)
+            assertEquals("1:1", assertNotNull(report.result).fullTime)
+        }
+
+    @Test
+    fun aReportThatWasConfirmedBeforeKeepsTheResultItWasSignedWith() =
+        runTest {
+            // Typed under the old rules and signed under them: it says what it
+            // said, whatever its goals add up to.
+            val signed =
+                CompleteReport.match.copy(
+                    status = MatchStatus.CONFIRMED,
+                    result = MatchResult(halfTime = Score(1, 1), fullTime = Score(2, 2)),
+                )
+            val report = assertNotNull(BuildZouReport(CompleteReport.league(), NoAddedPlayers())(signed))
+
+            assertEquals("2:2", assertNotNull(report.result).fullTime)
+            assertEquals(ZouWords.DRAW, assertNotNull(report.result).winner)
+        }
+
+    @Test
+    fun aResultTypedUnderTheOldRulesOnAReportThatIsNotConfirmedIsIgnored() =
+        runTest {
+            val unsigned =
+                CompleteReport.match.copy(
+                    status = MatchStatus.FINISHED,
+                    result = MatchResult(halfTime = Score(1, 1), fullTime = Score(9, 9)),
+                )
+            val report = assertNotNull(BuildZouReport(CompleteReport.league(), NoAddedPlayers())(unsigned))
+
+            assertEquals(CompleteReport.match.scoreFromGoals().asWrittenOnReport, assertNotNull(report.result).fullTime)
         }
 
     @Test
@@ -146,7 +179,8 @@ class BuildZouReportTest {
 
             assertEquals("", report.header.referee)
             assertTrue(report.lineups.isEmpty())
-            assertNull(report.result)
+            // The result is the goals', so even a bare report has one: 0:0.
+            assertEquals("0:0", assertNotNull(report.result).fullTime)
         }
 }
 
@@ -235,8 +269,9 @@ class ZouTextTest {
     @Test
     fun aMissingResultIsMarkedRatherThanOmitted() =
         runTest {
-            val noResult = CompleteReport.match.copy(result = null)
-            val report = assertNotNull(BuildZouReport(CompleteReport.league(), NoAddedPlayers())(noResult))
+            // The builder always has one now; the formatter still marks a report
+            // that was handed one with none, as it always did.
+            val report = CompleteReport.report().copy(result = null)
 
             assertContains(ZouText.format(report), "${ZouLabels.Result.FINAL}: ${ZouWords.NOT_GIVEN}")
         }

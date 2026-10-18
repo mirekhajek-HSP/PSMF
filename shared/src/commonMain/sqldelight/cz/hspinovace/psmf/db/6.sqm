@@ -14,6 +14,14 @@
 --   match finished before version 7 simply has no instant for its final
 --   whistle: the console then shows what it always showed after it.
 --
+--   Team notes: empty, for every match already written -- none was given.
+--
+--   The result the referee typed (half_time_*, full_time_*): LEFT WHERE IT IS.
+--   From version 7 the result comes from the goals and is never written, so
+--   what is stored is read for one purpose only: a match that is CONFIRMED
+--   keeps what it said when it was signed. On any other match it is dead
+--   data, ignored; nothing is deleted or rewritten.
+--
 --   Captain and goalkeeper: NULL, for every lineup already written. That is
 --   the truth -- version 6 kept neither -- and nothing is invented to fill
 --   it: a captain nobody marked is not a captain, and a report must not
@@ -54,6 +62,11 @@ ALTER TABLE match_record ADD COLUMN finished_at TEXT;
 ALTER TABLE match_record ADD COLUMN finished_sequence INTEGER;
 ALTER TABLE period_break_record ADD COLUMN ended_sequence INTEGER;
 ALTER TABLE period_break_record ADD COLUMN next_started_sequence INTEGER;
+
+-- A team's note, for a complaint or a protest the captain asks the referee to
+-- note. Empty for every match already written, which is what none was given.
+ALTER TABLE match_record ADD COLUMN home_note TEXT NOT NULL DEFAULT '';
+ALTER TABLE match_record ADD COLUMN away_note TEXT NOT NULL DEFAULT '';
 
 -- date_of_birth was NOT NULL, because it was all a player added at the pitch
 -- had. One with a card has the number on the appearance instead. SQLite

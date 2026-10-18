@@ -119,6 +119,7 @@ abstract class LineupScreenTestBase {
         confirmation: LineupConfirmation? = null,
         newPlayer: NewPlayerRequest? = null,
         rejected: Boolean = false,
+        signed: Boolean = false,
     ): LineupUiState {
         val away =
             TeamLineupEntry(
@@ -129,6 +130,7 @@ abstract class LineupScreenTestBase {
             )
         return LineupUiState(
             loading = false,
+            signed = signed,
             entry = LineupEntry(homeTeam(members, captain, goalkeeper, confirmation), away),
             newPlayer = newPlayer,
             newPlayerRejected = rejected,

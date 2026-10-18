@@ -28,6 +28,8 @@ import cz.hspinovace.psmf.resources.assessment_continue
 import cz.hspinovace.psmf.resources.assessment_fines_note
 import cz.hspinovace.psmf.resources.assessment_no
 import cz.hspinovace.psmf.resources.assessment_shirts
+import cz.hspinovace.psmf.resources.assessment_team_note
+import cz.hspinovace.psmf.resources.assessment_team_note_hint
 import cz.hspinovace.psmf.resources.assessment_uniform_kit
 import cz.hspinovace.psmf.resources.assessment_waiting_time
 import cz.hspinovace.psmf.resources.assessment_yes
@@ -123,6 +125,20 @@ private fun TeamBlock(
             value = draft.uniformKitColour,
             onChange = { onChange(draft.copy(uniformKitColour = it)) },
         )
+        // A complaint or a protest the captain asks the referee to note. The
+        // referee types it, being the only recorder; it is optional, and never
+        // a reason the report cannot be sent.
+        PsmfTextField(
+            value = draft.note,
+            onValueChange = { onChange(draft.copy(note = it)) },
+            label = { Text(stringResource(Res.string.assessment_team_note)) },
+            supportingText = { Text(stringResource(Res.string.assessment_team_note_hint)) },
+            modifier = Modifier.fillMaxWidth().heightIn(min = NOTE_HEIGHT),
+            singleLine = false,
+            minLines = NOTE_LINES,
+            // Several lines: the return key is a new line, as in the commentary.
+            imeAction = ImeAction.Default,
+        )
     }
 }
 
@@ -176,4 +192,6 @@ private fun NumberField(
 }
 
 private val COMMENTARY_HEIGHT = 160.dp
+private val NOTE_HEIGHT = 96.dp
+private const val NOTE_LINES = 3
 private const val COMMENTARY_LINES = 5

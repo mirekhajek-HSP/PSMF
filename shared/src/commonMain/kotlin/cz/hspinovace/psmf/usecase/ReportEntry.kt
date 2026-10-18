@@ -7,12 +7,11 @@ import cz.hspinovace.psmf.domain.Confirmation
 import cz.hspinovace.psmf.domain.ConfirmingParty
 import cz.hspinovace.psmf.domain.JerseyNumber
 import cz.hspinovace.psmf.domain.Match
-import cz.hspinovace.psmf.domain.MatchResult
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.PersonName
-import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamAssessment
 import cz.hspinovace.psmf.domain.TeamSide
+import cz.hspinovace.psmf.domain.afterAChangeFrom
 import kotlin.time.Instant
 
 /**
@@ -29,6 +28,8 @@ data class TeamAssessmentDraft(
     val waitingTimeMinutes: String = "0",
     val shirtsProperlyNumbered: Boolean? = null,
     val uniformKitColour: Boolean? = null,
+    /** A complaint or protest the captain asks the referee to note; see [TeamAssessment.note]. */
+    val note: String = "",
 ) {
     fun toDomain(): TeamAssessment =
         TeamAssessment(
@@ -36,6 +37,7 @@ data class TeamAssessmentDraft(
             waitingTimeMinutes = waitingTimeMinutes.trim().toIntOrNull()?.coerceAtLeast(0) ?: 0,
             shirtsProperlyNumbered = shirtsProperlyNumbered,
             uniformKitColour = uniformKitColour,
+            note = note,
         )
 
     companion object {
@@ -49,6 +51,7 @@ data class TeamAssessmentDraft(
                 waitingTimeMinutes = assessment.waitingTimeMinutes.toString(),
                 shirtsProperlyNumbered = assessment.shirtsProperlyNumbered,
                 uniformKitColour = assessment.uniformKitColour,
+                note = assessment.note,
             )
     }
 }
@@ -83,6 +86,10 @@ data class AssessmentDraft(
  * Unlike the header and the lineup, there is nothing here that cannot be
  * stored half-finished: [Assessment] is nullable all the way down by
  * design, because the commentary stays editable until export (A6).
+ *
+ * **It touches no confirmation.** The assessment, the commentary and the team
+ * notes are the referee's to finish until export, and nobody signs them: an
+ * edit here leaves the captains' and the referee's signatures where they are.
  */
 class SaveAssessment(
     private val matches: MatchRepository,
@@ -98,115 +105,6 @@ class SaveAssessment(
 }
 
 /**
- * `poločas` and `Konečný výsledek`, while they are being typed.
- *
- * Both are entered rather than derived. The goals give the app a number,
- * but the referee's is the one that counts and the two disagreeing is
- * exactly what the readiness check exists to surface.
- */
-data class ResultDraft(
-    val halfTimeHome: String = "",
-    val halfTimeAway: String = "",
-    val fullTimeHome: String = "",
-    val fullTimeAway: String = "",
-) {
-    fun toResult(): MatchResult? {
-        val halfTime = scoreOf(halfTimeHome, halfTimeAway) ?: return null
-        val fullTime = scoreOf(fullTimeHome, fullTimeAway) ?: return null
-        // Goals cannot be un-scored. A full-time score below the half-time
-        // one is a typo, and MatchResult refuses to hold it.
-        if (fullTime.home < halfTime.home || fullTime.away < halfTime.away) return null
-        return MatchResult(halfTime = halfTime, fullTime = fullTime)
-    }
-
-    fun problems(): List<ResultProblem> =
-        buildList {
-            if (scoreOf(fullTimeHome, fullTimeAway) == null) add(ResultProblem.FULL_TIME_MISSING)
-            if (isEmpty() && toResult() == null) add(ResultProblem.FULL_TIME_BELOW_HALF_TIME)
-        }
-
-    private fun scoreOf(
-        home: String,
-        away: String,
-    ): Score? {
-        val h = home.trim().toIntOrNull()?.takeIf { it >= 0 } ?: return null
-        val a = away.trim().toIntOrNull()?.takeIf { it >= 0 } ?: return null
-        return Score(h, a)
-    }
-
-    companion object {
-        fun from(result: MatchResult?) =
-            ResultDraft(
-                halfTimeHome =
-                    result
-                        ?.halfTime
-                        ?.home
-                        ?.toString()
-                        .orEmpty(),
-                halfTimeAway =
-                    result
-                        ?.halfTime
-                        ?.away
-                        ?.toString()
-                        .orEmpty(),
-                fullTimeHome =
-                    result
-                        ?.fullTime
-                        ?.home
-                        ?.toString()
-                        .orEmpty(),
-                fullTimeAway =
-                    result
-                        ?.fullTime
-                        ?.away
-                        ?.toString()
-                        .orEmpty(),
-            )
-
-        /**
-         * Pre-filled from the goals, and **never blank**.
-         *
-         * Full time is what was recorded. Half time is the score at the
-         * moment the first period ended (analysis section 2.5) — a fact
-         * about the match now, not a guess, once a half-time exists to
-         * read it from. If it does not — an abandoned match that never
-         * reached the break — the closest true statement is the score
-         * recorded so far, which is what [Match.scoreFromGoals] already
-         * is.
-         */
-        fun suggestedFrom(match: Match): ResultDraft {
-            val fromGoals = match.scoreFromGoals()
-            val halfTime = match.scoreAtEndOfFirstPeriod() ?: fromGoals
-            return ResultDraft(
-                halfTimeHome = halfTime.home.toString(),
-                halfTimeAway = halfTime.away.toString(),
-                fullTimeHome = fromGoals.home.toString(),
-                fullTimeAway = fromGoals.away.toString(),
-            )
-        }
-    }
-}
-
-enum class ResultProblem {
-    FULL_TIME_MISSING,
-    FULL_TIME_BELOW_HALF_TIME,
-}
-
-class RecordResult(
-    private val matches: MatchRepository,
-) {
-    suspend operator fun invoke(
-        match: Match,
-        draft: ResultDraft,
-    ): Match {
-        val result = draft.toResult() ?: return match
-        val updated = match.copy(result = result)
-        matches.save(updated)
-        return updated
-    }
-}
-
-/**
  * The referee affirming that no cards were issued.
  *
  * **An empty list is not "no cards".** The paper form requires the boxes
@@ -214,6 +112,9 @@ class RecordResult(
  * says — distinct from a block nobody has filled in. Nothing else in the
  * app can set it: the console only ever adds cards, so without this a
  * clean match could never be exported.
+ *
+ * It is a statement about the cards, which the captains attest, so on a
+ * signed report it takes the signatures back ([afterAChangeFrom]).
  */
 class AffirmNoCards(
     private val matches: MatchRepository,
@@ -222,7 +123,27 @@ class AffirmNoCards(
         // Only when there is genuinely nothing there. Striking the boxes
         // through must not be a way to delete cards already recorded.
         if (match.cardEvents.isNotEmpty()) return match
-        val updated = match.copy(cards = CardsSection.NoneIssued)
+        val updated = match.copy(cards = CardsSection.NoneIssued).afterAChangeFrom(match)
+        matches.save(updated)
+        return updated
+    }
+}
+
+/**
+ * Taking the "no cards" affirmation back: the block is unaccounted for again.
+ *
+ * Not "some cards" and not "none": **unaccounted for**, which is what it was
+ * before the referee said anything, and what the readiness check then asks
+ * about. A mis-tap on *Žádné karty nebyly uděleny* is no longer final. Only an
+ * affirmation can be withdrawn -- never recorded cards, which Undo takes back
+ * one at a time -- and, like making it, it takes signatures back.
+ */
+class WithdrawNoCards(
+    private val matches: MatchRepository,
+) {
+    suspend operator fun invoke(match: Match): Match {
+        if (match.cards != CardsSection.NoneIssued) return match
+        val updated = match.copy(cards = null).afterAChangeFrom(match)
         matches.save(updated)
         return updated
     }
@@ -231,11 +152,17 @@ class AffirmNoCards(
 /**
  * One confirmation per party, replaced rather than accumulated.
  *
- * **One captain per team confirms** — settled 2026-08-30. The captain
- * confirms the lineup before kickoff and the finished report afterwards,
- * and those are the same act: re-confirming updates the timestamp rather
- * than adding a second signature, which is why [Match.confirmedBy] filters
- * by party before appending.
+ * **One captain per team confirms** — settled 2026-08-30 — and **by a tap**:
+ * the name is the one the screen showed on the button, the captain marked in
+ * the lineup or the referee from the header, so there is nothing to type and
+ * no deputy to switch on (prompt 13, part 4). These are the *final*
+ * confirmations, under the finished report. The captain's confirmation of the
+ * lineup before kickoff is a different record ([cz.hspinovace.psmf.domain.Lineup.confirmation]),
+ * and giving one does not give the other.
+ *
+ * Re-confirming updates the time rather than adding a second signature,
+ * which is why [Match.confirmedBy] filters by party before appending. All
+ * three in, and the report is CONFIRMED.
  */
 class ConfirmReport(
     private val matches: MatchRepository,
@@ -243,16 +170,10 @@ class ConfirmReport(
     suspend operator fun invoke(
         match: Match,
         party: ConfirmingParty,
-        by: String,
-        asDeputy: Boolean,
+        by: PersonName,
         at: Instant,
-    ): Match? {
-        val name = PersonName.orNull(by) ?: return null
-        val confirmed =
-            match.confirmedBy(
-                Confirmation(party = party, at = at, confirmedBy = name, asDeputy = asDeputy),
-            )
-        // All three in: the report is what the parties agreed it says.
+    ): Match {
+        val confirmed = match.confirmedBy(Confirmation(party = party, at = at, confirmedBy = by))
         val updated =
             if (ConfirmingParty.entries.all { confirmed.hasConfirmationFrom(it) }) {
                 confirmed.copy(status = MatchStatus.CONFIRMED)

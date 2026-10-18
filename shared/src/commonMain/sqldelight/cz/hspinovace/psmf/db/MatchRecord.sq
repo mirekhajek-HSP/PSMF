@@ -54,7 +54,14 @@ CREATE TABLE match_record (
     -- The final whistle, which had no instant of its own before version 7.
     -- Both NULL for a match that was finished before then.
     finished_at       TEXT,
-    finished_sequence INTEGER
+    finished_sequence INTEGER,
+
+    -- A complaint or protest a captain asks the referee to note, one per
+    -- team (version 7). Free text and optional: an empty string is the normal
+    -- case. Not something the final confirmations attest, so it is edited
+    -- until export like the commentary.
+    home_note         TEXT    NOT NULL DEFAULT '',
+    away_note         TEXT    NOT NULL DEFAULT ''
 );
 
 CREATE TABLE lineup_record (
@@ -245,7 +252,8 @@ INSERT OR REPLACE INTO match_record (
     home_best_player, home_waiting, home_shirts, home_kit,
     away_best_player, away_waiting, away_shirts, away_kit,
     commentary, cards_state,
-    kickoff_sequence, finished_at, finished_sequence
+    kickoff_sequence, finished_at, finished_sequence,
+    home_note, away_note
 ) VALUES (
     ?, ?, ?, ?, ?,
     ?, ?, ?, ?, ?,
@@ -253,7 +261,8 @@ INSERT OR REPLACE INTO match_record (
     ?, ?, ?, ?,
     ?, ?, ?, ?,
     ?, ?,
-    ?, ?, ?
+    ?, ?, ?,
+    ?, ?
 );
 
 selectMatch:

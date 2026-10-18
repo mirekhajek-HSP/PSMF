@@ -23,13 +23,6 @@ sealed interface ReportProblem {
         val side: TeamSide,
     ) : ReportProblem
 
-    data object MissingResult : ReportProblem
-
-    data class ScoreDisagreesWithGoals(
-        val recorded: Score,
-        val fromGoals: Score,
-    ) : ReportProblem
-
     data object MissingOfficials : ReportProblem
 
     data class MissingLineup(
@@ -80,15 +73,9 @@ fun Match.reportProblems(): List<ReportProblem> =
         if (!assessment.home.isComplete) add(ReportProblem.AssessmentIncomplete(TeamSide.HOME))
         if (!assessment.away.isComplete) add(ReportProblem.AssessmentIncomplete(TeamSide.AWAY))
 
-        val recorded = result
-        if (recorded == null) {
-            add(ReportProblem.MissingResult)
-        } else {
-            val derived = scoreFromGoals()
-            if (recorded.fullTime != derived) {
-                add(ReportProblem.ScoreDisagreesWithGoals(recorded.fullTime, derived))
-            }
-        }
+        // No result problem of either kind: the result comes from the goals
+        // (resultFromGoals), so it is never missing and cannot disagree with
+        // them. A team's note is never a problem either.
 
         ConfirmingParty.entries
             .filterNot { hasConfirmationFrom(it) }

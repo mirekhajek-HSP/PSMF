@@ -16,6 +16,7 @@ import cz.hspinovace.psmf.domain.PlayerName
 import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.YellowCard
+import cz.hspinovace.psmf.domain.resultForReport
 
 /**
  * Turns a report in progress into the *Zápis o utkání*.
@@ -94,8 +95,11 @@ class BuildZouReport(
                     yellow = match.cardsInMatchOrder<YellowCard>().map { it.toZou(appearances) },
                     red = match.cardsInMatchOrder<RedCard>().map { it.toZou(appearances) },
                 ),
+            // From the goals, and never typed; the one exception is a report
+            // that was already CONFIRMED with a result of its own, which keeps
+            // what it said (resultForReport).
             result =
-                match.result?.let { result ->
+                match.resultForReport().let { result ->
                     ZouResult(
                         halfTime = result.halfTime.asWrittenOnReport,
                         fullTime = result.fullTime.asWrittenOnReport,
@@ -207,6 +211,7 @@ private fun cz.hspinovace.psmf.domain.TeamAssessment.toZou(): ZouTeamAssessment 
         waitingTimeMinutes = waitingTimeMinutes,
         shirtsProperlyNumbered = shirtsProperlyNumbered,
         uniformKitColour = uniformKitColour,
+        note = note,
     )
 
 private fun ConfirmingParty.asZouLabel(): String =

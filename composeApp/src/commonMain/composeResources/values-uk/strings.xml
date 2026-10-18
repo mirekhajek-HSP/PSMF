@@ -159,6 +159,8 @@
     <string name="assessment_waiting_time">Čd — час очікування (хв)</string>
     <string name="assessment_shirts">Č — номери на футболках у порядку?</string>
     <string name="assessment_uniform_kit">B — єдиний колір форми?</string>
+    <string name="assessment_team_note">Примітка команди</string>
+    <string name="assessment_team_note_hint">Скарга або протест, які капітан просить арбітра записати. Необов’язково.</string>
     <string name="assessment_yes">Так</string>
     <string name="assessment_no">Ні</string>
     <string name="assessment_fines_note">Č і B впливають на штрафи. Поки ви не відповісте, вони лишаються незаповненими — порожня відповідь не рахується як «так».</string>
@@ -170,7 +172,7 @@
     <string name="recap_title">Підсумок</string>
     <string name="recap_loading">Завантаження протоколу…</string>
     <string name="recap_result">Результат</string>
-    <string name="recap_result_note">Обидва рахунки підставлено автоматично — кінцевий із записаних голів, рахунок першого тайму — зі стану матчу на момент завершення першого тайму. Обидва можна виправити, якщо гол потрібно скоригувати пізніше.</string>
+    <string name="recap_result_note">Результат обчислюється із записаних голів — рахунок першого тайму зі стану на момент його завершення — і не редагується. Гол виправляють на екрані матчу.</string>
     <string name="recap_half_time">Перший тайм</string>
     <string name="recap_full_time">Кінцевий рахунок</string>
     <string name="recap_document">Протокол у тому вигляді, як буде надіслано</string>
@@ -180,14 +182,19 @@
     <string name="recap_no_cards_note">На папері клітинки перекреслюють. Незаповнений розділ — це не те саме, що «без карток», тому це треба підтвердити.</string>
     <string name="recap_no_cards_confirmed">Підтверджено: без карток</string>
     <string name="recap_signatures">Підписи</string>
+    <string name="recap_confirm_as">%1$s підтверджує</string>
+    <string name="recap_confirmed_by">%1$s — підтверджено %2$s</string>
+    <string name="recap_no_captain">У складі не позначено капітана. Поверніться до складів (Назад) і позначте його.</string>
+    <string name="recap_no_referee">У заголовку немає імені судді. Поверніться до заголовка (Назад).</string>
+    <string name="recap_no_cards_withdraw">Скасувати</string>
+    <string name="signatures_withdraw_title">Скасувати підписи?</string>
+    <string name="signatures_withdraw_body">Протокол підписано. Ця зміна скасує підписи капітанів і судді, і підсумок знову попросить їх.</string>
+    <string name="signatures_withdraw_confirm">Так, скасувати підписи</string>
+    <string name="signatures_withdraw_keep">Залишити підписи</string>
+    <string name="signatures_banner">Протокол підписано. Будь-яка зміна тут скасує підписи капітанів і судді; підсумок знову попросить їх.</string>
     <string name="recap_confirm_home_captain">Капітан господарів</string>
     <string name="recap_confirm_away_captain">Капітан гостей</string>
     <string name="recap_confirm_referee">Суддя</string>
-    <string name="recap_confirmed">підтверджено</string>
-    <string name="recap_confirm">Підтвердити</string>
-    <string name="recap_confirm_name">Імʼя</string>
-    <string name="recap_confirm_error">Введіть імʼя латиницею.</string>
-    <string name="recap_deputy">Заступник капітана</string>
     <string name="recap_continue">Далі до надсилання</string>
 
     <!-- Screen 7: export -->
@@ -214,8 +221,6 @@
     <string name="export_problem_card_reason">Картка на %1$s не має причини.</string>
     <string name="export_problem_commentary">Бракує обовʼязкового коментаря.</string>
     <string name="export_problem_assessment">Бракує оцінки Č або B (%1$s).</string>
-    <string name="export_problem_result">Бракує результату.</string>
-    <string name="export_problem_score_mismatch">Введений результат %1$s не збігається із записаними голами %2$s.</string>
     <string name="export_problem_confirmation_home">Капітан господарів не підтвердив.</string>
     <string name="export_problem_confirmation_away">Капітан гостей не підтвердив.</string>
     <string name="export_problem_confirmation_referee">Суддя не підтвердив.</string>

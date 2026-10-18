@@ -155,6 +155,8 @@
     <string name="assessment_waiting_time">Čd — waiting time (min)</string>
     <string name="assessment_shirts">Č — shirts properly numbered?</string>
     <string name="assessment_uniform_kit">B — uniform kit colour?</string>
+    <string name="assessment_team_note">Team note</string>
+    <string name="assessment_team_note_hint">A complaint or protest the captain asks the referee to note. Optional.</string>
     <string name="assessment_yes">Yes</string>
     <string name="assessment_no">No</string>
     <string name="assessment_fines_note">Č and B feed into fines. They stay unanswered until you answer them — a blank is not counted as a yes.</string>
@@ -166,7 +168,7 @@
     <string name="recap_title">Recap</string>
     <string name="recap_loading">Loading the report…</string>
     <string name="recap_result">Result</string>
-    <string name="recap_result_note">Both scores are pre-filled — the final score from the goals recorded, the half-time score from how the match stood when the first half ended. Both stay editable in case a goal needs correcting afterwards.</string>
+    <string name="recap_result_note">The result is worked out from the goals recorded — half time from how the match stood when the first half ended — and cannot be edited. A goal is corrected on the match screen.</string>
     <string name="recap_half_time">Half time</string>
     <string name="recap_full_time">Final score</string>
     <string name="recap_document">The report as it will be sent</string>
@@ -176,14 +178,19 @@
     <string name="recap_no_cards_note">On paper the boxes are struck through. An unfilled block is not the same as “no cards”, so it has to be said.</string>
     <string name="recap_no_cards_confirmed">Confirmed: no cards</string>
     <string name="recap_signatures">Signatures</string>
+    <string name="recap_confirm_as">%1$s confirms</string>
+    <string name="recap_confirmed_by">%1$s — confirmed %2$s</string>
+    <string name="recap_no_captain">No captain is marked in the lineup. Go back to the lineups (Back) and mark one.</string>
+    <string name="recap_no_referee">The header has no referee’s name. Go back to the header (Back).</string>
+    <string name="recap_no_cards_withdraw">Take back</string>
+    <string name="signatures_withdraw_title">Take the signatures back?</string>
+    <string name="signatures_withdraw_body">The report is signed. This change takes back the captains’ and the referee’s signatures, and the recap will ask for them again.</string>
+    <string name="signatures_withdraw_confirm">Yes, take them back</string>
+    <string name="signatures_withdraw_keep">Keep the signatures</string>
+    <string name="signatures_banner">The report is signed. Any change here takes back the captains’ and the referee’s signatures; the recap will ask for them again.</string>
     <string name="recap_confirm_home_captain">Home captain</string>
     <string name="recap_confirm_away_captain">Away captain</string>
     <string name="recap_confirm_referee">Referee</string>
-    <string name="recap_confirmed">confirmed</string>
-    <string name="recap_confirm">Confirm</string>
-    <string name="recap_confirm_name">Name</string>
-    <string name="recap_confirm_error">Enter a name in the Latin alphabet.</string>
-    <string name="recap_deputy">Deputy captain</string>
     <string name="recap_continue">Continue to sending</string>
 
     <!-- Screen 7: export -->
@@ -210,8 +217,6 @@
     <string name="export_problem_card_reason">The card at %1$s has no reason.</string>
     <string name="export_problem_commentary">The mandatory commentary is missing.</string>
     <string name="export_problem_assessment">The Č or B rating is missing (%1$s).</string>
-    <string name="export_problem_result">The result is missing.</string>
-    <string name="export_problem_score_mismatch">The result entered, %1$s, does not match the goals recorded, %2$s.</string>
     <string name="export_problem_confirmation_home">The home captain has not confirmed.</string>
     <string name="export_problem_confirmation_away">The away captain has not confirmed.</string>
     <string name="export_problem_confirmation_referee">The referee has not confirmed.</string>

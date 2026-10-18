@@ -163,6 +163,8 @@
     <string name="assessment_waiting_time">Čd — čekací doba (min)</string>
     <string name="assessment_shirts">Č — čísla dresů v pořádku?</string>
     <string name="assessment_uniform_kit">B — jednotná barva dresů?</string>
+    <string name="assessment_team_note">Poznámka týmu</string>
+    <string name="assessment_team_note_hint">Stížnost nebo protest, který kapitán žádá rozhodčího zapsat. Nepovinné.</string>
     <string name="assessment_yes">Ano</string>
     <string name="assessment_no">Ne</string>
     <string name="assessment_fines_note">Č a B se promítají do pokut. Dokud neodpovíte, zůstávají nevyplněné — prázdná odpověď se nepočítá jako „ano“.</string>
@@ -174,7 +176,7 @@
     <string name="recap_title">Rekapitulace</string>
     <string name="recap_loading">Načítání zápisu…</string>
     <string name="recap_result">Výsledek</string>
-    <string name="recap_result_note">Oba výsledky jsou předvyplněné — konečný ze zaznamenaných gólů, poločas ze stavu utkání v okamžiku, kdy skončil první poločas. Oba zůstávají upravitelné, kdyby bylo potřeba gól opravit dodatečně.</string>
+    <string name="recap_result_note">Výsledek se počítá ze zaznamenaných gólů — poločas ze stavu v okamžiku, kdy skončil první poločas — a nejde upravit. Oprava gólu se dělá na obrazovce Zápis.</string>
     <string name="recap_half_time">Poločas</string>
     <string name="recap_full_time">Konečný výsledek</string>
     <string name="recap_document">Zápis, jak bude odeslán</string>
@@ -184,14 +186,19 @@
     <string name="recap_no_cards_note">Na papíře se políčka proškrtávají. Nevyplněný oddíl není totéž jako „bez karet“, proto to potvrďte.</string>
     <string name="recap_no_cards_confirmed">Potvrzeno: bez karet</string>
     <string name="recap_signatures">Podpisy</string>
+    <string name="recap_confirm_as">Potvrzuje %1$s</string>
+    <string name="recap_confirmed_by">%1$s — potvrzeno %2$s</string>
+    <string name="recap_no_captain">Kapitán není označen v sestavě. Vraťte se do sestav (Zpět) a označte ho.</string>
+    <string name="recap_no_referee">V hlavičce chybí jméno rozhodčího. Vraťte se do hlavičky (Zpět).</string>
+    <string name="recap_no_cards_withdraw">Vzít zpět</string>
+    <string name="signatures_withdraw_title">Zrušit podpisy?</string>
+    <string name="signatures_withdraw_body">Zpráva je podepsaná. Tato změna zruší podpisy kapitánů i rozhodčího a rekapitulace je bude chtít znovu.</string>
+    <string name="signatures_withdraw_confirm">Ano, zrušit podpisy</string>
+    <string name="signatures_withdraw_keep">Ponechat podpisy</string>
+    <string name="signatures_banner">Zpráva je podepsaná. Každá změna tady zruší podpisy kapitánů i rozhodčího; rekapitulace je bude chtít znovu.</string>
     <string name="recap_confirm_home_captain">Kapitán domácích</string>
     <string name="recap_confirm_away_captain">Kapitán hostí</string>
     <string name="recap_confirm_referee">Rozhodčí</string>
-    <string name="recap_confirmed">potvrzeno</string>
-    <string name="recap_confirm">Potvrdit</string>
-    <string name="recap_confirm_name">Jméno</string>
-    <string name="recap_confirm_error">Zadejte jméno latinkou.</string>
-    <string name="recap_deputy">Zástupce kapitána</string>
     <string name="recap_continue">Pokračovat na odeslání</string>
 
     <!-- Screen 7: export -->
@@ -218,8 +225,6 @@
     <string name="export_problem_card_reason">Karta v %1$s nemá důvod.</string>
     <string name="export_problem_commentary">Chybí povinný komentář.</string>
     <string name="export_problem_assessment">Chybí hodnocení Č nebo B (%1$s).</string>
-    <string name="export_problem_result">Chybí výsledek.</string>
-    <string name="export_problem_score_mismatch">Zadaný výsledek %1$s neodpovídá zaznamenaným gólům %2$s.</string>
     <string name="export_problem_confirmation_home">Chybí potvrzení kapitána domácích.</string>
     <string name="export_problem_confirmation_away">Chybí potvrzení kapitána hostí.</string>
     <string name="export_problem_confirmation_referee">Chybí potvrzení rozhodčího.</string>

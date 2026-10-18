@@ -4,6 +4,7 @@ import cz.hspinovace.psmf.data.player.AddedPlayerRepository
 import cz.hspinovace.psmf.data.seed.LeagueGroup
 import cz.hspinovace.psmf.domain.Appearance
 import cz.hspinovace.psmf.domain.AppearanceId
+import cz.hspinovace.psmf.domain.ConfirmingParty
 import cz.hspinovace.psmf.domain.GoalEvent
 import cz.hspinovace.psmf.domain.IdentificationSource
 import cz.hspinovace.psmf.domain.JerseyNumber
@@ -25,6 +26,7 @@ import cz.hspinovace.psmf.ui.UiTestData
 import cz.hspinovace.psmf.ui.fixtures.GatedMatchRepository
 import cz.hspinovace.psmf.ui.fixtures.InMemoryLeague
 import cz.hspinovace.psmf.usecase.BuildConsoleEntry
+import cz.hspinovace.psmf.usecase.ConfirmReport
 import cz.hspinovace.psmf.usecase.EndPeriod
 import cz.hspinovace.psmf.usecase.FinishMatch
 import cz.hspinovace.psmf.usecase.GoalDraft
@@ -346,5 +348,175 @@ class ConsoleFlowTest {
             assertEquals(emptyList(), console.goalMinutes())
             console.onEvent(ConsoleEvent.UndoPressed)
             assertEquals(UndoStep.TakesBackWhistle(Whistle.FINAL, 2), console.state.value.takeBack)
+        }
+
+    // ------------------------------------------------------------------
+    // A signed report: a change asks first, because it takes the signatures back
+    // ------------------------------------------------------------------
+
+    /** A finished match with a goal at 10´ and all three final confirmations given. */
+    private suspend fun signedConsole(
+        matches: GatedMatchRepository,
+        clock: SteppingClock,
+        lateGoal: Boolean = false,
+    ): ConsoleViewModel {
+        val console = viewModel(matches, clock)
+        console.onEvent(ConsoleEvent.StartPressed)
+        clock.at = KICKOFF + 10.minutes
+        console.onEvent(ConsoleEvent.GoalScoredBy(aNovak.id))
+        clock.at = KICKOFF + 30.minutes
+        console.onEvent(ConsoleEvent.EndPeriodPressed)
+        clock.at = KICKOFF + 45.minutes
+        console.onEvent(ConsoleEvent.StartNextPeriodPressed)
+        clock.at = KICKOFF + 75.minutes
+        console.onEvent(ConsoleEvent.FinishPressed)
+        if (lateGoal) {
+            clock.at = KICKOFF + 80.minutes
+            console.onEvent(ConsoleEvent.GoalWithMinuteOpened(TeamSide.AWAY))
+            val sheet = assertNotNull(console.state.value.goal)
+            console.onEvent(ConsoleEvent.GoalEdited(sheet.copy(minute = MinuteDraft("47"))))
+            console.onEvent(ConsoleEvent.GoalSubmitted)
+        }
+
+        var current = assertNotNull(matches.load(matchId))
+        ConfirmingParty.entries.forEach {
+            current = ConfirmReport(matches)(current, it, PersonName.of("Vlk Jiří"), clock.at)
+        }
+        assertEquals(MatchStatus.CONFIRMED, current.status)
+        // The screen is opened again on the signed report.
+        return viewModel(matches, clock)
+    }
+
+    @Test
+    fun aGoalWrittenOnASignedReportAsksFirstAndWithdrawsTheSignaturesOnlyOnYes() =
+        runTest {
+            val matches = GatedMatchRepository(listOf(report))
+            val clock = SteppingClock(KICKOFF)
+            val console = signedConsole(matches, clock)
+            assertTrue(console.state.value.signed)
+            clock.at = KICKOFF + 90.minutes
+
+            console.onEvent(ConsoleEvent.GoalWithMinuteOpened(TeamSide.AWAY))
+            val opened = assertNotNull(console.state.value.goal)
+            console.onEvent(ConsoleEvent.GoalEdited(opened.copy(scorer = aVlk.id, minute = MinuteDraft("40"))))
+            console.onEvent(ConsoleEvent.GoalSubmitted)
+
+            // Asked, and nothing has been saved: the signatures are still there.
+            assertEquals(ConsoleEvent.GoalSubmitted, console.state.value.withdrawing)
+            assertEquals(3, matches.load(matchId)?.confirmations?.size)
+            assertEquals(1, matches.load(matchId)?.goals?.size)
+
+            // No: the sheet is still open, nothing changed.
+            console.onEvent(ConsoleEvent.WithdrawalDismissed)
+            assertNull(console.state.value.withdrawing)
+            assertNotNull(console.state.value.goal)
+            assertEquals(3, matches.load(matchId)?.confirmations?.size)
+
+            // Yes: the goal is written, and the signatures and the CONFIRMED status go.
+            console.onEvent(ConsoleEvent.GoalSubmitted)
+            console.onEvent(ConsoleEvent.WithdrawalConfirmed)
+            assertEquals(2, matches.load(matchId)?.goals?.size)
+            assertEquals(emptyList(), matches.load(matchId)?.confirmations)
+            assertEquals(MatchStatus.FINISHED, matches.load(matchId)?.status)
+            assertNull(console.state.value.goal)
+            assertEquals(false, console.state.value.signed)
+        }
+
+    @Test
+    fun aCardOnASignedReportAsksFirstToo() =
+        runTest {
+            val matches = GatedMatchRepository(listOf(report))
+            val clock = SteppingClock(KICKOFF)
+            val console = signedConsole(matches, clock)
+            clock.at = KICKOFF + 90.minutes
+
+            console.onEvent(ConsoleEvent.CardOpened(aVlk.id, TeamSide.AWAY))
+            val opened = assertNotNull(console.state.value.card)
+            console.onEvent(ConsoleEvent.CardEdited(opened.copy(reason = "podražení", minute = MinuteDraft("40"))))
+            console.onEvent(ConsoleEvent.CardSubmitted)
+
+            assertEquals(ConsoleEvent.CardSubmitted, console.state.value.withdrawing)
+            assertEquals(0, matches.load(matchId)?.cardEvents?.size)
+
+            console.onEvent(ConsoleEvent.WithdrawalConfirmed)
+
+            assertEquals(1, matches.load(matchId)?.cardEvents?.size)
+            assertEquals(emptyList(), matches.load(matchId)?.confirmations)
+        }
+
+    @Test
+    fun aCardThatCannotBeSavedYetAsksNothingBecauseNothingWouldChange() =
+        runTest {
+            val matches = GatedMatchRepository(listOf(report))
+            val clock = SteppingClock(KICKOFF)
+            val console = signedConsole(matches, clock)
+
+            console.onEvent(ConsoleEvent.CardOpened(aVlk.id, TeamSide.AWAY))
+            // No reason, so it cannot be saved: the sheet says so, and the
+            // question about the signatures is for a card that can.
+            console.onEvent(ConsoleEvent.CardSubmitted)
+
+            assertNull(console.state.value.withdrawing)
+            assertEquals(3, matches.load(matchId)?.confirmations?.size)
+        }
+
+    @Test
+    fun takingBackTheLastGoalOfASignedReportAsksFirst() =
+        runTest {
+            val matches = GatedMatchRepository(listOf(report))
+            val clock = SteppingClock(KICKOFF)
+            // The last thing recorded is a goal written after the whistle, so
+            // that is what Undo would take back.
+            val console = signedConsole(matches, clock, lateGoal = true)
+            assertEquals(2, matches.load(matchId)?.goals?.size)
+
+            console.onEvent(ConsoleEvent.UndoPressed)
+
+            assertEquals(ConsoleEvent.UndoPressed, console.state.value.withdrawing)
+            assertEquals(2, matches.load(matchId)?.goals?.size)
+            assertEquals(3, matches.load(matchId)?.confirmations?.size)
+
+            console.onEvent(ConsoleEvent.WithdrawalConfirmed)
+
+            assertEquals(1, matches.load(matchId)?.goals?.size)
+            assertEquals(emptyList(), matches.load(matchId)?.confirmations)
+        }
+
+    @Test
+    fun takingBackTheFinalWhistleOfASignedReportIsOneQuestionThatAlsoSaysTheSignaturesGo() =
+        runTest {
+            val matches = GatedMatchRepository(listOf(report))
+            val clock = SteppingClock(KICKOFF)
+            val console = signedConsole(matches, clock)
+
+            console.onEvent(ConsoleEvent.UndoPressed)
+
+            // One dialog: the whistle is named, and it knows the report is signed.
+            assertEquals(UndoStep.TakesBackWhistle(Whistle.FINAL, 2), console.state.value.takeBack)
+            assertTrue(console.state.value.signed)
+            assertNull(console.state.value.withdrawing, "a second question on top of the first")
+            assertEquals(3, matches.load(matchId)?.confirmations?.size)
+
+            console.onEvent(ConsoleEvent.TakeBackConfirmed)
+
+            assertEquals(MatchStatus.IN_PROGRESS, matches.load(matchId)?.status)
+            assertEquals(emptyList(), matches.load(matchId)?.confirmations)
+            assertNull(console.state.value.withdrawing)
+        }
+
+    @Test
+    fun anUnsignedReportIsNeverAsked() =
+        runTest {
+            val matches = GatedMatchRepository(listOf(report))
+            val clock = SteppingClock(KICKOFF)
+            val console = viewModel(matches, clock)
+            console.onEvent(ConsoleEvent.StartPressed)
+            clock.at = KICKOFF + 5.minutes
+
+            console.onEvent(ConsoleEvent.GoalScoredBy(aNovak.id))
+
+            assertNull(console.state.value.withdrawing)
+            assertEquals(false, console.state.value.signed)
+            assertEquals(1, matches.load(matchId)?.goals?.size)
         }
 }

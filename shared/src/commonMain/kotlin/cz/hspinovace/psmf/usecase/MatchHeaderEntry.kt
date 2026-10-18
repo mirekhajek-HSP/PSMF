@@ -5,6 +5,7 @@ import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.Official
 import cz.hspinovace.psmf.domain.PersonName
 import cz.hspinovace.psmf.domain.RefereeAssignment
+import cz.hspinovace.psmf.domain.afterAChangeFrom
 
 /**
  * What the header screen has collected so far.
@@ -128,7 +129,7 @@ class SaveMatchHeader(
         entry: MatchHeaderEntry,
     ): Match {
         val assignment = entry.toAssignment() ?: return match
-        val updated = match.copy(officials = assignment)
+        val updated = match.copy(officials = assignment).afterAChangeFrom(match)
         matches.save(updated)
         return updated
     }

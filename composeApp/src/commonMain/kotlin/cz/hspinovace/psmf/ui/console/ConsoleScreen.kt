@@ -42,9 +42,9 @@ import cz.hspinovace.psmf.domain.CardSubject
 import cz.hspinovace.psmf.domain.Dismissal
 import cz.hspinovace.psmf.domain.GoalEvent
 import cz.hspinovace.psmf.domain.MatchEvent
-import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.TeamSide
+import cz.hspinovace.psmf.domain.isPastTheFinalWhistle
 import cz.hspinovace.psmf.resources.Res
 import cz.hspinovace.psmf.resources.card_dismissal_second
 import cz.hspinovace.psmf.resources.console_card
@@ -67,6 +67,7 @@ import cz.hspinovace.psmf.resources.console_start_next_period
 import cz.hspinovace.psmf.resources.console_undo
 import cz.hspinovace.psmf.resources.console_yellows
 import cz.hspinovace.psmf.ui.common.ActionRow
+import cz.hspinovace.psmf.ui.common.WithdrawSignaturesDialog
 import cz.hspinovace.psmf.ui.common.brandFilledColors
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.ConsoleRow
@@ -116,7 +117,15 @@ fun ConsoleScreen(
 
     state.card?.let { CardSheet(draft = it, state = state, onEvent = onEvent) }
     state.goal?.let { GoalSheet(draft = it, state = state, now = now, onEvent = onEvent) }
-    state.takeBack?.let { TakeBackDialog(step = it, onEvent = onEvent) }
+    state.takeBack?.let { TakeBackDialog(step = it, signed = state.signed, onEvent = onEvent) }
+    // Asked before a goal, a card or a whistle is saved on a signed report:
+    // it takes the signatures back.
+    if (state.withdrawing != null) {
+        WithdrawSignaturesDialog(
+            onConfirm = { onEvent(ConsoleEvent.WithdrawalConfirmed) },
+            onDismiss = { onEvent(ConsoleEvent.WithdrawalDismissed) },
+        )
+    }
 }
 
 @Composable
@@ -184,7 +193,7 @@ private fun Controls(
                     }
                 }
 
-                entry.status == MatchStatus.FINISHED -> {
+                entry.status.isPastTheFinalWhistle -> {
                     Button(
                         onClick = { onEvent(ConsoleEvent.ContinuePressed) },
                         modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),

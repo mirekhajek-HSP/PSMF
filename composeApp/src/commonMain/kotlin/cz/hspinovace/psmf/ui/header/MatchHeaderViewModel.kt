@@ -6,6 +6,7 @@ import cz.hspinovace.psmf.data.league.LeagueRepository
 import cz.hspinovace.psmf.data.match.MatchRepository
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
+import cz.hspinovace.psmf.domain.isSigned
 import cz.hspinovace.psmf.usecase.HeaderProblem
 import cz.hspinovace.psmf.usecase.MatchHeaderEntry
 import cz.hspinovace.psmf.usecase.SaveMatchHeader
@@ -30,6 +31,12 @@ data class FixtureHeadline(
 
 data class MatchHeaderUiState(
     val loading: Boolean = true,
+    /**
+     * The report has its final confirmations, and any change here takes them
+     * back (prompt 13, part 4). The header saves as you type, so there is no
+     * moment to ask; the screen says so before the first edit.
+     */
+    val signed: Boolean = false,
     val fixture: FixtureHeadline? = null,
     val entry: MatchHeaderEntry = MatchHeaderEntry(),
     /**
@@ -130,6 +137,7 @@ class MatchHeaderViewModel(
         _state.value =
             MatchHeaderUiState(
                 loading = false,
+                signed = loaded?.isSigned == true,
                 fixture =
                     fixture?.let {
                         FixtureHeadline(
@@ -213,6 +221,8 @@ class MatchHeaderViewModel(
         }
         viewModelScope.launch {
             match?.let { match = saveMatchHeader(it, updated) }
+            // The first change took the signatures back, and the notice goes.
+            _state.update { it.copy(signed = match?.isSigned == true) }
         }
     }
 }

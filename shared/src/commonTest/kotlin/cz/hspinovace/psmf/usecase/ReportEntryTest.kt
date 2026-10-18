@@ -5,21 +5,19 @@ import cz.hspinovace.psmf.domain.CardSubject
 import cz.hspinovace.psmf.domain.CardsSection
 import cz.hspinovace.psmf.domain.ConfirmingParty
 import cz.hspinovace.psmf.domain.Fixtures
-import cz.hspinovace.psmf.domain.GoalEvent
 import cz.hspinovace.psmf.domain.JerseyNumber
+import cz.hspinovace.psmf.domain.LineupConfirmation
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
-import cz.hspinovace.psmf.domain.PeriodBreak
-import cz.hspinovace.psmf.domain.Score
+import cz.hspinovace.psmf.domain.PersonName
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.YellowCard
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.time.Instant
@@ -96,103 +94,6 @@ class AssessmentDraftTest {
         }
 }
 
-/** `poločas` and `Konečný výsledek`, entered rather than derived. */
-class ResultDraftTest {
-    @Test
-    fun bothScoresAreNeededBeforeThereIsAResult() {
-        assertNull(ResultDraft().toResult())
-        assertNull(ResultDraft(halfTimeHome = "1", halfTimeAway = "1").toResult())
-        assertEquals(
-            ResultProblem.FULL_TIME_MISSING,
-            ResultDraft(halfTimeHome = "1", halfTimeAway = "1").problems().single(),
-        )
-    }
-
-    @Test
-    fun aCompleteDraftBecomesAResultWithAWinner() {
-        val result = assertNotNull(ResultDraft("1", "1", "2", "1").toResult())
-
-        assertEquals(Score(1, 1), result.halfTime)
-        assertEquals(Score(2, 1), result.fullTime)
-        assertEquals(TeamSide.HOME, result.winner)
-    }
-
-    @Test
-    fun goalsCannotBeUnScoredBetweenHalfTimeAndTheEnd() {
-        // A full-time score below the half-time one is a typo, and the
-        // domain refuses to hold it rather than exporting a contradiction.
-        val backwards = ResultDraft("2", "1", "1", "1")
-
-        assertNull(backwards.toResult())
-        assertEquals(listOf(ResultProblem.FULL_TIME_BELOW_HALF_TIME), backwards.problems())
-    }
-
-    @Test
-    fun theHalfTimeScoreIsSuggestedFromTheGoalsUpToTheBreakAndNeverBlank() =
-        runTest {
-            // Found by using the app: there was no way to end the first
-            // half, so this could not have been true before Phase 1 --
-            // "only the referee knows where the break fell" stopped being
-            // the case the moment there is a button for it.
-            val withBreak =
-                match().copy(
-                    periodBreaks = listOf(PeriodBreak(endedAt = Instant.parse("2026-08-31T19:32:00Z"))),
-                    goals =
-                        listOf(
-                            GoalEvent(Minute.Played(5), TeamSide.AWAY, null, Score(0, 1)),
-                            GoalEvent(Minute.HalfTime, TeamSide.HOME, null, Score(1, 1)),
-                            GoalEvent(Minute.Played(45), TeamSide.HOME, null, Score(2, 1)),
-                        ),
-                )
-
-            val suggested = ResultDraft.suggestedFrom(withBreak)
-
-            // The first two goals happened up to and including the break;
-            // the third is in the second half and does not count toward it.
-            assertEquals("1", suggested.halfTimeHome)
-            assertEquals("1", suggested.halfTimeAway)
-            assertEquals("2", suggested.fullTimeHome)
-            assertEquals("1", suggested.fullTimeAway)
-        }
-
-    @Test
-    fun withNoBreakYetTheHalfTimeSuggestionFallsBackToTheScoreSoFarRatherThanBlank() =
-        runTest {
-            // An abandoned match, or simply not reached the break yet: there
-            // is no moment to read a half-time score from, and "never blank"
-            // still has to mean something.
-            val played =
-                match().copy(
-                    goals = listOf(GoalEvent(Minute.Played(5), TeamSide.AWAY, null, Score(0, 1))),
-                )
-
-            val suggested = ResultDraft.suggestedFrom(played)
-
-            assertEquals("0", suggested.halfTimeHome)
-            assertEquals("1", suggested.halfTimeAway)
-        }
-
-    @Test
-    fun theResultIsWrittenThroughWhenItIsUsable() =
-        runTest {
-            val matches = FakeMatchRepository(listOf(match()))
-
-            val updated = RecordResult(matches)(match(), ResultDraft("1", "1", "2", "1"))
-
-            assertEquals(Score(2, 1), updated.result?.fullTime)
-            assertEquals(updated, matches.load(MatchId("m1")))
-        }
-
-    @Test
-    fun anUnusableResultWritesNothing() =
-        runTest {
-            val matches = FakeMatchRepository(listOf(match()))
-
-            assertNull(RecordResult(matches)(match(), ResultDraft("2", "1", "1", "1")).result)
-            assertEquals(0, matches.saves)
-        }
-}
-
 /**
  * RULE: **an empty list is not "no cards".**
  *
@@ -239,33 +140,29 @@ class AffirmNoCardsTest {
 }
 
 /**
- * RULE: **one captain per team confirms** — settled 2026-08-30.
+ * RULE: **one captain per team confirms** — settled 2026-08-30 — **by a tap**,
+ * under a name the screen showed (prompt 13, part 4): no typing, no deputy.
  *
- * The captain confirms the lineup before kickoff and the report at the
- * end, and those are one act: re-confirming moves the timestamp rather
- * than adding a second signature.
+ * These are the final confirmations, under the finished report. Re-confirming
+ * moves the time rather than adding a second signature.
  */
 class ConfirmReportTest {
+    private val novak = PersonName.of("Novak")
+
     @Test
     fun aConfirmationRecordsWhoAndWhen() =
         runTest {
             val matches = FakeMatchRepository(listOf(match()))
 
-            val confirmed =
-                assertNotNull(
-                    ConfirmReport(matches)(
-                        match(),
-                        ConfirmingParty.HOME_CAPTAIN,
-                        "Novak",
-                        asDeputy = false,
-                        at = CONFIRMED_AT,
-                    ),
-                )
+            val confirmed = ConfirmReport(matches)(match(), ConfirmingParty.HOME_CAPTAIN, novak, CONFIRMED_AT)
 
             val confirmation = confirmed.confirmations.single()
             assertEquals("Novak", confirmation.confirmedBy.value)
             assertEquals(CONFIRMED_AT, confirmation.at)
+            // A deputy is not a thing a tap can say: the captain is the one
+            // marked in the lineup.
             assertFalse(confirmation.asDeputy)
+            assertEquals(confirmed, matches.load(MatchId("m1")))
         }
 
     @Test
@@ -273,34 +170,13 @@ class ConfirmReportTest {
         runTest {
             val matches = FakeMatchRepository(listOf(match()))
             val confirm = ConfirmReport(matches)
-            val first =
-                assertNotNull(confirm(match(), ConfirmingParty.HOME_CAPTAIN, "Novak", false, CONFIRMED_AT))
+            val first = confirm(match(), ConfirmingParty.HOME_CAPTAIN, novak, CONFIRMED_AT)
 
             val later = CONFIRMED_AT + kotlin.time.Duration.parse("1h")
-            val second =
-                assertNotNull(confirm(first, ConfirmingParty.HOME_CAPTAIN, "Novak", false, later))
+            val second = confirm(first, ConfirmingParty.HOME_CAPTAIN, novak, later)
 
             assertEquals(1, second.confirmations.size)
             assertEquals(later, second.confirmations.single().at)
-        }
-
-    @Test
-    fun aDeputyIsMarkedBecauseCaptaincyCanBeDelegated() =
-        runTest {
-            val matches = FakeMatchRepository(listOf(match()))
-
-            val confirmed =
-                assertNotNull(
-                    ConfirmReport(matches)(
-                        match(),
-                        ConfirmingParty.AWAY_CAPTAIN,
-                        "Lepis",
-                        asDeputy = true,
-                        at = CONFIRMED_AT,
-                    ),
-                )
-
-            assertTrue(confirmed.confirmations.single().asDeputy)
         }
 
     @Test
@@ -311,23 +187,107 @@ class ConfirmReportTest {
             var current = match()
 
             ConfirmingParty.entries.forEach { party ->
-                current = assertNotNull(confirm(current, party, "Novak", false, CONFIRMED_AT))
+                current = confirm(current, party, novak, CONFIRMED_AT)
             }
 
             assertEquals(MatchStatus.CONFIRMED, current.status)
         }
 
     @Test
-    fun aNameThatIsNotALatinNameConfirmsNothing() =
+    fun twoOfThreeIsNotYetConfirmed() =
+        runTest {
+            val matches = FakeMatchRepository(listOf(match()))
+            val confirm = ConfirmReport(matches)
+
+            val two =
+                confirm(
+                    confirm(match(), ConfirmingParty.HOME_CAPTAIN, novak, CONFIRMED_AT),
+                    ConfirmingParty.AWAY_CAPTAIN,
+                    novak,
+                    CONFIRMED_AT,
+                )
+
+            assertEquals(MatchStatus.SETUP, two.status)
+            assertEquals(2, two.confirmations.size)
+        }
+
+    @Test
+    fun theLineupsConfirmationAndTheFinalOneAreSeparateRecords() =
+        runTest {
+            // The captain's confirmation before kickoff lives on the lineup;
+            // giving the final one writes only here, and the other way round.
+            val withLineupConfirmation =
+                match().copy(
+                    homeLineup =
+                        Fixtures.homeLineup.copy(
+                            confirmation = LineupConfirmation(CONFIRMED_AT, novak),
+                        ),
+                )
+            val matches = FakeMatchRepository(listOf(withLineupConfirmation))
+
+            val confirmed =
+                ConfirmReport(matches)(withLineupConfirmation, ConfirmingParty.HOME_CAPTAIN, novak, CONFIRMED_AT)
+
+            assertEquals(withLineupConfirmation.homeLineup, confirmed.homeLineup)
+            assertEquals(1, confirmed.confirmations.size)
+        }
+}
+
+/** The "no cards" affirmation can be taken back (prompt 13, part 4). */
+class WithdrawNoCardsTest {
+    @Test
+    fun anAffirmationCanBeWithdrawnAndTheBlockIsUnaccountedForAgain() =
+        runTest {
+            val affirmed = match().copy(cards = CardsSection.NoneIssued)
+            val matches = FakeMatchRepository(listOf(affirmed))
+
+            val withdrawn = WithdrawNoCards(matches)(affirmed)
+
+            // Not "none" and not "some": nobody has said anything about the
+            // block, which is what the readiness check then asks about.
+            assertNull(withdrawn.cards)
+            assertEquals(withdrawn, matches.load(MatchId("m1")))
+        }
+
+    @Test
+    fun andAffirmedAgainAfterwards() =
+        runTest {
+            val matches = FakeMatchRepository(listOf(match()))
+            val affirmed = AffirmNoCards(matches)(match())
+            val withdrawn = WithdrawNoCards(matches)(affirmed)
+
+            assertEquals(CardsSection.NoneIssued, AffirmNoCards(matches)(withdrawn).cards)
+        }
+
+    @Test
+    fun recordedCardsAreNotAnAffirmationAndAreNotWithdrawnByThis() =
+        runTest {
+            val withACard =
+                match().copy(
+                    cards =
+                        CardsSection.Issued(
+                            listOf(
+                                YellowCard(
+                                    Minute.Played(20),
+                                    TeamSide.AWAY,
+                                    CardSubject.Player(Fixtures.bacaAppearance.id),
+                                    CardReason("podražení"),
+                                ),
+                            ),
+                        ),
+                )
+            val matches = FakeMatchRepository(listOf(withACard))
+
+            assertEquals(withACard, WithdrawNoCards(matches)(withACard))
+            assertEquals(0, matches.saves)
+        }
+
+    @Test
+    fun withdrawingWhenNothingWasAffirmedChangesNothing() =
         runTest {
             val matches = FakeMatchRepository(listOf(match()))
 
-            assertNull(
-                ConfirmReport(matches)(match(), ConfirmingParty.REFEREE, "", false, CONFIRMED_AT),
-            )
-            assertNull(
-                ConfirmReport(matches)(match(), ConfirmingParty.REFEREE, "Вовк", false, CONFIRMED_AT),
-            )
+            assertEquals(match(), WithdrawNoCards(matches)(match()))
             assertEquals(0, matches.saves)
         }
 }

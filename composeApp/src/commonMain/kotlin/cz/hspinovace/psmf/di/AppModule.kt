@@ -53,7 +53,6 @@ import cz.hspinovace.psmf.usecase.LogCard
 import cz.hspinovace.psmf.usecase.LogGoal
 import cz.hspinovace.psmf.usecase.NewId
 import cz.hspinovace.psmf.usecase.ObserveReportInProgress
-import cz.hspinovace.psmf.usecase.RecordResult
 import cz.hspinovace.psmf.usecase.RememberCardNumber
 import cz.hspinovace.psmf.usecase.RememberDateOfBirth
 import cz.hspinovace.psmf.usecase.SaveAssessment
@@ -65,6 +64,7 @@ import cz.hspinovace.psmf.usecase.StartNextPeriod
 import cz.hspinovace.psmf.usecase.StartOrResumeMatch
 import cz.hspinovace.psmf.usecase.ToggleFollowedTeam
 import cz.hspinovace.psmf.usecase.UndoLastEvent
+import cz.hspinovace.psmf.usecase.WithdrawNoCards
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
@@ -166,7 +166,7 @@ private fun Module.factoryOfUseCases() {
     factory { BuildZouReport(get(), get()) }
     factory { ExportZou() }
     factory { SaveAssessment(get()) }
-    factory { RecordResult(get()) }
+    factory { WithdrawNoCards(get()) }
     factory { ConfirmReport(get()) }
     factory { AffirmNoCards(get()) }
 }

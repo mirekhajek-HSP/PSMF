@@ -54,6 +54,7 @@ import cz.hspinovace.psmf.ui.common.Choice
 import cz.hspinovace.psmf.ui.common.PrimaryAction
 import cz.hspinovace.psmf.ui.common.Section
 import cz.hspinovace.psmf.ui.common.Select
+import cz.hspinovace.psmf.ui.common.SignedBanner
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.LineupProblem
 import cz.hspinovace.psmf.usecase.TeamLineupEntry
@@ -88,6 +89,11 @@ fun LineupScreen(
         }
 
         Column(modifier = Modifier.fillMaxSize()) {
+            // Saves as you edit, so the report's signatures are taken back by the
+            // first change; the notice is here before it.
+            if (state.signed) {
+                SignedBanner(Modifier.padding(horizontal = PsmfDimens.screenPadding, vertical = PsmfDimens.labelGap))
+            }
             SideTabs(state, onEvent)
             SquadColumn(state, team, onEvent, modifier = Modifier.weight(1f))
         }

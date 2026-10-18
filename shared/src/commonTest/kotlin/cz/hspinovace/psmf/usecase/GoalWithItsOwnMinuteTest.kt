@@ -6,6 +6,7 @@ import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
 import cz.hspinovace.psmf.domain.TeamSide
+import cz.hspinovace.psmf.domain.resultFromGoals
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -84,10 +85,9 @@ class GoalWithItsOwnMinuteTest {
 
             assertEquals("1:1", m.scoreAtEndOfFirstPeriod()?.asWrittenOnReport)
             assertEquals("1:2", m.scoreFromGoals().asWrittenOnReport)
-            // ...and the suggested result the recap starts from says so too.
-            val suggested = ResultDraft.suggestedFrom(m)
-            assertEquals("1", suggested.halfTimeHome)
-            assertEquals("1", suggested.halfTimeAway)
+            // ...and the result the recap shows says so too: it is the goals'.
+            assertEquals("1:1", m.resultFromGoals().halfTime.asWrittenOnReport)
+            assertEquals("1:2", m.resultFromGoals().fullTime.asWrittenOnReport)
             assertEquals(listOf("10´", "24´", "41´"), m.minutesWritten())
             assertEquals(listOf("1:0", "1:1", "1:2"), m.stav())
         }

@@ -392,6 +392,31 @@ class MatchPersistenceTest {
         }
 
     @Test
+    fun theTeamNotesSurviveTheProcessBeingKilledWhateverIsInThem() =
+        runTest {
+            // Free text, so it has the awkward characters a complaint has: a
+            // semicolon, a quote and a line break.
+            val original =
+                matchInProgress().copy(
+                    assessment =
+                        Assessment(
+                            home =
+                                TeamAssessment(
+                                    note = "Protest proti 2. gólu; \"viděl jsem ruku\".\nPodle kapitána.",
+                                ),
+                            away = TeamAssessment(note = "Hráč bez průkazu."),
+                            commentary = "Utkání bez potíží.",
+                        ),
+                )
+            session { it.save(original) }
+
+            val restored = assertNotNull(session { it.load(original.id) })
+
+            assertEquals(original.assessment, restored.assessment)
+            assertEquals(original, restored)
+        }
+
+    @Test
     fun aDeletedMatchIsGoneFromEveryTable() =
         runTest {
             val original = matchInProgress()

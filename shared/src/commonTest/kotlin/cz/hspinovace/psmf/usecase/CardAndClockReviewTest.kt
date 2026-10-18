@@ -16,6 +16,7 @@ import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.YellowCard
+import cz.hspinovace.psmf.domain.resultFromGoals
 import cz.hspinovace.psmf.domain.yellowsAccumulatedBy
 import cz.hspinovace.psmf.export.BuildZouReport
 import cz.hspinovace.psmf.export.CompleteReport
@@ -462,8 +463,8 @@ class SecondHalfStartsAtThirtyTest {
                 )
 
             assertEquals(Score(1, 0), match.scoreAtEndOfFirstPeriod())
-            val suggested = ResultDraft.suggestedFrom(match)
-            assertEquals("1" to "0", suggested.halfTimeHome to suggested.halfTimeAway)
+            // And the result the report says is the same, from the goals.
+            assertEquals(Score(1, 0), match.resultFromGoals().halfTime)
         }
 
     private companion object {

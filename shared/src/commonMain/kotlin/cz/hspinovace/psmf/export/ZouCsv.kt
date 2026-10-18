@@ -87,7 +87,11 @@ object ZouCsv {
                 it.kind.written,
             )
         }
-        row(ZouLabels.Lineup.CAPTAIN_BEFORE_KICKOFF, lineup.confirmation?.byWritten.orEmpty())
+        row(
+            ZouLabels.Lineup.CAPTAIN_BEFORE_KICKOFF,
+            lineup.confirmation?.byWritten.orEmpty(),
+            lineup.confirmation?.atWritten.orEmpty(),
+        )
         blank()
     }
 
@@ -166,6 +170,9 @@ object ZouCsv {
         teamAssessmentRow(ZouLabels.Assessment.AWAY, assessment.away)
         blank()
         row(ZouLabels.Assessment.COMMENTARY, assessment.commentary)
+        // One row per team, always both: an empty cell is "no note".
+        row("${ZouLabels.Assessment.TEAM_NOTE} ${ZouLabels.Assessment.HOME}", assessment.home.note)
+        row("${ZouLabels.Assessment.TEAM_NOTE} ${ZouLabels.Assessment.AWAY}", assessment.away.note)
         blank()
     }
 
@@ -184,13 +191,8 @@ object ZouCsv {
 
     private fun StringBuilder.confirmationsBlock(report: ZouReport) {
         listOf(ZouWords.HOME_CAPTAIN, ZouWords.AWAY_CAPTAIN, ZouWords.REFEREE).forEach { party ->
-            row(
-                party,
-                report.confirmations
-                    .firstOrNull { it.party == party }
-                    ?.byWritten
-                    .orEmpty(),
-            )
+            val confirmation = report.confirmations.firstOrNull { it.party == party }
+            row(party, confirmation?.byWritten.orEmpty(), confirmation?.atWritten.orEmpty())
         }
     }
 

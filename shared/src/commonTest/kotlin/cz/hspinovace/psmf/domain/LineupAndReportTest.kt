@@ -239,18 +239,16 @@ class ReportReadinessTest {
     }
 
     @Test
-    fun aRecordedScoreThatContradictsTheGoalsIsCaught() {
-        // Today nobody notices until the transcription crew does, a week later.
-        val wrong = completeMatch().copy(result = MatchResult(Score(1, 0), Score(3, 0)))
+    fun aScoreTypedUnderTheOldRulesThatContradictsTheGoalsIsNoLongerAProblemBecauseItIsNotRead() {
+        // The result comes from the goals (prompt 13, part 4), so there is
+        // nothing to disagree with them and nothing to catch. An old report
+        // that is not CONFIRMED says what its goals say; the stored number is
+        // dead data.
+        val old = completeMatch().copy(status = MatchStatus.FINISHED, result = MatchResult(Score(1, 0), Score(3, 0)))
 
-        val problem =
-            wrong
-                .reportProblems()
-                .filterIsInstance<ReportProblem.ScoreDisagreesWithGoals>()
-                .single()
-
-        assertEquals(Score(3, 0), problem.recorded)
-        assertEquals(Score(1, 0), problem.fromGoals)
+        assertEquals(Score(1, 0), old.resultForReport().fullTime)
+        // Still stored, and ignored: nothing deletes it.
+        assertEquals(Score(3, 0), old.result?.fullTime)
     }
 
     @Test

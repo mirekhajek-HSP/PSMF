@@ -128,6 +128,9 @@ object ZouLabels {
         const val UNIFORM_KIT = "B"
 
         const val COMMENTARY = "Komentář"
+
+        /** A team's note, for a complaint or protest its captain asks the referee to note. */
+        const val TEAM_NOTE = "Poznámka týmu"
     }
 
     /** Page 2 signatures. Analysis section 2.5. */

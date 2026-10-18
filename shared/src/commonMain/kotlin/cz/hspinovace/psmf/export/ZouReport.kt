@@ -161,6 +161,11 @@ data class ZouLineupConfirmation(
     val asDeputy: Boolean = false,
 ) {
     val byWritten: String get() = if (asDeputy) "$by ${ZouWords.DEPUTY}" else by
+
+    /** The time as the Czech report writes it, in Prague time; the JSON keeps [at]. */
+    val atWritten: String get() = ZouTimes.written(at)
+
+    val writtenWithTime: String get() = "$byWritten ($atWritten)"
 }
 
 @Serializable
@@ -266,6 +271,11 @@ data class ZouTeamAssessment(
     @SerialName("c") val shirtsProperlyNumbered: Boolean?,
     /** `B` — uniform kit colour. Null means not assessed. */
     @SerialName("b") val uniformKitColour: Boolean?,
+    /**
+     * A complaint or protest the team's captain asked the referee to note.
+     * Empty when there was none; never a readiness problem.
+     */
+    val note: String = "",
 )
 
 @Serializable
@@ -274,10 +284,15 @@ data class ZouConfirmation(
     val party: String,
     val by: String,
     val at: Instant,
-    /** Captaincy may be delegated: the example has `Lepiš (zást.)`. */
+    /** Only ever true on a report signed before 0.3.0; the example has `Lepiš (zást.)`. */
     val asDeputy: Boolean,
 ) {
     val byWritten: String get() = if (asDeputy) "$by ${ZouWords.DEPUTY}" else by
+
+    /** The time as the Czech report writes it, in Prague time; the JSON keeps [at]. */
+    val atWritten: String get() = ZouTimes.written(at)
+
+    val writtenWithTime: String get() = "$byWritten ($atWritten)"
 }
 
 /** `D` and `H` on the form. */

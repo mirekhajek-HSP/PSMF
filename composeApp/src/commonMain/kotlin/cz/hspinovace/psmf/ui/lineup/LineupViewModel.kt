@@ -11,6 +11,7 @@ import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.PersonName
 import cz.hspinovace.psmf.domain.PlayerId
 import cz.hspinovace.psmf.domain.TeamSide
+import cz.hspinovace.psmf.domain.isSigned
 import cz.hspinovace.psmf.usecase.AddPlayerToLineup
 import cz.hspinovace.psmf.usecase.BuildLineupEntry
 import cz.hspinovace.psmf.usecase.LineupEntry
@@ -32,6 +33,12 @@ import kotlin.time.ExperimentalTime
 
 data class LineupUiState(
     val loading: Boolean = true,
+    /**
+     * The report has its final confirmations, and a change to the lineups takes
+     * them back (prompt 13, part 4). The lineups save as you edit, so there is
+     * no moment to ask; the screen says so before the first edit.
+     */
+    val signed: Boolean = false,
     val entry: LineupEntry? = null,
     val selectedSide: TeamSide = TeamSide.HOME,
     /** Open only while the referee is adding someone; null otherwise. */
@@ -186,6 +193,7 @@ class LineupViewModel(
         _state.value =
             LineupUiState(
                 loading = false,
+                signed = loaded?.isSigned == true,
                 entry = entry,
                 problems = entry?.problems().orEmpty(),
             )
@@ -318,6 +326,7 @@ class LineupViewModel(
                 return@launch
             }
             match = added.match
+            _state.update { it.copy(signed = added.match.isSigned) }
             // The entry the screen holds, with the player in it -- not one
             // rebuilt from the database, which has none of the marks that are
             // not saved yet.
@@ -378,6 +387,8 @@ class LineupViewModel(
         viewModelScope.launch {
             val current = match ?: return@launch
             match = saveLineup(current, updated.side(_state.value.selectedSide))
+            // The first change took the signatures back, and the notice goes.
+            _state.update { it.copy(signed = match?.isSigned == true) }
         }
     }
 }

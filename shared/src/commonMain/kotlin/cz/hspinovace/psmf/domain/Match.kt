@@ -62,7 +62,20 @@ data class Match(
      */
     val cards: CardsSection? = null,
     val assessment: Assessment = Assessment(),
+    /**
+     * **Typed by the referee before 0.3.0 and never written since**: the result
+     * comes from the goals ([resultFromGoals]) and cannot be edited. What is
+     * stored here is read for one purpose, a report that was already
+     * CONFIRMED, which keeps what it said when it was signed
+     * ([resultForReport]). On any other old report it is dead data.
+     */
     val result: MatchResult? = null,
+    /**
+     * The final confirmations -- the recap's, under the finished report --
+     * as opposed to a lineup's own ([Lineup.confirmation]), which is the
+     * captain's before kickoff. Taken back by any change to what they attest;
+     * see [afterAChangeFrom].
+     */
     val confirmations: List<Confirmation> = emptyList(),
     /**
      * Ten minutes of play a side spends a player short after a dismissal.

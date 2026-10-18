@@ -646,6 +646,22 @@ class ConsoleScreenTest {
         }
 
     @Test
+    fun aConfirmedReportsConsoleOffersToContinueAndNotToEndTheMatchAgain() =
+        runComposeUiTest {
+            // Back from the recap on a signed report: the match is over, and the
+            // button that moves on is the one to show.
+            val signed = entry(status = MatchStatus.CONFIRMED)
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme { ConsoleScreen(state = state(signed), now = KICKOFF + 61.minutes, onEvent = {}) }
+                }
+            }
+
+            onNodeWithText("Pokračovat na hodnocení").assertIsDisplayed()
+            onNodeWithText("Ukončit utkání").assertDoesNotExist()
+        }
+
+    @Test
     fun nothingCountsDownOnTheScoreboardAfterTheFinalWhistle() =
         runComposeUiTest {
             val powerPlay =

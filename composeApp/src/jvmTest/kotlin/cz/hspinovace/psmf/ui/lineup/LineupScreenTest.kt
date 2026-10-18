@@ -604,4 +604,25 @@ class LineupScreenTest : LineupScreenTestBase() {
             // The label verbatim from PSMF, never derived from the colours.
             onNodeWithText("modrá").assertIsDisplayed()
         }
+
+    @Test
+    fun aSignedReportSaysBeforeTheFirstEditThatAnyChangeTakesTheSignaturesBack() =
+        runComposeUiTest {
+            withLanguage("cs") {
+                setContent { PsmfTheme { LineupScreen(state = state(signed = true), onEvent = {}) } }
+
+                onNodeWithText("Zpráva je podepsaná. Každá změna tady zruší podpisy", substring = true)
+                    .assertIsDisplayed()
+            }
+        }
+
+    @Test
+    fun anUnsignedReportShowsNoSuchNotice() =
+        runComposeUiTest {
+            withLanguage("cs") {
+                setContent { PsmfTheme { LineupScreen(state = state(), onEvent = {}) } }
+
+                onNodeWithText("Zpráva je podepsaná.", substring = true).assertDoesNotExist()
+            }
+        }
 }

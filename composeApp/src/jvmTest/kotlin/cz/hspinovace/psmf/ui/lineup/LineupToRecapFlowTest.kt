@@ -26,10 +26,10 @@ import cz.hspinovace.psmf.usecase.AffirmNoCards
 import cz.hspinovace.psmf.usecase.BuildLineupEntry
 import cz.hspinovace.psmf.usecase.ConfirmReport
 import cz.hspinovace.psmf.usecase.NewId
-import cz.hspinovace.psmf.usecase.RecordResult
 import cz.hspinovace.psmf.usecase.RememberCardNumber
 import cz.hspinovace.psmf.usecase.RememberDateOfBirth
 import cz.hspinovace.psmf.usecase.SaveLineup
+import cz.hspinovace.psmf.usecase.WithdrawNoCards
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -140,9 +140,9 @@ class LineupToRecapFlowTest {
             matchId = matchId,
             matches = matches,
             buildZouReport = BuildZouReport(league, added),
-            recordResult = RecordResult(matches),
             confirmReport = ConfirmReport(matches),
             affirmNoCards = AffirmNoCards(matches),
+            withdrawNoCards = WithdrawNoCards(matches),
         )
 
     /** Home: both players marked, numbers from their cards, a captain and a goalkeeper chosen. */

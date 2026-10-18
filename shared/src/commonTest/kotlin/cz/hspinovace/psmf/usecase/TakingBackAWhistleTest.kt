@@ -8,6 +8,7 @@ import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
 import cz.hspinovace.psmf.domain.PeriodBreak
+import cz.hspinovace.psmf.domain.PersonName
 import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.UndoStep
@@ -263,13 +264,28 @@ class TakingBackAWhistleTest {
         }
 
     @Test
-    fun aConfirmedReportsWhistlesAreNotOffered() =
+    fun aSignedReportsWhistlesAreOfferedAndTakingOneBackTakesTheSignaturesWithIt() =
         runTest {
-            val confirmed =
-                finish(start(match(), KICKOFF), KICKOFF + 60.minutes).copy(status = MatchStatus.CONFIRMED)
+            // The whistles are among the things the captains attest
+            // (prompt 13, part 4), so they are offered like any other, and the
+            // signatures go with the one that is taken back.
+            val signed =
+                finish(start(match(), KICKOFF), KICKOFF + 60.minutes)
+                    .copy(
+                        status = MatchStatus.CONFIRMED,
+                        confirmations =
+                            cz.hspinovace.psmf.domain.ConfirmingParty.entries.map {
+                                cz.hspinovace.psmf.domain
+                                    .Confirmation(it, KICKOFF, PersonName.of("Vlk Jiří"))
+                            },
+                    )
 
-            assertNull(confirmed.nextUndoStep())
-            assertEquals(confirmed, undo(confirmed))
+            assertEquals(UndoStep.TakesBackWhistle(Whistle.FINAL, 1), signed.nextUndoStep())
+
+            val takenBack = undo(signed)
+
+            assertEquals(MatchStatus.IN_PROGRESS, takenBack.status)
+            assertEquals(emptyList(), takenBack.confirmations)
         }
 
     @Test

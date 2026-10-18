@@ -61,7 +61,7 @@ object ZouText {
             appendLine(row(it.jerseyNumber?.toString().orEmpty(), it.identification, name))
         }
         appendLine()
-        field(ZouLabels.Lineup.CAPTAIN_BEFORE_KICKOFF, lineup.confirmation?.byWritten.orNotGiven())
+        field(ZouLabels.Lineup.CAPTAIN_BEFORE_KICKOFF, lineup.confirmation?.writtenWithTime.orNotGiven())
         appendLine()
     }
 
@@ -153,6 +153,12 @@ object ZouText {
         appendLine("${ZouLabels.Assessment.COMMENTARY}:")
         appendLine(assessment.commentary.ifBlank { ZouWords.NOT_GIVEN })
         appendLine()
+        // The team notes belong to the commentary block: what a captain asked
+        // the referee to note, labelled by team. Both are always written, so
+        // that a reader can tell none was given from one that was left out.
+        field("${ZouLabels.Assessment.TEAM_NOTE} ${ZouLabels.Assessment.HOME}", assessment.home.note.orNotGiven())
+        field("${ZouLabels.Assessment.TEAM_NOTE} ${ZouLabels.Assessment.AWAY}", assessment.away.note.orNotGiven())
+        appendLine()
     }
 
     private fun StringBuilder.appendTeamAssessment(
@@ -178,7 +184,7 @@ object ZouText {
         appendLine()
         listOf(ZouWords.HOME_CAPTAIN, ZouWords.AWAY_CAPTAIN, ZouWords.REFEREE).forEach { party ->
             val confirmation = report.confirmations.firstOrNull { it.party == party }
-            field(party, confirmation?.byWritten.orNotGiven())
+            field(party, confirmation?.writtenWithTime.orNotGiven())
         }
     }
 

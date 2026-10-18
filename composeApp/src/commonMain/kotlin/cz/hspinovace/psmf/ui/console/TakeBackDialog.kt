@@ -1,9 +1,12 @@
 package cz.hspinovace.psmf.ui.console
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.font.FontWeight
 import cz.hspinovace.psmf.domain.UndoStep
 import cz.hspinovace.psmf.domain.Whistle
 import cz.hspinovace.psmf.resources.Res
@@ -15,6 +18,8 @@ import cz.hspinovace.psmf.resources.console_whistle_end_period
 import cz.hspinovace.psmf.resources.console_whistle_final
 import cz.hspinovace.psmf.resources.console_whistle_kickoff
 import cz.hspinovace.psmf.resources.console_whistle_start_period
+import cz.hspinovace.psmf.resources.signatures_withdraw_body
+import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -29,12 +34,20 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun TakeBackDialog(
     step: UndoStep.TakesBackWhistle,
+    signed: Boolean,
     onEvent: (ConsoleEvent) -> Unit,
 ) {
     AlertDialog(
         onDismissRequest = { onEvent(ConsoleEvent.TakeBackDismissed) },
         title = { Text(stringResource(Res.string.console_takeback_title)) },
-        text = { Text(stringResource(Res.string.console_takeback_body, step.named())) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing)) {
+                Text(stringResource(Res.string.console_takeback_body, step.named()))
+                // A whistle is among the things the captains attest, so on a
+                // signed report this one answer also takes the signatures back.
+                if (signed) Text(stringResource(Res.string.signatures_withdraw_body), fontWeight = FontWeight.SemiBold)
+            }
+        },
         confirmButton = {
             TextButton(onClick = { onEvent(ConsoleEvent.TakeBackConfirmed) }) {
                 Text(stringResource(Res.string.console_takeback_confirm))

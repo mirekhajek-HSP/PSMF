@@ -25,6 +25,14 @@ data class TeamAssessment(
     val shirtsProperlyNumbered: Boolean? = null,
     /** `B` — is the team in uniform kit colour? */
     val uniformKitColour: Boolean? = null,
+    /**
+     * A complaint or a protest the team's captain asks the referee to note
+     * (prompt 13, part 4). **The referee types it**, because the referee is
+     * the only recorder. Optional, and never a readiness problem; blank is
+     * the normal case. Not something the signatures attest: it stays editable
+     * until export, like the commentary.
+     */
+    val note: String = "",
 ) {
     init {
         require(waitingTimeMinutes >= 0) {

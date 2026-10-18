@@ -37,8 +37,10 @@ class MatchHeaderScreenTest {
         entry: MatchHeaderEntry = MatchHeaderEntry(),
         problems: List<HeaderProblem> = emptyList(),
         otherTeamSelected: Boolean = false,
+        signed: Boolean = false,
     ) = MatchHeaderUiState(
         loading = false,
+        signed = signed,
         fixture = headline,
         entry = entry,
         teamOptions = listOf(UiTestData.homeTeam.name, UiTestData.awayTeam.name, "Sokol"),
@@ -207,5 +209,26 @@ class MatchHeaderScreenTest {
             onNodeWithText("Rozhodčí").performScrollTo().performTextInput("Vlk")
 
             assertTrue(events.any { it == MatchHeaderEvent.RefereeNameChanged("Vlk") })
+        }
+
+    @Test
+    fun aSignedReportSaysBeforeTheFirstEditThatAnyChangeTakesTheSignaturesBack() =
+        runComposeUiTest {
+            withLanguage("cs") {
+                setContent { PsmfTheme { MatchHeaderScreen(state = state(signed = true), onEvent = {}) } }
+            }
+
+            onNodeWithText("Zpráva je podepsaná. Každá změna tady zruší podpisy", substring = true)
+                .assertIsDisplayed()
+        }
+
+    @Test
+    fun anUnsignedReportShowsNoSuchNotice() =
+        runComposeUiTest {
+            withLanguage("cs") {
+                setContent { PsmfTheme { MatchHeaderScreen(state = state(), onEvent = {}) } }
+            }
+
+            onNodeWithText("Zpráva je podepsaná.", substring = true).assertDoesNotExist()
         }
 }

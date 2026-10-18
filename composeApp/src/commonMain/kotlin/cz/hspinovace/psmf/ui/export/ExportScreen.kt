@@ -42,8 +42,6 @@ import cz.hspinovace.psmf.resources.export_problem_confirmation_referee
 import cz.hspinovace.psmf.resources.export_problem_lineup
 import cz.hspinovace.psmf.resources.export_problem_lineup_confirmation
 import cz.hspinovace.psmf.resources.export_problem_officials
-import cz.hspinovace.psmf.resources.export_problem_result
-import cz.hspinovace.psmf.resources.export_problem_score_mismatch
 import cz.hspinovace.psmf.resources.export_ready
 import cz.hspinovace.psmf.resources.export_save
 import cz.hspinovace.psmf.resources.export_save_cancelled
@@ -256,18 +254,6 @@ private fun ReportProblem.describe(): String =
 
         is ReportProblem.AssessmentIncomplete -> {
             stringResource(Res.string.export_problem_assessment, side.mark())
-        }
-
-        ReportProblem.MissingResult -> {
-            stringResource(Res.string.export_problem_result)
-        }
-
-        is ReportProblem.ScoreDisagreesWithGoals -> {
-            stringResource(
-                Res.string.export_problem_score_mismatch,
-                recorded.asWrittenOnReport,
-                fromGoals.asWrittenOnReport,
-            )
         }
 
         ReportProblem.MissingOfficials -> {

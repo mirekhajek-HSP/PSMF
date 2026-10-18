@@ -296,4 +296,78 @@ class ConsoleSheetsTest {
                 }
             }
         }
+
+    @Test
+    fun onASignedReportTheWhistleQuestionAlsoSaysTheSignaturesGoWithIt() =
+        runComposeUiTest {
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme {
+                        ConsoleScreen(
+                            ConsoleUiState(
+                                loading = false,
+                                entry = entry(),
+                                signed = true,
+                                takeBack = UndoStep.TakesBackWhistle(Whistle.FINAL, 2),
+                            ),
+                            KICKOFF + 33.minutes,
+                            onEvent = {},
+                        )
+                    }
+                }
+
+                onNodeWithText("Konec utkání se vezme zpět.", substring = true).assertIsDisplayed()
+                onNodeWithText("Zpráva je podepsaná. Tato změna zruší podpisy", substring = true).assertIsDisplayed()
+            }
+        }
+
+    @Test
+    fun onAnUnsignedReportTheWhistleQuestionSaysNothingAboutSignatures() =
+        runComposeUiTest {
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme {
+                        ConsoleScreen(
+                            ConsoleUiState(
+                                loading = false,
+                                entry = entry(),
+                                takeBack = UndoStep.TakesBackWhistle(Whistle.END_OF_PERIOD, 1),
+                            ),
+                            KICKOFF + 33.minutes,
+                            onEvent = {},
+                        )
+                    }
+                }
+
+                onNodeWithText("Zpráva je podepsaná.", substring = true).assertDoesNotExist()
+            }
+        }
+
+    @Test
+    fun aChangeWaitingOnASignedReportIsAskedAboutWithTheTwoAnswers() =
+        runComposeUiTest {
+            val events = mutableListOf<ConsoleEvent>()
+            withLanguage("cs") {
+                setContent {
+                    PsmfTheme {
+                        ConsoleScreen(
+                            ConsoleUiState(
+                                loading = false,
+                                entry = entry(),
+                                signed = true,
+                                withdrawing = ConsoleEvent.GoalSubmitted,
+                            ),
+                            KICKOFF + 90.minutes,
+                            events::add,
+                        )
+                    }
+                }
+
+                onNodeWithText("Zrušit podpisy?").assertIsDisplayed()
+                onNodeWithText("Ano, zrušit podpisy").performClick()
+                onNodeWithText("Ponechat podpisy").performClick()
+            }
+
+            assertEquals(listOf(ConsoleEvent.WithdrawalConfirmed, ConsoleEvent.WithdrawalDismissed), events)
+        }
 }

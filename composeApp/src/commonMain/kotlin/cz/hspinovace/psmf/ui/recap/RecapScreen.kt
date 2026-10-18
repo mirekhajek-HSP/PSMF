@@ -7,55 +7,48 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import cz.hspinovace.psmf.domain.ConfirmingParty
+import cz.hspinovace.psmf.export.ZouResult
 import cz.hspinovace.psmf.export.ZouText
+import cz.hspinovace.psmf.export.ZouTimes
 import cz.hspinovace.psmf.resources.Res
-import cz.hspinovace.psmf.resources.action_cancel
-import cz.hspinovace.psmf.resources.recap_confirm
+import cz.hspinovace.psmf.resources.recap_confirm_as
 import cz.hspinovace.psmf.resources.recap_confirm_away_captain
-import cz.hspinovace.psmf.resources.recap_confirm_error
 import cz.hspinovace.psmf.resources.recap_confirm_home_captain
-import cz.hspinovace.psmf.resources.recap_confirm_name
 import cz.hspinovace.psmf.resources.recap_confirm_referee
-import cz.hspinovace.psmf.resources.recap_confirmed
+import cz.hspinovace.psmf.resources.recap_confirmed_by
 import cz.hspinovace.psmf.resources.recap_continue
-import cz.hspinovace.psmf.resources.recap_deputy
 import cz.hspinovace.psmf.resources.recap_document
 import cz.hspinovace.psmf.resources.recap_document_note
 import cz.hspinovace.psmf.resources.recap_full_time
 import cz.hspinovace.psmf.resources.recap_half_time
 import cz.hspinovace.psmf.resources.recap_loading
+import cz.hspinovace.psmf.resources.recap_no_captain
 import cz.hspinovace.psmf.resources.recap_no_cards
 import cz.hspinovace.psmf.resources.recap_no_cards_confirmed
 import cz.hspinovace.psmf.resources.recap_no_cards_note
 import cz.hspinovace.psmf.resources.recap_no_cards_title
+import cz.hspinovace.psmf.resources.recap_no_cards_withdraw
+import cz.hspinovace.psmf.resources.recap_no_referee
 import cz.hspinovace.psmf.resources.recap_result
 import cz.hspinovace.psmf.resources.recap_result_note
 import cz.hspinovace.psmf.resources.recap_signatures
 import cz.hspinovace.psmf.ui.common.ActionRow
-import cz.hspinovace.psmf.ui.common.KeyboardDismissal
 import cz.hspinovace.psmf.ui.common.PrimaryAction
-import cz.hspinovace.psmf.ui.common.PsmfTextField
 import cz.hspinovace.psmf.ui.common.Section
+import cz.hspinovace.psmf.ui.common.WithdrawSignaturesDialog
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
-import cz.hspinovace.psmf.usecase.ResultDraft
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -66,6 +59,10 @@ import org.jetbrains.compose.resources.stringResource
  * is not being checked (analysis section 5.5). So the middle of this
  * screen is the report itself, rendered by the same formatter the export
  * uses — the captains confirm exactly the bytes that leave the phone.
+ *
+ * **Nothing on it is typed** (prompt 13, part 4): the result is the goals',
+ * and the three signatures are one tap each, under a name this screen already
+ * knows and shows on the button.
  */
 @Composable
 fun RecapScreen(
@@ -91,7 +88,7 @@ fun RecapScreen(
                     .padding(PsmfDimens.screenPadding),
             verticalArrangement = Arrangement.spacedBy(PsmfDimens.sectionSpacing),
         ) {
-            ResultSection(state, onEvent)
+            report.result?.let { ResultSection(it) }
 
             Section(
                 title = stringResource(Res.string.recap_document),
@@ -118,72 +115,43 @@ fun RecapScreen(
         }
     }
 
-    state.confirming?.let { ConfirmationDialog(state, it, onEvent) }
+    // Asked before the change is made: it takes the signatures back.
+    if (state.withdrawing != null) {
+        WithdrawSignaturesDialog(
+            onConfirm = { onEvent(RecapEvent.WithdrawalConfirmed) },
+            onDismiss = { onEvent(RecapEvent.WithdrawalDismissed) },
+        )
+    }
 }
 
+/**
+ * `poločas` and `Konečný výsledek`: shown, and **not editable**. They come
+ * from the goals, and a line says where a goal is corrected.
+ */
 @Composable
-private fun ResultSection(
-    state: RecapUiState,
-    onEvent: (RecapEvent) -> Unit,
-) {
-    val draft = state.result
+private fun ResultSection(result: ZouResult) {
     Section(
         title = stringResource(Res.string.recap_result),
         note = stringResource(Res.string.recap_result_note),
     ) {
-        ScoreRow(
-            label = stringResource(Res.string.recap_half_time),
-            home = draft.halfTimeHome,
-            away = draft.halfTimeAway,
-            onHome = { onEvent(RecapEvent.ResultEdited(draft.copy(halfTimeHome = it))) },
-            onAway = { onEvent(RecapEvent.ResultEdited(draft.copy(halfTimeAway = it))) },
-        )
-        ScoreRow(
-            label = stringResource(Res.string.recap_full_time),
-            home = draft.fullTimeHome,
-            away = draft.fullTimeAway,
-            onHome = { onEvent(RecapEvent.ResultEdited(draft.copy(fullTimeHome = it))) },
-            onAway = { onEvent(RecapEvent.ResultEdited(draft.copy(fullTimeAway = it))) },
-            last = true,
-        )
+        ScoreRow(stringResource(Res.string.recap_half_time), result.halfTime)
+        ScoreRow(stringResource(Res.string.recap_full_time), result.fullTime)
     }
 }
 
 @Composable
 private fun ScoreRow(
     label: String,
-    home: String,
-    away: String,
-    onHome: (String) -> Unit,
-    onAway: (String) -> Unit,
-    last: Boolean = false,
+    score: String,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
         Text(label, style = MaterialTheme.typography.bodyLarge)
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            ScoreField(home, onHome, ImeAction.Next)
-            Text(":", style = MaterialTheme.typography.titleLarge)
-            ScoreField(away, onAway, if (last) ImeAction.Done else ImeAction.Next)
-        }
+        Text(score, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
     }
-}
-
-@Composable
-private fun ScoreField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    imeAction: ImeAction,
-) {
-    PsmfTextField(
-        value = value,
-        onValueChange = onValueChange,
-        keyboardType = KeyboardType.Number,
-        imeAction = imeAction,
-        modifier = Modifier.width(SCORE_FIELD_WIDTH).heightIn(min = PsmfDimens.minTouchTarget),
-    )
 }
 
 /**
@@ -191,7 +159,9 @@ private fun ScoreField(
  *
  * Only offered while nothing has been recorded. An empty block and an
  * affirmed "no cards" look the same on a screen and mean different things
- * to PSMF, which is the whole reason the distinction is modelled.
+ * to PSMF, which is the whole reason the distinction is modelled. **It can be
+ * taken back**: a mis-tap is not final, and a block that is not accounted for
+ * is what the readiness check then asks about.
  */
 @Composable
 private fun CardsAffirmation(
@@ -205,6 +175,12 @@ private fun CardsAffirmation(
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.primary,
             )
+            OutlinedButton(
+                onClick = { onEvent(RecapEvent.NoCardsWithdrawn) },
+                modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
+            ) {
+                Text(stringResource(Res.string.recap_no_cards_withdraw))
+            }
         }
         return
     }
@@ -223,6 +199,14 @@ private fun CardsAffirmation(
     }
 }
 
+/**
+ * The three final confirmations: home captain, away captain, referee.
+ *
+ * **One tap each, under the name on the button** -- the captain marked in that
+ * team's lineup, the referee from the header -- with nothing to type and no
+ * deputy to switch on. Once given, it reads the name and the time. Where
+ * there is no name to sign under there is no button, only what to do about it.
+ */
 @Composable
 private fun SignatureSection(
     state: RecapUiState,
@@ -230,18 +214,44 @@ private fun SignatureSection(
 ) {
     Section(title = stringResource(Res.string.recap_signatures)) {
         ConfirmingParty.entries.forEach { party ->
-            if (party in state.confirmed) {
-                Text(
-                    text = "${party.label()} — ${stringResource(Res.string.recap_confirmed)}",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-            } else {
-                OutlinedButton(
-                    onClick = { onEvent(RecapEvent.ConfirmationOpened(party)) },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
-                ) {
-                    Text(party.label())
+            val given = state.confirmed[party]
+            val name = state.signsAs[party]
+            when {
+                given != null -> {
+                    Text(
+                        text =
+                            "${party.label()}: " +
+                                stringResource(
+                                    Res.string.recap_confirmed_by,
+                                    given.confirmedBy.value,
+                                    ZouTimes.written(given.at),
+                                ),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+
+                name != null -> {
+                    Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) {
+                        Text(party.label(), style = MaterialTheme.typography.bodyLarge)
+                        OutlinedButton(
+                            onClick = { onEvent(RecapEvent.ConfirmationGiven(party)) },
+                            modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
+                        ) {
+                            Text(stringResource(Res.string.recap_confirm_as, name))
+                        }
+                    }
+                }
+
+                else -> {
+                    Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) {
+                        Text(party.label(), style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            text = party.missingName(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    }
                 }
             }
         }
@@ -257,63 +267,8 @@ private fun ConfirmingParty.label(): String =
     }
 
 @Composable
-private fun ConfirmationDialog(
-    state: RecapUiState,
-    party: ConfirmingParty,
-    onEvent: (RecapEvent) -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = { onEvent(RecapEvent.ConfirmationDismissed) },
-        title = { Text(party.label()) },
-        text = {
-            // A dialog is a window of its own: the screen's keyboard rules do
-            // not reach into it.
-            KeyboardDismissal {
-                Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing)) {
-                    PsmfTextField(
-                        value = state.confirmingName,
-                        onValueChange = { onEvent(RecapEvent.ConfirmingNameChanged(it)) },
-                        label = { Text(stringResource(Res.string.recap_confirm_name)) },
-                        isError = state.confirmingRejected,
-                        imeAction = ImeAction.Done,
-                        modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
-                    )
-                    if (party != ConfirmingParty.REFEREE) {
-                        // Captaincy may be delegated: the worked example has a
-                        // deputy signing as `Lepiš (zást.)`.
-                        Row(
-                            modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
-                            horizontalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Switch(
-                                checked = state.confirmingAsDeputy,
-                                onCheckedChange = { onEvent(RecapEvent.ConfirmingDeputyChanged(it)) },
-                            )
-                            Text(stringResource(Res.string.recap_deputy), modifier = Modifier.weight(1f))
-                        }
-                    }
-                    if (state.confirmingRejected) {
-                        Text(
-                            text = stringResource(Res.string.recap_confirm_error),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.error,
-                        )
-                    }
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = { onEvent(RecapEvent.ConfirmationSubmitted) }) {
-                Text(stringResource(Res.string.recap_confirm))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = { onEvent(RecapEvent.ConfirmationDismissed) }) {
-                Text(stringResource(Res.string.action_cancel))
-            }
-        },
-    )
-}
-
-private val SCORE_FIELD_WIDTH = 88.dp
+private fun ConfirmingParty.missingName(): String =
+    when (this) {
+        ConfirmingParty.REFEREE -> stringResource(Res.string.recap_no_referee)
+        else -> stringResource(Res.string.recap_no_captain)
+    }

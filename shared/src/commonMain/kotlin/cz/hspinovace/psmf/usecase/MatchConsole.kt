@@ -19,6 +19,7 @@ import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.UndoStep
 import cz.hspinovace.psmf.domain.YellowCard
+import cz.hspinovace.psmf.domain.afterAChangeFrom
 import cz.hspinovace.psmf.domain.inPeriodInterval
 import cz.hspinovace.psmf.domain.isPastTheFinalWhistle
 import cz.hspinovace.psmf.domain.latestGoalMinuteAt
@@ -45,7 +46,12 @@ class StartMatch(
     ): Match {
         if (match.kickoffAt != null) return match
         val started =
-            match.copy(kickoffAt = at, kickoffSequence = match.nextSequence(), status = MatchStatus.IN_PROGRESS)
+            match
+                .copy(
+                    kickoffAt = at,
+                    kickoffSequence = match.nextSequence(),
+                    status = MatchStatus.IN_PROGRESS,
+                ).afterAChangeFrom(match)
         matches.save(started)
         return started
     }
@@ -68,7 +74,12 @@ class FinishMatch(
     ): Match {
         if (match.status.isPastTheFinalWhistle) return match
         val finished =
-            match.copy(status = MatchStatus.FINISHED, finishedAt = at, finishedSequence = match.nextSequence())
+            match
+                .copy(
+                    status = MatchStatus.FINISHED,
+                    finishedAt = at,
+                    finishedSequence = match.nextSequence(),
+                ).afterAChangeFrom(match)
         matches.save(finished)
         return finished
     }
@@ -94,7 +105,7 @@ class EndPeriod(
         if (match.kickoffAt == null) return match
         if (match.inPeriodInterval) return match
         val ended = PeriodBreak(endedAt = at, endedSequence = match.nextSequence())
-        val updated = match.copy(periodBreaks = match.periodBreaks + ended)
+        val updated = match.copy(periodBreaks = match.periodBreaks + ended).afterAChangeFrom(match)
         matches.save(updated)
         return updated
     }
@@ -119,7 +130,7 @@ class StartNextPeriod(
     ): Match {
         val open = match.periodBreaks.lastOrNull()?.takeIf { it.nextStartedAt == null } ?: return match
         val resumed = open.copy(nextStartedAt = at, nextStartedSequence = match.nextSequence())
-        val updated = match.copy(periodBreaks = match.periodBreaks.dropLast(1) + resumed)
+        val updated = match.copy(periodBreaks = match.periodBreaks.dropLast(1) + resumed).afterAChangeFrom(match)
         matches.save(updated)
         return updated
     }
@@ -165,7 +176,7 @@ class LogGoal(
                 scoreAfter = Score.GOALLESS,
                 sequence = match.nextSequence(),
             )
-        val updated = match.copy(goals = (match.goals + goal).rescored())
+        val updated = match.copy(goals = (match.goals + goal).rescored()).afterAChangeFrom(match)
         matches.save(updated)
         return updated
     }
@@ -403,10 +414,11 @@ class LogCard(
                 ?.let { match.powerPlayFor(it, at, halfLengthMinutes, sequence) }
 
         val updated =
-            match.copy(
-                cards = CardsSection.Issued(match.cardEvents + recorded),
-                powerPlays = match.powerPlays + listOfNotNull(powerPlay),
-            )
+            match
+                .copy(
+                    cards = CardsSection.Issued(match.cardEvents + recorded),
+                    powerPlays = match.powerPlays + listOfNotNull(powerPlay),
+                ).afterAChangeFrom(match)
         matches.save(updated)
         return updated
     }
@@ -461,7 +473,7 @@ class UndoLastEvent(
     private val matches: MatchRepository,
 ) {
     suspend operator fun invoke(match: Match): Match {
-        val updated = match.withoutLastAction() ?: return match
+        val updated = (match.withoutLastAction() ?: return match).afterAChangeFrom(match)
         matches.save(updated)
         return updated
     }

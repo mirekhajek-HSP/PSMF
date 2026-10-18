@@ -46,6 +46,7 @@ import cz.hspinovace.psmf.ui.common.PrimaryAction
 import cz.hspinovace.psmf.ui.common.PsmfTextField
 import cz.hspinovace.psmf.ui.common.ReadOnlyField
 import cz.hspinovace.psmf.ui.common.Section
+import cz.hspinovace.psmf.ui.common.SignedBanner
 import cz.hspinovace.psmf.ui.format.asClockTime
 import cz.hspinovace.psmf.ui.format.asFullDate
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
@@ -74,6 +75,9 @@ fun MatchHeaderScreen(
                     .padding(PsmfDimens.screenPadding),
             verticalArrangement = Arrangement.spacedBy(PsmfDimens.sectionSpacing),
         ) {
+            // Saves as you type, so the report's signatures are taken back by the
+            // first edit; the notice is here before it.
+            if (state.signed) SignedBanner()
             state.fixture?.let { FixtureSection(it) }
             OfficialsSection(state, onEvent)
             DelegatingTeamSection(state, onEvent)

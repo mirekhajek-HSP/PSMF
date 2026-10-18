@@ -12,6 +12,7 @@ import cz.hspinovace.psmf.domain.Lineup
 import cz.hspinovace.psmf.domain.LineupConfirmation
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
+import cz.hspinovace.psmf.domain.MatchResult
 import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.Minute
 import cz.hspinovace.psmf.domain.PersonName
@@ -19,11 +20,13 @@ import cz.hspinovace.psmf.domain.Player
 import cz.hspinovace.psmf.domain.PlayerId
 import cz.hspinovace.psmf.domain.PlayerName
 import cz.hspinovace.psmf.domain.PowerPlay
+import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.UndoStep
 import cz.hspinovace.psmf.domain.Whistle
 import cz.hspinovace.psmf.domain.nextUndoStep
 import cz.hspinovace.psmf.domain.reportProblems
+import cz.hspinovace.psmf.domain.resultForReport
 import cz.hspinovace.psmf.export.BuildZouReport
 import cz.hspinovace.psmf.export.CompleteReport
 import cz.hspinovace.psmf.export.NoAddedPlayers
@@ -352,13 +355,18 @@ class SchemaMigrationTest {
         runTest {
             val database = databaseAtVersion(6)
             val inProgress = oldMatch("m-play", MatchStatus.IN_PROGRESS, listOf(lineupTapHome, lineupTapAwayByADeputy))
-            val unsigned = oldMatch("m-done", MatchStatus.FINISHED, listOf(lineupTapHome, signedAwayAtTheRecap))
+            // Typed under 0.2.1, where the result was a field: the finished
+            // report's disagrees with its goals (there are none), the signed
+            // report's was signed under the old rules.
+            val unsigned =
+                oldMatch("m-done", MatchStatus.FINISHED, listOf(lineupTapHome, signedAwayAtTheRecap))
+                    .copy(result = MatchResult(Score(1, 0), Score(2, 0)))
             val signed =
                 oldMatch(
                     "m-signed",
                     MatchStatus.CONFIRMED,
                     listOf(lineupTapHome, signedAwayAtTheRecap, signedByTheReferee),
-                )
+                ).copy(result = MatchResult(Score(0, 0), Score(3, 1)))
             val addedAtThePitch = pitchAddedPlayer()
 
             beforeTheUpdateIn(database) { db ->
@@ -431,19 +439,7 @@ class SchemaMigrationTest {
             assertEquals(signed.reportProblems(), restoredSigned.reportProblems())
             assertEquals(MatchStatus.CONFIRMED, restoredSigned.status)
 
-            // THE WHISTLES: 0.2.1 kept no place in the recording order for
-            // them and no instant for the final whistle, and none is invented.
-            listOf(restoredPlay, restoredDone, restoredSigned).forEach { match ->
-                assertNull(match.kickoffSequence, "an upgrade numbered a whistle it never saw pressed")
-                assertNull(match.finishedAt)
-                assertNull(match.finishedSequence)
-            }
-            // A whistle pressed under 0.2.1 can still be taken back -- after
-            // everything recorded since -- except on the signed report, whose
-            // clock is not changed under a signature.
-            assertEquals(UndoStep.TakesBackWhistle(Whistle.KICKOFF, 1), restoredPlay.nextUndoStep())
-            assertEquals(UndoStep.TakesBackWhistle(Whistle.FINAL, 1), restoredDone.nextUndoStep())
-            assertNull(restoredSigned.nextUndoStep())
+            assertResultNotesAndWhistlesWereLeftAlone(restoredPlay, restoredDone, restoredSigned)
 
             // The player who was added at the pitch, with the date of birth
             // the old table insisted on, is still there with it.
@@ -490,6 +486,40 @@ class SchemaMigrationTest {
 
     private val signedByTheReferee =
         Confirmation(ConfirmingParty.REFEREE, Instant.parse("2026-08-31T21:00:00Z"), PersonName.of("Jiri Vlk"), false)
+
+    /** What an upgrade does to the typed result, the new notes and the whistles. */
+    private fun assertResultNotesAndWhistlesWereLeftAlone(
+        restoredPlay: Match,
+        restoredDone: Match,
+        restoredSigned: Match,
+    ) {
+        // THE RESULT: left where it is, and read for one purpose. The signed
+        // report keeps what it said when it was signed; the finished one,
+        // not signed, says what its goals say and its typed result is dead
+        // data (still stored, never read). New: both teams' notes, empty.
+        assertEquals(Score(3, 1), restoredSigned.resultForReport().fullTime)
+        assertEquals(MatchResult(Score(1, 0), Score(2, 0)), restoredDone.result)
+        assertEquals(Score(0, 0), restoredDone.resultForReport().fullTime)
+        listOf(restoredPlay, restoredDone, restoredSigned).forEach { match ->
+            assertEquals("", match.assessment.home.note)
+            assertEquals("", match.assessment.away.note)
+        }
+
+        // THE WHISTLES: 0.2.1 kept no place in the recording order for
+        // them and no instant for the final whistle, and none is invented.
+        listOf(restoredPlay, restoredDone, restoredSigned).forEach { match ->
+            assertNull(match.kickoffSequence, "an upgrade numbered a whistle it never saw pressed")
+            assertNull(match.finishedAt)
+            assertNull(match.finishedSequence)
+        }
+        // A whistle pressed under 0.2.1 can still be taken back -- after
+        // everything recorded since. On the signed report too: the whistles
+        // are among the things the signatures attest, so taking one back
+        // takes the signatures with it, and the console says so first.
+        assertEquals(UndoStep.TakesBackWhistle(Whistle.KICKOFF, 1), restoredPlay.nextUndoStep())
+        assertEquals(UndoStep.TakesBackWhistle(Whistle.FINAL, 1), restoredDone.nextUndoStep())
+        assertEquals(UndoStep.TakesBackWhistle(Whistle.FINAL, 1), restoredSigned.nextUndoStep())
+    }
 
     /**
      * A match as 0.2.1 wrote it: the shared lineups, kickoff at 19:00, no
