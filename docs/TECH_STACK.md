@@ -203,15 +203,18 @@ default.
 - **An RP number and a fallback identification are two different things**, and
   collapsing them into one polymorphic field was a modelling error, corrected
   2026-08-30. An `RpNumber` is *issued by PSMF*, immutable and **never
-  user-editable**; a date of birth or `BirthNumber` is *entered by a person* when
-  there is no RP number to use. `Player` carries all three; a league record may have
-  none (psmf.cz publishes none), a pitch-added player must have a date of birth,
-  and the referee writes one in the lineup when the record has nothing (2026-10-07).
-  `BirthNumber` exists only because A28 is unresolved.
+  user-editable**. What a referee types from a player's card is not an
+  `RpNumber`: it is what was written in `Číslo RP` that day
+  (`IdentificationSource.RP_TYPED`), it lives on the appearance, and it never
+  reaches the player, league data or the jersey override table. A date of birth
+  is the fallback for a player with no card. A league record may carry nothing
+  (psmf.cz publishes no RP numbers); a pitch-added player needs the card number
+  or a date of birth (DECISIONS 2026-10-17). `BirthNumber` exists only because
+  A28 is unresolved, and nothing in the app asks for one.
 - **What was written in the `Číslo RP` column is a per-match fact**, not a player
-  attribute. Three situations produce a value (card present → RP; card not to
-  hand → date of birth, the form's own rule; not yet registered → the fallback),
-  so it lives on the appearance and is **stored, not derived at export time**.
+  attribute. The value is the league's RP number, the number typed from the
+  card, or, with no card, the date of birth (the form's own rule), and the
+  appearance records which. So it lives on the appearance and is **stored, not derived at export time**.
   Deriving it would let a later registration retroactively change an old report.
 - **A team owns two kit sets**; the lineup records which was worn, which is why
   `Barva dresů` sits on the lineup block and is filled in at the match. The kit

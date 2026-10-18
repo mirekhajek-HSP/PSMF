@@ -6,12 +6,31 @@ Grouped by what blocks what, not by size. Last updated 2026-10-17.
 
 ## Next
 
-- [ ] **Prompt 13: the report after the first iPhone test**, 0.3.0 (4).
-      `prompts/13-report-flow-after-iphone-test.md`. The tester's eighteen
-      points from 0.2.1 (3) on an iPhone: the keyboard, the way back, the
-      lineup (who came, captain and goalkeeper, the RP number from the card),
-      a goal's own minute, taking back a whistle, the signatures. The
-      owner's decisions and mine: DECISIONS, 2026-10-17.
+- [x] **Prompt 13: the report after the first iPhone test**, 0.3.0 (4).
+      Done 2026-10-18, `fbae266`, `reports/2026-10-17-report-flow-after-iphone-test.md`.
+      Sixteen of the tester's eighteen points built; the code/PIN not
+      (DECISIONS, "A forged report"). Verified independently from a clean,
+      uncached build: 559 shared JVM · 500 Android host · 302 UI · 23 importer
+      tests, detekt green, APK 70,313,351 bytes, same debug key (installs as an
+      update), `builds/psmf-0.3.0-debug-fbae266.apk`.
+- [ ] **On the phone: 0.3.0 (4)**, installed **over 0.2.1, never uninstalling
+      first**, with three reports recorded in 0.2.1 beforehand (in progress,
+      finished, CONFIRMED). The checklist is §8 of prompt 13's report. The
+      clock steps (§8 B13) have never been seen past the first minute.
+- [ ] **The lineup's unmarked rows are tall blanks**, about 160 dp each, so
+      that marking a player never moves the rows below. A squad of 20 with 8
+      present is about 1,900 dp of empty space (see the lineup render). Prompt
+      13 asked for "rows do not jump under the thumb", and that was taken more
+      literally than meant: the tapped row must stay put, but rows below
+      opening downwards is normal. Judge it on the phone, then fix it in the
+      next prompt.
+- [ ] **A lineup is saved only once it is whole** (everyone marked present has
+      a number or date, plus a captain and a goalkeeper). Marks made before
+      that are lost if the app is killed. The coder called it "a minute's
+      work"; a phone call during the lineup is exactly when Android kills apps.
+      Next prompt: save the partial lineup too.
+- [ ] **The console log does not list the whistles**, though Undo walks back
+      through them (prompt 13, Gate 3).
 - [ ] **Prompt 11's report stops at Gate 1 in git** (`de6c4e6`). Build 3
       reached TestFlight and was tested, so Parts 2–4 ran: the archive, the
       upload, the upgrade over build 1, the three checklists. None of that is
@@ -24,8 +43,19 @@ Grouped by what blocks what, not by size. Last updated 2026-10-17.
       and 2, and how the form marks them.
 - [ ] **A forged report** (DECISIONS 2026-10-17). Nothing for the demo. The
       next step, when the export is next touched: a report ID, the fixture ID
-      and the device in every export, so that a duplicate is visible. A code
-      that PSMF issue and check goes to PSMF with A7.
+      and the device in every export, so that a duplicate is visible. Prompt
+      13's report (§6, "Not built") adds a checksum of the report's own text
+      at its foot, so a re-export reads as a copy and a correction as a new
+      version. A code that PSMF issue and check goes to PSMF with A7.
+- [ ] **Run gated prompts overnight, one fresh session per gate** (owner,
+      2026-10-18). A runner script in the `psmf-work` container: `claude -p`
+      once per gate; check the gate's commit landed; wait and retry when the
+      usage limit stops a run; halt on a failed gate or a STOP file. Inside
+      the container because it cannot push and has no credentials, which is
+      the only reason running without permission prompts is acceptable. It
+      loses the Windows emulator, so emulator checks move to the phone
+      checklist. Build it with prompt 14, and write prompt 14 for cold
+      sessions: a reading list per gate, named STOP conditions.
 - [ ] **At 12:40 of play, `12´` or `13´`?** The app writes 12´. For the
       referee visit. Prompt 13 puts the seconds on screen, which makes the
       question visible: the console now reads `12:40` and, beneath it,
