@@ -50,11 +50,11 @@ Ten in the full product. **Nine in the demo**, arranged in four tabs.
 |---|---|---|---|---|
 | 1 | **Fixtures** | HomeScreen | ✅ | Its own tab. Matches across all groups, filterable by league, group, pitch, date and team. An in-progress match is reachable from any tab — see *Shell*. |
 | 2 | **Match header** | MatchSetupScreen | ✅ | *Different content, not a modification.* Pick a fixture, then referee + assistant, licensed-hire flag (`R`), and the **delegating team** — which is who gets fined for a bad report. |
-| 3 | **Lineup** | — *new* | ✅ | Per team: who is present, jersey numbers, kit worn, identification. Captain confirms. **Absences live here and nowhere else.** |
+| 3 | **Lineup** | — *new* | ✅ | Per team: who came (marked, nobody is present until tapped), the captain and goalkeeper, jersey numbers, kit worn, Číslo RP. Captain confirms before kickoff. **Who came is recorded here and nowhere else.** |
 | 3a | **Týmy** | TeamsScreen | ✅ | Its own tab. Search, follow, roster. Jersey numbers editable; nothing else. |
 | 4 | **Live console** | MatchScreen | ✅ | The one genuinely reusable interaction model. |
-| 5 | **Assessment** | — *new* | ✅ | NH / Čd / Č / B per team, plus the mandatory commentary. |
-| 6 | **Recap & confirm** | MatchRecapScreen | ✅ | What the captains sign against. |
+| 5 | **Assessment** | — *new* | ✅ | NH / Čd / Č / B per team, an optional note per team, plus the mandatory commentary. |
+| 6 | **Recap & confirm** | MatchRecapScreen | ✅ | What the captains sign against: the result from the goals, three taps. |
 | 7 | **Export** | Share action | ✅ | JSON + CSV + formatted text, out via email intent **and saved to the device**. |
 | 8 | Settings | SettingsScreen | ✅ | Its own tab. Language and theme are real settings; league rules are information. |
 | 9 | Amend a finished match | MatchEditScreen | ❌ later | Required by the product (§2.12), not by the demo. |
@@ -92,25 +92,41 @@ team — a separate field from the two playing teams, and easy to miss.
 
 ### 3 · Lineup
 **The design decision that shapes everything.** §5.1's proposal: the squad is
-already known, so the task inverts from "write ten names" to "mark who is absent"
-— three to five taps, done on the referee's own phone with the captain beside them,
-nothing changing hands.
+already known, so the task inverts from "write ten names" to a few taps, done on
+the referee's own phone with the captain beside them, nothing changing hands. It
+was first built as "mark who is absent". The first iPhone test (2026-10-17) turned
+it round: **mark who came**, as the paper form's captain does.
 
-Per player: present/absent, jersey number, identification.
+Per player: present or not, jersey number, Číslo RP.
 
+- **Mark who came.** Nobody is present until tapped. A tap marks the player present
+  and opens their row (jersey, Číslo RP); a tap again takes it back. The count of
+  those marked is pinned at the top, and no row moves under the thumb while the
+  referee is marking.
+- **One captain and one goalkeeper per team**, both among those present, possibly
+  the same person; both are needed to continue. The report lists the captain
+  first, then the goalkeeper, then the rest in jersey order, and says in all three
+  formats who is which.
 - Jersey number defaults to last known and is corrected by exception. In the demo
   there is no history, so it defaults from seed data.
 - **Kit selection per team.** A team owns two kit sets and picks one per match, so
   that two teams do not play in similar colours. Defaults to the primary. This is
   what fills `Barva dresů` on the ZoU, which is why the form asks for it at the
   match rather than holding it against the team.
-- **Identification is two separate things, not one field.** The RP number is issued
-  by PSMF at registration, is immutable, and **the user can never type or edit
-  one**. Date of birth (or rodné číslo, pending A28) is the fallback, entered by a
-  person. A player needs at least one of them to exist at all.
+- **Číslo RP is what the card says.** The RP number is issued by PSMF at
+  registration, is immutable, and **the user can never type or edit one**; a
+  player the league has one for shows it, read-only. For a present player without
+  one, the row asks for the number *from the player's card* (digits, four to
+  seven). **That is not an RP number**: it is what was written in the column that
+  day, it lives on the appearance, it is never written into league data, and the
+  export says which of the two a row's number is. *Nemá průkaz* turns the same row
+  to the date of birth, the form's printed fallback. Both are remembered on the
+  device for the next match, typed once and editable. **No rodné číslo** anywhere,
+  pending A28.
 - **Adding a player is allowed** — a player turns up who is not yet in PSMF's
-  database. First name, surname, date of birth. No RP field is offered. Mark them
-  as user-added so they can be reconciled once PSMF registers them.
+  database. First name, surname, then the number from the card or, with *Nemá
+  průkaz*, the date of birth. No RP field is offered. Mark them as user-added so
+  they can be reconciled once PSMF registers them.
 - **Suspension badge, advisory only.** Yellows accumulate per group per season and
   trigger a ban on even totals; two yellows in one match count zero. Shown with its
   `asOf` date. **Never blocks, never says "eligible"** — fielding an ineligible
@@ -122,8 +138,13 @@ Per player: present/absent, jersey number, identification.
 - What was written in the RP column is recorded **per match**, with its source, not
   derived at export. A report states what was written on the day.
 
-Captain confirms per team. A tap, not a signature — parity with a pen mark nobody
-verifies (§3.2, pending A7).
+The captain confirms the lineup before kickoff, per team. One tap on
+*Potvrzuje* and the captain's name, by the captain marked above it: no list to
+pick from and no deputy. A
+tap, not a signature — parity with a pen mark nobody verifies (§3.2, pending A7).
+A missing one is listed in the export and never blocks kickoff; a late one carries
+its real time. It is a record of its own and is **not** the captain's final
+confirmation under the finished report (§6).
 
 ### 3a · Týmy — the reference tab
 
@@ -142,7 +163,7 @@ the referee's app**; there is no captain-facing surface here.
 - **Names, RP numbers and card history stay read-only.** A referee editing a
   registered player is a data-integrity failure — unchanged from screen 3.
 
-**Absences are not here.** Absence is a fact about one match, not about a player.
+**Who came is not here.** Presence is a fact about one match, not about a player.
 Setting it in a team screen would either persist forever or need a fixture
 attached, at which point it is the lineup screen with extra steps. It stays on
 screen 3, where the referee is standing next to the captain.
@@ -160,11 +181,19 @@ Two mechanics this needs:
 Reworked from golblok. What changes:
 
 - **Goals:** time, jersey number, scorer, running score. **A goal may have no
-  scorer** — the worked example contains one.
+  scorer** — the worked example contains one. The one-tap goal is written at the
+  clock's minute. **A goal can also be written at its own minute** — one the
+  referee forgot, during the match or after the final whistle (every goal after
+  the whistle asks for its minute, as the clock has none to give). The minute is
+  entered as on the card sheet, a number or `30´+`; **a minute the clock has not
+  reached is refused**, in words, and no goal is written at `60´+`. The goal list,
+  `Stav` and the half-time score follow the minute written; goals at one minute
+  keep the order they were recorded in.
 - **Cards:** mandatory free-text reason on every card. Red must record straight
   versus second yellow (`2. ŽK`).
 - **Minute is not an integer** — `30´+` at half-time, `60´+` after the whistle
-  before signing.
+  before signing (for a card; a goal after the whistle is written at the minute it
+  was scored).
 - **No substitutions. No assists.** Neither appears on the ZoU.
 - **No user-configurable rules.** 2 × 30, 5+1, venue from the fixture.
 - **The clock runs continuously *during play*.** 2 × 30 gross time, referee adds
@@ -177,11 +206,23 @@ Reworked from golblok. What changes:
   Two consequences, both simplifications: `30´+` and `60´+` become **derivable
   from the period state** instead of remembered, and the half-time score becomes
   **the score when period one ended** instead of something typed on the recap.
+- **A whistle can be taken back.** A mis-tapped kickoff, end of half, start of the
+  next half or final whistle is taken back with Undo, which takes back the last
+  thing recorded (a goal, a card or a whistle) and **asks first** when it is a
+  whistle, because it changes the clock. Then the whistle can be pressed again.
+  This is not a pause: nothing stops, resumes or adjusts anything, and nothing
+  edits an instant. The clock is what the remaining instants say, and a red card's
+  ten minutes of play follow it.
+- **The clock reads `mm:ss` of play**, the second half starting at `30:00`, and
+  frozen at the final whistle. The minute the next event will be written with
+  (`30´+` in first-half added time and in the interval, `60´+` after the whistle)
+  stays visible on a line of its own. The log and the report keep the form's
+  minutes: `12:40` is still `12´`.
 - **Power-play:** 10 minutes **of play** after a dismissal before a replacement
   may come on — not shortened by a goal, unaffected by further dismissals, held
   through the interval, none after the final whistle. Its own lifecycle, on a
   clock with no stoppage during play.
-- Keep: undo, tap-to-log against a tabbed player list, crash recovery, sent-off
+- Keep: undo (last recorded first), tap-to-log against a tabbed player list, crash recovery, sent-off
   players visually disabled, left-handed mirroring.
 - **Timer:** store the kickoff timestamp and derive elapsed time. Nothing ticks in
   the background — iOS cannot run a background timer at all.
@@ -193,18 +234,36 @@ Per team: `NH` best player by jersey number · `Čd` waiting time in minutes if 
 team was not ready at kickoff · `Č` shirts properly numbered, yes/no · `B` uniform
 kit colour, yes/no. `Č` and `B` feed directly into fines.
 
-Then the commentary — free prose, ~400 characters in the worked example.
+Then an optional **note per team**, for a complaint or a protest the captain asks
+the referee to note — typed by the referee, who is the only recorder, never a
+readiness problem — and the commentary, free prose, ~400 characters in the worked
+example.
 
 **This is the hardest usability problem in the product** and A6 decides how hard:
 if the commentary must be complete before the captains sign, it has to be typed at
 the pitch in the dark. Until A6 lands, build it editable at any point up to export.
 
 ### 6 · Recap & confirm
-Half-time score **pre-filled from the event log** and still editable, final score,
-explicit winner. Full event list. The assessment
-block. An explicit **"no cards were issued"** affirmation where applicable — the
-paper form requires the boxes to be struck through, so an empty list is not the
-same as "none".
+The half-time and final score **come from the goals** and are shown, not edited; a
+line says a goal is corrected in the console, and the winner is derived from the
+final score. Full event list. The assessment block, team notes included. An
+explicit **"no cards were issued"** affirmation where applicable — the paper form
+requires the boxes to be struck through, so an empty list is not the same as
+"none". The affirmation can be taken back.
+
+**Three taps, no typing.** The home captain, the away captain and the referee each
+have one button naming who signs: the captain **marked in that team's lineup**, the
+referee **from the header**. There is no name to type and no deputy. All three make
+the report CONFIRMED. These are the *final* confirmations, a different record from
+the one each captain gave under the lineup before kickoff (§3); the report shows
+both of each captain's, each with its time (Prague time in the text and CSV).
+
+**A change takes the signatures back.** After the final confirmations, a change to
+anything the captains attest — the header, the lineups, the goals, the cards
+(including the affirmation), the whistles — asks first, and withdraws all three;
+the recap then asks again. The header and the lineups save as you type, so they say
+so before the first edit instead. The assessment, the team notes and the commentary
+stay editable until export and never touch a signature, as A6 decided.
 
 §5.5: on paper a captain signs one sheet they can see in full. Here they confirm a
 screen, and **whatever is not on that screen is not being checked.** Design it as a
@@ -254,10 +313,10 @@ Deferred, not rejected.
 
 | | Question | Answer |
 |---|---|---|
-| §5.1 | How does the lineup reach the referee? | **Mark the absentees**, on the referee's own phone, captain beside them. Nothing changes hands. |
+| §5.1 | How does the lineup reach the referee? | **Mark the absentees**, on the referee's own phone, captain beside them. Nothing changes hands. *Turned round 2026-10-17, after the first iPhone test: mark who came (§3).* |
 | A6 | Must the commentary be complete before the captains sign? | **No.** Editable until export. |
 | A7 | Is a tap enough for captain confirmation? | **Yes.** |
-| A15 | How often does a player arrive without their card? | **Rare** — the captain typically carries the whole set. Identifier stays editable but not prominent. |
+| A15 | How often does a player arrive without their card? | **Rare** — the captain typically carries the whole set. Identifier stays editable but not prominent. *Since 2026-10-17 the row asks for the number from the card, and for the date of birth only after Nemá průkaz (§3).* |
 
 Still worth confirming against reality by watching one referee fill in a real ZoU,
 but nothing is blocked on it.
@@ -394,7 +453,8 @@ dated yellow-card count) and fixtures (round, date, time, venue code, home, away
 
 Player identification is **two fields, not one polymorphic one** — an RP number is
 issued by PSMF and can never be typed; date of birth is what a person enters when
-there is no RP number to use. See `DECISIONS.md`, 2026-08-29.
+there is no RP number to use. What a referee copies from a card is neither: it
+belongs to the appearance (§3). See `DECISIONS.md`, 2026-08-29 and 2026-10-17.
 
 This shape follows the entity sketch in the analysis §6, and is the reason the
 domain model was built before any screen.

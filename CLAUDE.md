@@ -119,17 +119,22 @@ Full list and sources in `docs/TECH_STACK.md` §4. The ones that bite:
 - **A red card records straight vs. second yellow.** Suspension maths depends on it.
 - **Every card carries a mandatory free-text reason.**
 - **A goal may have no scorer.**
-- **An RP number and a fallback identification are two different things.** An
-  `RpNumber` is issued by PSMF, immutable, and **never user-editable** — there is
-  no UI path to typing one, and `Player.addedAtThePitch()` takes no RP parameter.
-  A date of birth or birth number is what a person enters instead. A league player
-  may carry none of the three — every psmf.cz player does — and is fielded by the
-  referee typing the date of birth in the lineup row; a player added at the pitch
-  must have one. The rule "something in Číslo RP" lives on the appearance.
+- **An RP number and what a referee types are two different things.** An
+  `RpNumber` is issued by PSMF, immutable, and **never user-editable** — no UI path
+  makes one, and `Player.addedAtThePitch()` takes no RP parameter. What a referee
+  types from a player's registration card is **not an `RpNumber`**: it is what was
+  written in `Číslo RP` that day (`IdentificationSource.RP_TYPED`), it lives on the
+  appearance, and it never reaches the player, league data or the jersey override
+  table. A date of birth is the fallback for a player with no card. **No rodné
+  číslo until A28** — not as a field, a hint or a label. A league player may carry
+  none of these — every psmf.cz player does — so the lineup row asks for the number
+  from the card and, after *Nemá průkaz*, the date of birth; a player added at the
+  pitch needs one of the two. The rule "something in Číslo RP" lives on the
+  appearance.
 - **What was written in the `Číslo RP` column is a per-match fact.** It lives on
-  the appearance as `reportedIdentification`, is non-null, and is **stored, never
-  derived at export time** — a player registered later must not retroactively
-  change an old report.
+  the appearance as `reportedIdentification` (a value and which of the kinds it
+  is), is non-null, and is **stored, never derived at export time** — a player
+  registered later must not retroactively change an old report.
 - **A team owns two kit sets and the lineup records which was worn.** `label` is
   verbatim from PSMF and authoritative for the report; `colours` is for the app
   only. Neither is derivable from the other.
