@@ -33,6 +33,14 @@ import kotlin.time.Instant
 // with the process, and survives a reboot -- the resolution TECH_STACK
 // section 3 reaches for iOS, which cannot run a background timer at all.
 //
+// A WHISTLE CAN BE TAKEN BACK (2026-10-18, Whistles.kt), and that is not a
+// pause, a stop, a resume or an adjust either: nothing edits an instant. A
+// whistle taken back is one instant fewer among those the clock is worked out
+// from, and the clock is what the rest say -- end the first half by mistake,
+// take it back, and play simply went on, with no gap, because the clock never
+// learned of one. What the console shows of the clock (ClockReading.kt) is a
+// computation over the same instants and nothing more.
+//
 // THE POWER PLAY runs on that same clock: ten minutes OF PLAY. It holds
 // through the interval rather than expiring in it, and it is the one timer
 // here that starts and finishes.

@@ -427,7 +427,12 @@ class EndPeriodTest {
 
             val ended = EndPeriod(matches)(started, KICKOFF + 32.minutes)
 
-            assertEquals(listOf(PeriodBreak(endedAt = KICKOFF + 32.minutes)), ended.periodBreaks)
+            // The whistle carries its place in the recording order, which is
+            // what lets Undo take it back when its turn comes.
+            assertEquals(
+                listOf(PeriodBreak(endedAt = KICKOFF + 32.minutes, endedSequence = 1)),
+                ended.periodBreaks,
+            )
             assertEquals(ended, matches.load(MatchId("m1")))
         }
 
@@ -464,8 +469,16 @@ class StartNextPeriodTest {
 
             val resumed = StartNextPeriod(matches)(onBreak, KICKOFF + 33.minutes)
 
+            // The end was pressed under 0.2.1, so it has no place in the
+            // order; the start, pressed now, has the first.
             assertEquals(
-                listOf(PeriodBreak(endedAt = KICKOFF + 30.minutes, nextStartedAt = KICKOFF + 33.minutes)),
+                listOf(
+                    PeriodBreak(
+                        endedAt = KICKOFF + 30.minutes,
+                        nextStartedAt = KICKOFF + 33.minutes,
+                        nextStartedSequence = 1,
+                    ),
+                ),
                 resumed.periodBreaks,
             )
             assertEquals(resumed, matches.load(MatchId("m1")))

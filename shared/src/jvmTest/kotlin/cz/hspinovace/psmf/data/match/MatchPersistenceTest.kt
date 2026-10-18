@@ -21,10 +21,15 @@ import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamAssessment
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.YellowCard
+import cz.hspinovace.psmf.domain.elapsedAt
 import cz.hspinovace.psmf.usecase.CardDraft
+import cz.hspinovace.psmf.usecase.EndPeriod
+import cz.hspinovace.psmf.usecase.FinishMatch
 import cz.hspinovace.psmf.usecase.LogCard
 import cz.hspinovace.psmf.usecase.LogGoal
 import cz.hspinovace.psmf.usecase.MinuteDraft
+import cz.hspinovace.psmf.usecase.StartMatch
+import cz.hspinovace.psmf.usecase.StartNextPeriod
 import cz.hspinovace.psmf.usecase.UndoLastEvent
 import kotlinx.coroutines.test.runTest
 import java.io.File
@@ -313,6 +318,77 @@ class MatchPersistenceTest {
             assertTrue(undone.goals.isEmpty(), "Undo took the card, not the goal recorded after it")
             assertEquals(1, undone.cardEvents.size)
             assertEquals(undone, session { it.load(started.id) })
+        }
+
+    @Test
+    fun theWhistlesAndTheirPlaceInTheOrderSurviveTheProcessBeingKilled() =
+        runTest {
+            val kickoff = Instant.parse("2026-08-31T19:00:00Z")
+            val set = Fixtures.matchInSetup()
+            session { matches ->
+                matches.save(set)
+                var m = StartMatch(matches)(set, kickoff)
+                m = LogGoal(matches)(m, TeamSide.HOME, null, Minute.Played(10))
+                m = EndPeriod(matches)(m, kickoff + 30.minutes)
+                m = StartNextPeriod(matches)(m, kickoff + 45.minutes)
+                FinishMatch(matches)(m, kickoff + 75.minutes)
+            }
+
+            val restored = assertNotNull(session { it.load(set.id) })
+
+            assertEquals(1, restored.kickoffSequence)
+            assertEquals(3, restored.periodBreaks.single().endedSequence)
+            assertEquals(4, restored.periodBreaks.single().nextStartedSequence)
+            assertEquals(5, restored.finishedSequence)
+            assertEquals(kickoff + 75.minutes, restored.finishedAt)
+        }
+
+    @Test
+    fun aWhistleTakenBackStaysTakenBackAfterTheAppRestarts() =
+        runTest {
+            // The rows are rewritten, not only added to: a break taken back
+            // and still on disk would come back the next time the report is
+            // opened, and the clock with it.
+            val kickoff = Instant.parse("2026-08-31T19:00:00Z")
+            val set = Fixtures.matchInSetup()
+            session { matches ->
+                matches.save(set)
+                val started = StartMatch(matches)(set, kickoff)
+                val ended = EndPeriod(matches)(started, kickoff + 31.minutes)
+                UndoLastEvent(matches)(ended)
+            }
+
+            val restored = assertNotNull(session { it.load(set.id) })
+
+            assertTrue(restored.periodBreaks.isEmpty(), "the break came back: ${restored.periodBreaks}")
+            assertEquals(33.minutes, restored.elapsedAt(kickoff + 33.minutes))
+
+            // And the whistle can be pressed again and survive that too.
+            session { matches -> EndPeriod(matches)(restored, kickoff + 35.minutes) }
+            val again = assertNotNull(session { it.load(set.id) })
+            assertEquals(listOf(kickoff + 35.minutes), again.periodBreaks.map { it.endedAt })
+        }
+
+    @Test
+    fun takingBackTheKickoffAndTheFinalWhistleSurvivesTheAppRestarting() =
+        runTest {
+            val kickoff = Instant.parse("2026-08-31T19:00:00Z")
+            val set = Fixtures.matchInSetup()
+            session { matches ->
+                matches.save(set)
+                val finished = FinishMatch(matches)(StartMatch(matches)(set, kickoff), kickoff + 60.minutes)
+                UndoLastEvent(matches)(finished)
+            }
+            val running = assertNotNull(session { it.load(set.id) })
+            assertEquals(MatchStatus.IN_PROGRESS, running.status)
+            assertNull(running.finishedAt)
+            assertNull(running.finishedSequence)
+
+            session { matches -> UndoLastEvent(matches)(running) }
+            val notStarted = assertNotNull(session { it.load(set.id) })
+            assertEquals(MatchStatus.SETUP, notStarted.status)
+            assertNull(notStarted.kickoffAt)
+            assertNull(notStarted.kickoffSequence)
         }
 
     @Test

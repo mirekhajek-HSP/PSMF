@@ -5,6 +5,101 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-18 · The console: a goal at its own minute, a whistle taken back, minutes and seconds (prompt 13, Part 3)
+
+**1. A goal with its own minute.** The one-tap goal is still one tap, at the
+clock's minute. A new button under each team's list, *Gól s jinou minutou*,
+opens a sheet -- scorer from the players still on the pitch (or none), the
+minute entered the way the card sheet takes it: a number, or `30´+`. **There
+is no `60´+`**, in the sheet or anywhere a goal is written: the use case
+refuses it as well as the sheet not offering it.
+
+- **A minute later than the clock is refused, not clamped.** A goal moved to
+  another minute without being asked is a goal in the wrong place on a report
+  the referee signs; a refusal says which minute is the latest. The latest is
+  the clock's own reading as if the whistle had not gone: `30´+` in the first
+  half's added time and in the interval, which keeps a second-half minute out
+  of reach until the second half has started. **Reverses if** referees would
+  rather have it clamped; it is one line in `LogGoal` and one problem in
+  `GoalDraft`.
+- **After the final whistle every goal asks for its minute.** The clock has
+  none to give (`60´+` is not a goal's), so a tap on a player's goal icon opens
+  the sheet with that player already chosen. The bound is the clock **frozen at
+  the final whistle**, which needs the whistle's instant (below); a match
+  finished before 0.3.0 has none, and the running clock is the bound there --
+  weaker, never wrongly refusing.
+- **Before the kickoff** the sheet refuses (there is no minute to have scored
+  in). The one-tap goal still lands at `0´` there, as it did; that is a mistake
+  to undo, not a state to model.
+- **The goal list, `Stav` and the half-time score follow the minute written;
+  goals at one minute keep the order they were recorded in.** The stored list is
+  now in report order (`rescored()` sorts by minute, then by recording
+  sequence), so every reader of it -- the console log, the three export
+  formats, the recap's suggested result -- gets the same order without sorting
+  for itself. The half-time cut was already by minute: a second-half goal
+  written with a first-half minute counted for half-time at HEAD too; nothing
+  could write one until now.
+- **Undo is unchanged**: it takes back the last thing *recorded*, whatever
+  minute it carries.
+
+**2. A whistle taken back, in recording order.** A whistle is one more thing
+recorded, with a place in the same order goals and cards have, and Undo takes
+back the last thing recorded whichever kind it is. **Nothing pauses, stops,
+resumes or adjusts anything; nothing edits an instant.** Taking a boundary
+back removes it from the instants the clock is worked out from, and the clock
+is what those that remain say: end the first half by mistake and take it back,
+and play simply went on -- no gap, because the clock never learned of one. A
+red card's ten minutes *of play* follow without anything being recomputed, as
+they are worked out on demand from the clock.
+
+- **It asks first, and says which.** A goal or a card still goes at once; a
+  whistle brings up *Vzít zpět hvizd?* naming it (*Konec 1. poločasu*,
+  *Výkop*, ...), because it changes the clock and the referee may not have
+  expected Undo's next step to be one.
+- **The price of one order:** a whistle with goals recorded after it is taken
+  back only after those have gone, one Undo each. A mis-tapped half-time
+  noticed three goals later costs three taps. **Reverses if** referees need a
+  whistle out of order, in which case Undo becomes a list of what has been
+  recorded, newest first.
+- **A confirmed report's whistles are not offered**: changing the clock under
+  signatures is for the part of the app that withdraws them (part 4). Goals and
+  cards on a confirmed report go as they did.
+- **Whistles pressed before 0.3.0 have no place in the order** and no invented
+  one: they come back only after everything recorded since, last pressed first
+  (final whistle, start of the second half, end of the first, kickoff). The
+  final whistle had no instant either, so a match finished under 0.2.1 has
+  none.
+- **Pressing the final whistle twice is one whistle**: the second changes
+  nothing and does not take a later place in the order.
+- **Schema 7 amended, not an 8.** Version 7 has not shipped (0.2.1 is schema
+  6), so the five columns -- `kickoff_sequence`, `finished_at`,
+  `finished_sequence` on the match, `ended_sequence` and
+  `next_started_sequence` on a period break -- are in `6.sqm` with the rest and
+  `7.db` was regenerated. A period break can now be taken back, so the table is
+  rewritten on every save instead of only added to. **Reverses if** a build with
+  the first version-7 schema ever reaches a device: then it is an 8.
+
+**3. Minutes and seconds on the clock.** Two lines, which are not the same
+thing, and both stay on screen:
+
+- *Play so far* as `mm:ss`: the first half counts on past `30:00` in its added
+  time, **holds in the interval**, and the second half **starts at `30:00`**
+  whatever the first added -- so it can read less than the interval showed,
+  because that is how the form's minute restarts. Past `60:00` it counts on
+  (`61:05`). After the final whistle it is frozen at the whistle.
+- *The minute the next thing recorded gets*, as the form writes it: `12´` for
+  12:40 (**which minute a moment maps to is unchanged**), `30´+` for the first
+  half's added time and the interval, `60´+` once the match is over. It was the
+  only thing shown before; it stays, on its own line, with the phase beside it
+  (*Nastavení 1. poločasu*, *Poločas*, *Konec utkání*).
+
+What it shows at each boundary is in the report (§5) and pinned by
+`ConsoleClockTest` and `ClockReadingTest`. The log and the report keep the
+form's minutes. **Reverses if** the seconds turn out to invite a precision the
+report does not have; the second line alone is the old screen.
+
+---
+
 ## 2026-10-17 · The lineup, as built: who came, two roles, the number from the card, one tap (prompt 13, Part 2)
 
 **The session's calls, carrying out the owner's and my entries below.** The

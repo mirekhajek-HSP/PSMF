@@ -14,8 +14,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import cz.hspinovace.psmf.domain.ClockPhase
+import cz.hspinovace.psmf.domain.ClockReading
 import cz.hspinovace.psmf.resources.Res
 import cz.hspinovace.psmf.resources.console_before_kickoff
+import cz.hspinovace.psmf.resources.console_clock_added_time
+import cz.hspinovace.psmf.resources.console_clock_finished
+import cz.hspinovace.psmf.resources.console_clock_interval
+import cz.hspinovace.psmf.resources.console_clock_written
 import cz.hspinovace.psmf.resources.console_power_play
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.ConsoleEntry
@@ -58,12 +64,7 @@ fun Scoreboard(
             TeamName(entry.away.teamName, TextAlign.End, Modifier.weight(1f))
         }
 
-        Text(
-            text = entry.clockReading(now),
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.fillMaxWidth(),
-            textAlign = TextAlign.Center,
-        )
+        ClockLines(entry.readingAt(now))
 
         entry.powerPlaysRunningAt(now).forEach { powerPlay ->
             val team = entry.side(powerPlay.shortHandedSide).teamName
@@ -107,14 +108,53 @@ private fun TeamName(
 }
 
 /**
- * `34´` once the match is under way.
+ * The clock, in two lines that are not the same thing and both stay.
  *
- * Minutes rather than minutes and seconds: the form records minutes, and a
- * second-by-second display invites a precision the report does not have.
+ * **Above: play so far, `mm:ss`.** The first half counts on past `30:00` in
+ * its added time, holds through the interval, and the second half starts at
+ * `30:00` whatever the first added -- which is why it can be less than what
+ * the interval showed. After the final whistle it is frozen at the whistle.
+ *
+ * **Below: the minute the next thing recorded gets**, as the form writes it:
+ * `12´` for 12:40, `30´+` for the first half's added time and the interval,
+ * `60´+` once the match is over. It was the only thing shown before, and a
+ * referee about to tap a goal in added time needs to read it off.
+ *
+ * What the report and the log keep is still the form's minutes; the seconds
+ * are for the referee, because added time is added by looking at them.
  */
 @Composable
-private fun ConsoleEntry.clockReading(now: Instant): String =
-    minuteAt(now)?.written ?: stringResource(Res.string.console_before_kickoff)
+private fun ClockLines(reading: ClockReading) {
+    val written = reading.written?.written.orEmpty()
+    reading.shown?.let {
+        Text(
+            text = it.asMinutesAndSeconds(),
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.fillMaxWidth(),
+            textAlign = TextAlign.Center,
+        )
+    }
+    Text(
+        text =
+            when (reading.phase) {
+                ClockPhase.BEFORE_KICKOFF -> stringResource(Res.string.console_before_kickoff)
+                ClockPhase.PLAYING -> stringResource(Res.string.console_clock_written, written)
+                ClockPhase.FIRST_HALF_ADDED_TIME -> stringResource(Res.string.console_clock_added_time, written)
+                ClockPhase.INTERVAL -> stringResource(Res.string.console_clock_interval, written)
+                ClockPhase.FINISHED -> stringResource(Res.string.console_clock_finished, written)
+            },
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.fillMaxWidth(),
+        textAlign = TextAlign.Center,
+    )
+}
+
+/** `12:40`, with the minutes as long as they are: a second half in added time reads `62:05`. */
+private fun Duration.asMinutesAndSeconds(): String {
+    val total = inWholeSeconds
+    val minutes = (total / SECONDS_IN_A_MINUTE).toString().padStart(SECONDS_PAD, '0')
+    return "$minutes:${(total % SECONDS_IN_A_MINUTE).toString().padStart(SECONDS_PAD, '0')}"
+}
 
 /**
  * The power play, in minutes and seconds, because ten minutes is short

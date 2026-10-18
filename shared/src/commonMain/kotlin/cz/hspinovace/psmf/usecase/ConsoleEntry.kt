@@ -4,6 +4,7 @@ import cz.hspinovace.psmf.data.league.LeagueRepository
 import cz.hspinovace.psmf.data.player.AddedPlayerRepository
 import cz.hspinovace.psmf.domain.AppearanceId
 import cz.hspinovace.psmf.domain.CardSubject
+import cz.hspinovace.psmf.domain.ClockReading
 import cz.hspinovace.psmf.domain.JerseyNumber
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchEvent
@@ -20,6 +21,8 @@ import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.YellowCard
 import cz.hspinovace.psmf.domain.isPastTheFinalWhistle
+import cz.hspinovace.psmf.domain.latestGoalMinuteAt
+import cz.hspinovace.psmf.domain.readingAt
 import kotlin.time.Duration
 import kotlin.time.Instant
 
@@ -90,6 +93,8 @@ data class ConsoleEntry(
     val halfLengthMinutes: Int = Minute.HALF_LENGTH,
     /** From the group's own data (`Group.periods`); two everywhere seeded so far. */
     val periods: Int = 2,
+    /** When the final whistle went, if it has and it is known; see [Match.finishedAt]. */
+    val finishedAt: Instant? = null,
 ) {
     val started: Boolean get() = kickoffAt != null
 
@@ -142,6 +147,12 @@ data class ConsoleEntry(
      */
     fun minuteAt(now: Instant): Minute? = clock.minuteAt(now, status, halfLengthMinutes)
 
+    /** What the clock shows at [now]: play as mm:ss, and the minute the next event gets. */
+    fun readingAt(now: Instant): ClockReading = clock.readingAt(now, status, finishedAt, halfLengthMinutes)
+
+    /** The latest minute a goal can be written with now; see [PlayClock.latestGoalMinuteAt]. */
+    fun latestGoalMinuteAt(now: Instant): Minute = clock.latestGoalMinuteAt(finishedAt ?: now, halfLengthMinutes)
+
     /** In force at [now]; none once the final whistle has gone. See [Match.powerPlaysRunningAt]. */
     fun powerPlaysRunningAt(now: Instant): List<PowerPlay> =
         if (status.isPastTheFinalWhistle) emptyList() else powerPlays.filter { it.isRunningAt(clock, now) }
@@ -185,6 +196,7 @@ class BuildConsoleEntry(
             periodBreaks = match.periodBreaks,
             halfLengthMinutes = group.halfLengthMinutes,
             periods = group.periods,
+            finishedAt = match.finishedAt,
         )
     }
 

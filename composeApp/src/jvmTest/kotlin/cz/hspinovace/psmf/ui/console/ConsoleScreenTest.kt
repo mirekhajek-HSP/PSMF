@@ -39,6 +39,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.Instant
 
 private val KICKOFF = Instant.parse("2026-08-31T19:00:00Z")
@@ -97,15 +98,21 @@ class ConsoleScreenTest {
     // ------------------------------------------------------------------
 
     @Test
-    fun theMinuteIsDrawnFromTheInstantPassedIn() =
+    fun theClockIsDrawnFromTheInstantPassedIn() =
         runComposeUiTest {
             withLanguage("cs") {
                 setContent {
-                    PsmfTheme { ConsoleScreen(state = state(), now = KICKOFF + 25.minutes, onEvent = {}) }
+                    PsmfTheme {
+                        ConsoleScreen(state = state(), now = KICKOFF + 25.minutes + 40.seconds, onEvent = {})
+                    }
                 }
-            }
 
-            onNodeWithText("25´").assertIsDisplayed()
+                // Play so far in minutes and seconds, and -- on its own line,
+                // because it is not the same thing -- the minute the next
+                // event would be written with.
+                onNodeWithText("25:40").assertIsDisplayed()
+                onNodeWithText("Zápis: 25´").assertIsDisplayed()
+            }
         }
 
     @Test
@@ -180,8 +187,9 @@ class ConsoleScreenTest {
                 }
             }
 
-            // The minute holds at the break rather than climbing through it.
-            onNodeWithText("30´+").assertIsDisplayed()
+            // The clock holds at the break rather than climbing through it.
+            onNodeWithText("30:00").assertIsDisplayed()
+            onNodeWithText("Poločas · zápis 30´+").assertIsDisplayed()
             onNodeWithText("Zahájit 2. poločas").performClick()
 
             assertTrue(events.contains(ConsoleEvent.StartNextPeriodPressed))

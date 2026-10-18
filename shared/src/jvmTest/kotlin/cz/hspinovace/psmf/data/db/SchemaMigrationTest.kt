@@ -20,6 +20,9 @@ import cz.hspinovace.psmf.domain.PlayerId
 import cz.hspinovace.psmf.domain.PlayerName
 import cz.hspinovace.psmf.domain.PowerPlay
 import cz.hspinovace.psmf.domain.TeamSide
+import cz.hspinovace.psmf.domain.UndoStep
+import cz.hspinovace.psmf.domain.Whistle
+import cz.hspinovace.psmf.domain.nextUndoStep
 import cz.hspinovace.psmf.domain.reportProblems
 import cz.hspinovace.psmf.export.BuildZouReport
 import cz.hspinovace.psmf.export.CompleteReport
@@ -428,6 +431,20 @@ class SchemaMigrationTest {
             assertEquals(signed.reportProblems(), restoredSigned.reportProblems())
             assertEquals(MatchStatus.CONFIRMED, restoredSigned.status)
 
+            // THE WHISTLES: 0.2.1 kept no place in the recording order for
+            // them and no instant for the final whistle, and none is invented.
+            listOf(restoredPlay, restoredDone, restoredSigned).forEach { match ->
+                assertNull(match.kickoffSequence, "an upgrade numbered a whistle it never saw pressed")
+                assertNull(match.finishedAt)
+                assertNull(match.finishedSequence)
+            }
+            // A whistle pressed under 0.2.1 can still be taken back -- after
+            // everything recorded since -- except on the signed report, whose
+            // clock is not changed under a signature.
+            assertEquals(UndoStep.TakesBackWhistle(Whistle.KICKOFF, 1), restoredPlay.nextUndoStep())
+            assertEquals(UndoStep.TakesBackWhistle(Whistle.FINAL, 1), restoredDone.nextUndoStep())
+            assertNull(restoredSigned.nextUndoStep())
+
             // The player who was added at the pitch, with the date of birth
             // the old table insisted on, is still there with it.
             val players =
@@ -574,6 +591,9 @@ class SchemaMigrationTest {
             assertContains(tableNames(database), "jersey_override")
             assertContains(tableNames(database), "remembered_date_of_birth")
             assertContains(tableNames(database), "remembered_card_number")
+            assertContains(columns(database, "match_record"), "kickoff_sequence")
+            assertContains(columns(database, "match_record"), "finished_at")
+            assertContains(columns(database, "period_break_record"), "next_started_sequence")
         }
 
     /**

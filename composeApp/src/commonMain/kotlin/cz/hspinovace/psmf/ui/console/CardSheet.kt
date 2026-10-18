@@ -247,7 +247,7 @@ private fun MinuteRow(
 }
 
 @Composable
-private fun Chip(
+internal fun Chip(
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
@@ -261,12 +261,12 @@ private fun Chip(
 }
 
 @Composable
-private fun Problem(text: String) {
+internal fun Problem(text: String) {
     Text(text = text, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.error)
 }
 
 @Composable
-private fun Field(
+internal fun Field(
     label: String,
     value: String,
     onValueChange: (String) -> Unit,

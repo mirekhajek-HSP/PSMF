@@ -9,12 +9,17 @@ import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.Minute
 import cz.hspinovace.psmf.domain.TeamSide
+import cz.hspinovace.psmf.domain.UndoStep
+import cz.hspinovace.psmf.domain.isPastTheFinalWhistle
+import cz.hspinovace.psmf.domain.nextUndoStep
 import cz.hspinovace.psmf.usecase.BuildConsoleEntry
 import cz.hspinovace.psmf.usecase.CardDraft
 import cz.hspinovace.psmf.usecase.CardProblem
 import cz.hspinovace.psmf.usecase.ConsoleEntry
 import cz.hspinovace.psmf.usecase.EndPeriod
 import cz.hspinovace.psmf.usecase.FinishMatch
+import cz.hspinovace.psmf.usecase.GoalDraft
+import cz.hspinovace.psmf.usecase.GoalProblem
 import cz.hspinovace.psmf.usecase.LogCard
 import cz.hspinovace.psmf.usecase.LogGoal
 import cz.hspinovace.psmf.usecase.MinuteDraft
@@ -37,12 +42,25 @@ data class ConsoleUiState(
     /** Open only while a card is being written. */
     val card: CardDraft? = null,
     val cardProblems: List<CardProblem> = emptyList(),
+    /**
+     * Open only while a goal is being written with a minute of its own: one
+     * the referee forgot, or any goal after the final whistle.
+     */
+    val goal: GoalDraft? = null,
+    val goalProblems: List<GoalProblem> = emptyList(),
+    /**
+     * A whistle that Undo would take back, waiting for the referee to say
+     * yes: taking it back changes the clock, so it asks first.
+     */
+    val takeBack: UndoStep.TakesBackWhistle? = null,
     /** The final whistle has gone and the referee is moving on. */
     val readyToContinue: Boolean = false,
 ) {
     val selected get() = entry?.side(selectedSide)
 
     fun cardProblem(kind: CardProblem): Boolean = kind in cardProblems
+
+    fun goalProblem(kind: GoalProblem): Boolean = kind in goalProblems
 
     /**
      * The player the open card is for already has a yellow in this match.
@@ -101,7 +119,25 @@ sealed interface ConsoleEvent {
 
     data object CardSubmitted : ConsoleEvent
 
+    /** A goal with a minute of its own: the sheet, for the team on screen. */
+    data class GoalWithMinuteOpened(
+        val side: TeamSide,
+    ) : ConsoleEvent
+
+    data class GoalEdited(
+        val draft: GoalDraft,
+    ) : ConsoleEvent
+
+    data object GoalDismissed : ConsoleEvent
+
+    data object GoalSubmitted : ConsoleEvent
+
+    /** Takes back the last thing recorded -- asking first when that is a whistle. */
     data object UndoPressed : ConsoleEvent
+
+    data object TakeBackConfirmed : ConsoleEvent
+
+    data object TakeBackDismissed : ConsoleEvent
 
     data object ContinuePressed : ConsoleEvent
 }
@@ -146,22 +182,14 @@ class ConsoleViewModel(
 
     fun onEvent(event: ConsoleEvent) {
         if (handleLifecycleEvent(event)) return
+        if (handleGoalEvent(event)) return
         when (event) {
             is ConsoleEvent.SideSelected -> {
                 _state.update { it.copy(selectedSide = event.side) }
             }
 
-            is ConsoleEvent.GoalScoredBy -> {
-                val side = sideOf(event.appearanceId) ?: return
-                record { logGoal(it, side, event.appearanceId, currentMinute()) }
-            }
-
-            is ConsoleEvent.GoalWithNoScorer -> {
-                record { logGoal(it, event.side, null, currentMinute()) }
-            }
-
             is ConsoleEvent.CardOpened -> {
-                openCard(event)
+                _state.update { it.withCardOpened(event, clock.now()) }
             }
 
             is ConsoleEvent.CardEdited -> {
@@ -193,29 +221,128 @@ class ConsoleViewModel(
      */
     private fun handleLifecycleEvent(event: ConsoleEvent): Boolean {
         when (event) {
-            ConsoleEvent.StartPressed -> record { startMatch(it, clock.now()) }
-            ConsoleEvent.FinishPressed -> record { finishMatch(it) }
-            ConsoleEvent.EndPeriodPressed -> record { endPeriod(it, clock.now()) }
-            ConsoleEvent.StartNextPeriodPressed -> record { startNextPeriod(it, clock.now()) }
-            ConsoleEvent.UndoPressed -> record { undoLastEvent(it) }
-            else -> return false
+            ConsoleEvent.StartPressed -> {
+                record { startMatch(it, clock.now()) }
+            }
+
+            ConsoleEvent.FinishPressed -> {
+                record { finishMatch(it, clock.now()) }
+            }
+
+            ConsoleEvent.EndPeriodPressed -> {
+                record { endPeriod(it, clock.now()) }
+            }
+
+            ConsoleEvent.StartNextPeriodPressed -> {
+                record { startNextPeriod(it, clock.now()) }
+            }
+
+            // Undo takes back the last thing recorded -- a goal, a card, or a
+            // whistle, whichever came last. A goal or a card goes at once, as it
+            // always did. A whistle asks first, because taking it back changes
+            // the clock: the dialog says which, and nothing happens until it is
+            // answered. Nothing here edits an instant; see Whistles.kt.
+            ConsoleEvent.UndoPressed -> {
+                when (val step = match?.nextUndoStep()) {
+                    null -> {}
+
+                    is UndoStep.TakesBackWhistle -> {
+                        _state.update { it.copy(takeBack = step) }
+                    }
+
+                    UndoStep.Event -> {
+                        record { undoLastEvent(it) }
+                    }
+                }
+            }
+
+            ConsoleEvent.TakeBackConfirmed -> {
+                _state.update { it.copy(takeBack = null) }
+                record { undoLastEvent(it) }
+            }
+
+            ConsoleEvent.TakeBackDismissed -> {
+                _state.update { it.copy(takeBack = null) }
+            }
+
+            else -> {
+                return false
+            }
         }
         return true
     }
 
-    private fun openCard(event: ConsoleEvent.CardOpened) {
-        _state.update {
-            it.copy(
-                card =
-                    CardDraft(
-                        side = event.side,
-                        appearance = event.appearanceId,
-                        // Pre-filled from the clock; the referee can change it,
-                        // including to 30´+ or 60´+.
-                        minute = MinuteDraft.of(currentMinute()),
-                    ),
-                cardProblems = emptyList(),
-            )
+    /**
+     * The goal sheet, and the goals that cannot be one tap.
+     *
+     * A goal is one tap at the clock's minute while the match is on. After
+     * the final whistle the clock has no minute to give -- `60´+` is not one
+     * a goal can have -- so the same tap opens the sheet, with the scorer
+     * already chosen and the minute left to write.
+     */
+    private fun handleGoalEvent(event: ConsoleEvent): Boolean {
+        when (event) {
+            is ConsoleEvent.GoalScoredBy -> {
+                val side = _state.value.sideOf(event.appearanceId) ?: return true
+                goalOrSheet(side, event.appearanceId)
+            }
+
+            is ConsoleEvent.GoalWithNoScorer -> {
+                goalOrSheet(event.side, null)
+            }
+
+            is ConsoleEvent.GoalWithMinuteOpened -> {
+                _state.update { it.withGoalOpened(GoalDraft(event.side)) }
+            }
+
+            is ConsoleEvent.GoalEdited -> {
+                _state.update { it.copy(goal = event.draft, goalProblems = emptyList()) }
+            }
+
+            ConsoleEvent.GoalDismissed -> {
+                _state.update { it.copy(goal = null, goalProblems = emptyList()) }
+            }
+
+            ConsoleEvent.GoalSubmitted -> {
+                submitGoal()
+            }
+
+            else -> {
+                return false
+            }
+        }
+        return true
+    }
+
+    private fun goalOrSheet(
+        side: TeamSide,
+        scorer: AppearanceId?,
+    ) {
+        val entry = _state.value.entry ?: return
+        if (entry.status.isPastTheFinalWhistle) {
+            _state.update { it.withGoalOpened(GoalDraft(side, scorer)) }
+        } else {
+            val now = clock.now()
+            val minute = _state.value.minuteAt(now)
+            record { logGoal(it, side, scorer, minute, now, entry.halfLengthMinutes) }
+        }
+    }
+
+    private fun submitGoal() {
+        val draft = _state.value.goal ?: return
+        val entry = _state.value.entry ?: return
+        val now = clock.now()
+        val problems = draft.problems(entry.latestGoalMinuteAt(now), entry.started)
+        val minute = draft.toMinute()
+        if (problems.isNotEmpty() || minute == null) {
+            _state.update { it.copy(goalProblems = problems) }
+            return
+        }
+        val current = match ?: return
+        viewModelScope.launch {
+            match = logGoal(current, draft.side, draft.scorer, minute, now, entry.halfLengthMinutes)
+            _state.update { it.copy(goal = null, goalProblems = emptyList()) }
+            reload()
         }
     }
 
@@ -237,24 +364,6 @@ class ConsoleViewModel(
         }
     }
 
-    private fun sideOf(appearanceId: AppearanceId): TeamSide? {
-        val entry = _state.value.entry ?: return null
-        return when {
-            entry.home.row(appearanceId) != null -> TeamSide.HOME
-            entry.away.row(appearanceId) != null -> TeamSide.AWAY
-            else -> null
-        }
-    }
-
-    /**
-     * The minute an event gets, if the referee does not say otherwise.
-     *
-     * Before kickoff there is no clock, so events land at minute 0 rather
-     * than at nothing — a goal before the whistle is a mistake to undo, not
-     * a state to model.
-     */
-    private fun currentMinute() = _state.value.entry?.minuteAt(clock.now()) ?: Minute.Played(0)
-
     private fun record(change: suspend (Match) -> Match) {
         val current = match ?: return
         viewModelScope.launch {
@@ -269,3 +378,40 @@ class ConsoleViewModel(
         _state.update { it.copy(loading = false, entry = buildConsoleEntry(current)) }
     }
 }
+
+private fun ConsoleUiState.sideOf(appearanceId: AppearanceId): TeamSide? {
+    val entry = entry ?: return null
+    return when {
+        entry.home.row(appearanceId) != null -> TeamSide.HOME
+        entry.away.row(appearanceId) != null -> TeamSide.AWAY
+        else -> null
+    }
+}
+
+/**
+ * The minute an event gets, if the referee does not say otherwise.
+ *
+ * Before kickoff there is no clock, so events land at minute 0 rather
+ * than at nothing — a goal before the whistle is a mistake to undo, not
+ * a state to model.
+ */
+private fun ConsoleUiState.minuteAt(now: Instant): Minute = entry?.minuteAt(now) ?: Minute.Played(0)
+
+private fun ConsoleUiState.withGoalOpened(draft: GoalDraft): ConsoleUiState =
+    copy(goal = draft, goalProblems = emptyList())
+
+private fun ConsoleUiState.withCardOpened(
+    event: ConsoleEvent.CardOpened,
+    now: Instant,
+): ConsoleUiState =
+    copy(
+        card =
+            CardDraft(
+                side = event.side,
+                appearance = event.appearanceId,
+                // Pre-filled from the clock; the referee can change it,
+                // including to 30´+ or 60´+.
+                minute = MinuteDraft.of(minuteAt(now)),
+            ),
+        cardProblems = emptyList(),
+    )

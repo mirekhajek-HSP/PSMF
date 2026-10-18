@@ -43,7 +43,18 @@ CREATE TABLE match_record (
     -- NULL          = the referee has not accounted for the cards block
     -- 'NONE_ISSUED' = the boxes were struck through
     -- 'ISSUED'      = see card_record
-    cards_state       TEXT
+    cards_state       TEXT,
+
+    -- Where the whistles stand in the recording order that goals and cards
+    -- already have (see goal_record.sequence), so that Undo can take a
+    -- whistle back in the order it was pressed. NULL for a kickoff pressed
+    -- before version 7, which kept none: it is then older than anything that
+    -- has one.
+    kickoff_sequence  INTEGER,
+    -- The final whistle, which had no instant of its own before version 7.
+    -- Both NULL for a match that was finished before then.
+    finished_at       TEXT,
+    finished_sequence INTEGER
 );
 
 CREATE TABLE lineup_record (
@@ -102,17 +113,17 @@ CREATE TABLE appearance_record (
 -- is data (Group.periods), not code. next_started_at is NULL while the
 -- match is in that interval; a match with no rows here has never had a
 -- period end at all.
--- No undo exists for ending or starting a period (EndPeriod,
--- StartNextPeriod), so unlike goals, cards and power plays this list only
--- ever grows or has its last row's next_started_at filled in -- never
--- shrinks. INSERT OR REPLACE on every save is therefore sufficient on its
--- own; there is no matching delete query, and there does not need to be
--- one unless an undo for a period is ever added.
+-- Since version 7 either whistle can be taken back (Undo, in recording
+-- order), so a save rewrites the list as goals and cards are: delete, then
+-- insert. Before that it only ever grew.
 CREATE TABLE period_break_record (
     match_id         TEXT    NOT NULL,
     position         INTEGER NOT NULL,
     ended_at         TEXT    NOT NULL,
     next_started_at  TEXT,
+    -- Recording order of each whistle; see match_record.kickoff_sequence.
+    ended_sequence        INTEGER,
+    next_started_sequence INTEGER,
     PRIMARY KEY (match_id, position)
 );
 
@@ -233,14 +244,16 @@ INSERT OR REPLACE INTO match_record (
     half_time_home, half_time_away, full_time_home, full_time_away,
     home_best_player, home_waiting, home_shirts, home_kit,
     away_best_player, away_waiting, away_shirts, away_kit,
-    commentary, cards_state
+    commentary, cards_state,
+    kickoff_sequence, finished_at, finished_sequence
 ) VALUES (
     ?, ?, ?, ?, ?,
     ?, ?, ?, ?, ?,
     ?, ?, ?, ?,
     ?, ?, ?, ?,
     ?, ?, ?, ?,
-    ?, ?
+    ?, ?,
+    ?, ?, ?
 );
 
 selectMatch:
@@ -335,8 +348,13 @@ deletePowerPlays:
 DELETE FROM power_play_record WHERE match_id = ?;
 
 insertPeriodBreak:
-INSERT OR REPLACE INTO period_break_record (match_id, position, ended_at, next_started_at)
-VALUES (?, ?, ?, ?);
+INSERT OR REPLACE INTO period_break_record (
+    match_id, position, ended_at, next_started_at, ended_sequence, next_started_sequence
+)
+VALUES (?, ?, ?, ?, ?, ?);
+
+deletePeriodBreaks:
+DELETE FROM period_break_record WHERE match_id = ?;
 
 selectPeriodBreaks:
 SELECT * FROM period_break_record WHERE match_id = ? ORDER BY position;

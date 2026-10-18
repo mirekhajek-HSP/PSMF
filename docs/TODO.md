@@ -28,7 +28,14 @@ Grouped by what blocks what, not by size. Last updated 2026-10-17.
       that PSMF issue and check goes to PSMF with A7.
 - [ ] **At 12:40 of play, `12´` or `13´`?** The app writes 12´. For the
       referee visit. Prompt 13 puts the seconds on screen, which makes the
-      question visible.
+      question visible: the console now reads `12:40` and, beneath it,
+      *Zápis: 12´*.
+- [ ] **The console log does not list the whistles, though Undo walks back
+      through them** (prompt 13, part 3). A mis-tapped half-time noticed
+      three goals later costs three Undos, and the log does not say what the
+      next one would take. If the referee visit shows that matters: list the
+      whistles in the log, or let Undo show what it would take back. Not
+      done: the dialog already names a whistle before it goes.
 - [x] **Prompt 10: red cards, the clock, league 6, build 0.2.0 (2).** Done
       2026-10-08, `c8bafd4`. Verified independently from a clean, uncached
       build: 436 shared JVM · 383 Android host · 194 UI · 23 importer tests,

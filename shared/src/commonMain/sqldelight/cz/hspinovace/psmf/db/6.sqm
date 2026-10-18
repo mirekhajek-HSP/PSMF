@@ -1,10 +1,18 @@
 -- Version 6 to version 7: a lineup knows its captain and goalkeeper and the
 -- captain's confirmation under it, a pitch-added player need not have a date
--- of birth, and the number copied from a card is remembered.
+-- of birth, the number copied from a card is remembered, and the whistles
+-- have a place in the recording order so that one can be taken back.
 --
 -- (DECISIONS 2026-10-17, from the first iPhone test.)
 --
 -- WHAT AN EXISTING MATCH GETS
+--
+--   Whistles: NO SEQUENCE, and no final-whistle instant. Version 6 kept
+--   neither, and none is invented. A whistle with no sequence is older than
+--   anything that has one, so Undo takes it back only after everything
+--   recorded since has gone, and among such whistles last-pressed first. A
+--   match finished before version 7 simply has no instant for its final
+--   whistle: the console then shows what it always showed after it.
 --
 --   Captain and goalkeeper: NULL, for every lineup already written. That is
 --   the truth -- version 6 kept neither -- and nothing is invented to fill
@@ -39,6 +47,13 @@ ALTER TABLE lineup_record ADD COLUMN goalkeeper_appearance_id TEXT;
 ALTER TABLE lineup_record ADD COLUMN confirmed_at TEXT;
 ALTER TABLE lineup_record ADD COLUMN confirmed_by TEXT;
 ALTER TABLE lineup_record ADD COLUMN confirmed_as_deputy INTEGER NOT NULL DEFAULT 0;
+
+-- The whistles in the recording order, and the final whistle's instant.
+ALTER TABLE match_record ADD COLUMN kickoff_sequence INTEGER;
+ALTER TABLE match_record ADD COLUMN finished_at TEXT;
+ALTER TABLE match_record ADD COLUMN finished_sequence INTEGER;
+ALTER TABLE period_break_record ADD COLUMN ended_sequence INTEGER;
+ALTER TABLE period_break_record ADD COLUMN next_started_sequence INTEGER;
 
 -- date_of_birth was NOT NULL, because it was all a player added at the pitch
 -- had. One with a card has the number on the appearance instead. SQLite

@@ -17,9 +17,13 @@ import cz.hspinovace.psmf.domain.PowerPlay
 import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamSide
+import cz.hspinovace.psmf.domain.UndoStep
 import cz.hspinovace.psmf.domain.YellowCard
 import cz.hspinovace.psmf.domain.inPeriodInterval
 import cz.hspinovace.psmf.domain.isPastTheFinalWhistle
+import cz.hspinovace.psmf.domain.latestGoalMinuteAt
+import cz.hspinovace.psmf.domain.nextUndoStep
+import cz.hspinovace.psmf.domain.withoutWhistle
 import kotlin.time.Instant
 
 /**
@@ -40,18 +44,31 @@ class StartMatch(
         at: Instant,
     ): Match {
         if (match.kickoffAt != null) return match
-        val started = match.copy(kickoffAt = at, status = MatchStatus.IN_PROGRESS)
+        val started =
+            match.copy(kickoffAt = at, kickoffSequence = match.nextSequence(), status = MatchStatus.IN_PROGRESS)
         matches.save(started)
         return started
     }
 }
 
-/** The final whistle. Cards may still be issued afterwards, at `60´+`. */
+/**
+ * The final whistle. Cards may still be issued afterwards, at `60´+`.
+ *
+ * [at] is when it went, kept so the clock can be read as it stood at full
+ * time and a goal written afterwards cannot be later than the play was.
+ * Pressing it twice is one whistle: the second changes nothing, and in
+ * particular does not take a later place in the recording order.
+ */
 class FinishMatch(
     private val matches: MatchRepository,
 ) {
-    suspend operator fun invoke(match: Match): Match {
-        val finished = match.copy(status = MatchStatus.FINISHED)
+    suspend operator fun invoke(
+        match: Match,
+        at: Instant? = null,
+    ): Match {
+        if (match.status.isPastTheFinalWhistle) return match
+        val finished =
+            match.copy(status = MatchStatus.FINISHED, finishedAt = at, finishedSequence = match.nextSequence())
         matches.save(finished)
         return finished
     }
@@ -76,7 +93,8 @@ class EndPeriod(
     ): Match {
         if (match.kickoffAt == null) return match
         if (match.inPeriodInterval) return match
-        val updated = match.copy(periodBreaks = match.periodBreaks + PeriodBreak(endedAt = at))
+        val ended = PeriodBreak(endedAt = at, endedSequence = match.nextSequence())
+        val updated = match.copy(periodBreaks = match.periodBreaks + ended)
         matches.save(updated)
         return updated
     }
@@ -100,10 +118,8 @@ class StartNextPeriod(
         at: Instant,
     ): Match {
         val open = match.periodBreaks.lastOrNull()?.takeIf { it.nextStartedAt == null } ?: return match
-        val updated =
-            match.copy(
-                periodBreaks = match.periodBreaks.dropLast(1) + open.copy(nextStartedAt = at),
-            )
+        val resumed = open.copy(nextStartedAt = at, nextStartedSequence = match.nextSequence())
+        val updated = match.copy(periodBreaks = match.periodBreaks.dropLast(1) + resumed)
         matches.save(updated)
         return updated
     }
@@ -121,12 +137,26 @@ class StartNextPeriod(
 class LogGoal(
     private val matches: MatchRepository,
 ) {
+    /**
+     * **Refused** -- the match comes back as it was -- when the minute is
+     * `60´+`, which no goal has, and, if [now] is given, when it is later than
+     * the clock: a goal cannot have been scored in a minute that has not
+     * been played. The console always gives [now]; code that writes a minute
+     * it already knows to be right may leave it out.
+     *
+     * Refused rather than clamped: a minute silently changed to another one
+     * is a goal in the wrong place on a report the referee signs.
+     */
     suspend operator fun invoke(
         match: Match,
         side: TeamSide,
         scorer: AppearanceId?,
         minute: Minute,
+        now: Instant? = null,
+        halfLengthMinutes: Int = Minute.HALF_LENGTH,
     ): Match {
+        if (minute == Minute.AfterFinalWhistle) return match
+        if (now != null && minute > match.latestGoalMinuteAt(now, halfLengthMinutes)) return match
         val goal =
             GoalEvent(
                 minute = minute,
@@ -146,10 +176,17 @@ class LogGoal(
  * whenever the list changes — including when the last one is undone.
  * Storing it and letting it go stale would put a wrong running score on
  * the report while the totals still added up.
+ *
+ * **In the order the minutes say, not the order they were written**: a goal
+ * the referee remembered at the 12´ he wrote it at lists before the one
+ * already there at 20´, and `Stav` is the score a reader of the list would
+ * work out. Goals at one minute keep the order they were recorded in (the
+ * sort is stable, and [GoalEvent.sequence] decides where it can); a goal
+ * from before 0.2.0 has no sequence and sorts before any that has one.
  */
 internal fun List<GoalEvent>.rescored(): List<GoalEvent> {
     var running = Score.GOALLESS
-    return map { goal ->
+    return sortedWith(compareBy<GoalEvent> { it.minute }.thenBy { it.sequence ?: Int.MIN_VALUE }).map { goal ->
         running = running.scoredBy(goal.side)
         goal.copy(scoreAfter = running)
     }
@@ -430,7 +467,14 @@ class UndoLastEvent(
     }
 }
 
-private fun Match.withoutLastAction(): Match? {
+private fun Match.withoutLastAction(): Match? =
+    when (val step = nextUndoStep()) {
+        null -> null
+        is UndoStep.TakesBackWhistle -> withoutWhistle(step.whistle)
+        UndoStep.Event -> withoutLastEvent()
+    }
+
+private fun Match.withoutLastEvent(): Match? {
     val action = (goals + cardEvents).mapNotNull { it.sequence }.maxOrNull() ?: return withoutLastUnnumbered()
     return copy(
         goals = goals.filterNot { it.sequence == action }.rescored(),

@@ -84,6 +84,22 @@ data class Match(
      * part of the sixty minutes. See [PlayClock].
      */
     val periodBreaks: List<PeriodBreak> = emptyList(),
+    /**
+     * Where the kickoff stands in the recording order that goals and cards
+     * have ([MatchEvent.sequence]), so that Undo can take it back when it
+     * comes up. Null for a whistle pressed before 0.3.0, which kept none.
+     */
+    val kickoffSequence: Int? = null,
+    /**
+     * When the final whistle went, so that the clock can be read as it stood
+     * at full time and a goal written afterwards cannot be later than the
+     * play was. Null for a match finished before 0.3.0, which kept none.
+     * **Recorded, not a stoppage:** nothing here stops anything, and taking
+     * the whistle back clears it.
+     */
+    val finishedAt: Instant? = null,
+    /** The final whistle's place in the recording order; null as [kickoffSequence]. */
+    val finishedSequence: Int? = null,
 ) {
     /** The clock these instants make. A value, worked out on demand; nothing ticks. */
     val clock: PlayClock get() = PlayClock(kickoffAt, periodBreaks)
@@ -116,9 +132,14 @@ data class Match(
     fun nextSequence(): Int =
         (
             goals.mapNotNull { it.sequence } + cardEvents.mapNotNull { it.sequence } +
-                powerPlays.mapNotNull { it.sequence }
+                powerPlays.mapNotNull { it.sequence } + whistleSequences()
         ).maxOrNull()
             ?.plus(1) ?: 1
+
+    /** The recording-order numbers of the whistles that have one. */
+    internal fun whistleSequences(): List<Int> =
+        listOfNotNull(kickoffSequence, finishedSequence) +
+            periodBreaks.flatMap { listOfNotNull(it.endedSequence, it.nextStartedSequence) }
 
     /** Looks an appearance up in either lineup. */
     fun appearance(id: AppearanceId): Appearance? = homeLineup?.appearance(id) ?: awayLineup?.appearance(id)
@@ -173,4 +194,7 @@ data class Match(
 data class PeriodBreak(
     val endedAt: Instant,
     val nextStartedAt: Instant? = null,
+    /** Each whistle's place in the recording order; null for one pressed before 0.3.0. */
+    val endedSequence: Int? = null,
+    val nextStartedSequence: Int? = null,
 )

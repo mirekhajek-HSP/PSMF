@@ -2,7 +2,8 @@ package cz.hspinovace.psmf.ui.common
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -31,14 +32,22 @@ import cz.hspinovace.psmf.ui.theme.PsmfDimens
  * it later is whether every screen already routes its buttons through
  * here. It costs nothing now; it is surgery once six screens have laid out
  * their own buttons.
+ *
+ * **It wraps rather than squeezes.** A row of three (the console's first
+ * half has *Undo*, *End the half* and *End the match*) does not fit on a
+ * narrow phone, and on one line the last button was left a strip a letter
+ * wide -- the end-of-match button, on the screen where it matters. The
+ * buttons keep their own width and the one that does not fit goes to the
+ * line below.
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ActionRow(
     modifier: Modifier = Modifier,
     mirrored: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    Row(
+    FlowRow(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement =
             if (mirrored) {
@@ -46,7 +55,8 @@ fun ActionRow(
             } else {
                 Arrangement.spacedBy(PsmfDimens.itemSpacing, Alignment.End)
             },
-        verticalAlignment = Alignment.CenterVertically,
+        verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap),
+        itemVerticalAlignment = Alignment.CenterVertically,
     ) {
         content()
     }

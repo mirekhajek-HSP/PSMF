@@ -158,14 +158,14 @@ class LanguagePickerTest {
                 }
             }
 
-            onNodeWithText("25´").assertIsDisplayed()
+            onNodeWithText("Zápis: 25´").assertIsDisplayed()
             onNodeWithText("2:1").assertIsDisplayed()
 
             language = AppLanguage.UKRAINIAN
             onNodeWithText("Скасувати останнє").assertIsDisplayed()
 
             // Still the same match, at the same minute.
-            onNodeWithText("25´").assertIsDisplayed()
+            onNodeWithText("Запис: 25´").assertIsDisplayed()
             onNodeWithText("2:1").assertIsDisplayed()
         }
 

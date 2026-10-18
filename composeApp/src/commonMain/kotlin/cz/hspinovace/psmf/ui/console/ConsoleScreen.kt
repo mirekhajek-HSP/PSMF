@@ -55,6 +55,7 @@ import cz.hspinovace.psmf.resources.console_end_period
 import cz.hspinovace.psmf.resources.console_finish
 import cz.hspinovace.psmf.resources.console_goal
 import cz.hspinovace.psmf.resources.console_goal_no_scorer
+import cz.hspinovace.psmf.resources.console_goal_with_minute
 import cz.hspinovace.psmf.resources.console_loading
 import cz.hspinovace.psmf.resources.console_log_empty
 import cz.hspinovace.psmf.resources.console_log_title
@@ -114,6 +115,8 @@ fun ConsoleScreen(
     }
 
     state.card?.let { CardSheet(draft = it, state = state, onEvent = onEvent) }
+    state.goal?.let { GoalSheet(draft = it, state = state, now = now, onEvent = onEvent) }
+    state.takeBack?.let { TakeBackDialog(step = it, onEvent = onEvent) }
 }
 
 @Composable
@@ -236,6 +239,18 @@ private fun Body(
     ) {
         items(team.rows.size, key = { team.rows[it].appearanceId.value }) { index ->
             PlayerRow(row = team.rows[index], side = team.side, onEvent = onEvent)
+        }
+
+        item(key = "goal-with-minute") {
+            // A goal the referee forgot, or any goal once the match is over:
+            // the one-tap goal writes the clock's minute, and this is for
+            // every other.
+            OutlinedButton(
+                onClick = { onEvent(ConsoleEvent.GoalWithMinuteOpened(team.side)) },
+                modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
+            ) {
+                Text(stringResource(Res.string.console_goal_with_minute))
+            }
         }
 
         item(key = "unattributed") {

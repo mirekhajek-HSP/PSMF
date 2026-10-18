@@ -205,12 +205,19 @@ private fun MatchRecordQueries.writeHeader(match: Match) {
         // collapsing the first two would turn "not filled in" into "the
         // referee affirmed there were none".
         cards_state = match.cards?.stateName(),
+        // The whistles' place in the recording order, and the final
+        // whistle's instant: what lets Undo take one back, and the clock
+        // be read as it stood at full time.
+        kickoff_sequence = match.kickoffSequence?.toLong(),
+        finished_at = match.finishedAt?.toString(),
+        finished_sequence = match.finishedSequence?.toLong(),
     )
 }
 
 private fun MatchRecordQueries.clearChildren(matchId: String) {
     deleteConfirmations(matchId)
     deletePowerPlays(matchId)
+    deletePeriodBreaks(matchId)
     deleteCards(matchId)
     deleteGoals(matchId)
     deleteAppearances(matchId)
@@ -305,10 +312,8 @@ private fun MatchRecordQueries.writePowerPlays(match: Match) {
     }
 }
 
-// No matching delete: unlike goals, cards and power plays, a period
-// break is never undone -- it only grows, or has its last row's
-// next_started_at filled in -- so INSERT OR REPLACE alone keeps every
-// existing row correct without a delete-then-rewrite pass first.
+// Rewritten on every save, after clearChildren has deleted the old rows: a
+// whistle can now be taken back, so the list can shrink as well as grow.
 private fun MatchRecordQueries.writePeriodBreaks(match: Match) {
     match.periodBreaks.forEachIndexed { index, brk ->
         insertPeriodBreak(
@@ -316,6 +321,8 @@ private fun MatchRecordQueries.writePeriodBreaks(match: Match) {
             position = index.toLong(),
             ended_at = brk.endedAt.toString(),
             next_started_at = brk.nextStartedAt?.toString(),
+            ended_sequence = brk.endedSequence?.toLong(),
+            next_started_sequence = brk.nextStartedSequence?.toLong(),
         )
     }
 }
@@ -370,6 +377,9 @@ private fun MatchRecordQueries.hydrate(row: Match_record): Match {
         cards = cardsSection(row.cards_state, selectCards(id).executeAsList().map { it.toDomain() }),
         powerPlays = selectPowerPlays(id).executeAsList().map { it.toDomain() },
         periodBreaks = selectPeriodBreaks(id).executeAsList().map { it.toDomain() },
+        kickoffSequence = row.kickoff_sequence?.toInt(),
+        finishedAt = row.finished_at?.let { Instant.parse(it) },
+        finishedSequence = row.finished_sequence?.toInt(),
         assessment = row.toAssessment(),
         result = row.toResult(),
         confirmations =
@@ -477,6 +487,8 @@ private fun Period_break_record.toDomain() =
     PeriodBreak(
         endedAt = Instant.parse(ended_at),
         nextStartedAt = next_started_at?.let { Instant.parse(it) },
+        endedSequence = ended_sequence?.toInt(),
+        nextStartedSequence = next_started_sequence?.toInt(),
     )
 
 private fun Goal_record.toDomain() =

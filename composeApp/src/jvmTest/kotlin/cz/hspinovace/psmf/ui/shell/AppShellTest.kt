@@ -149,13 +149,13 @@ class AppShellTest {
             withLanguage("cs") {
                 setContent { Harness(navigator) }
 
-                onNodeWithText("25´").assertIsDisplayed()
+                onNodeWithText("Zápis: 25´").assertIsDisplayed()
 
                 onNodeWithText("Nastavení").performClick()
                 onNodeWithText("SETTINGS").assertIsDisplayed()
 
                 onNodeWithText("Zápis").performClick()
-                onNodeWithText("25´").assertIsDisplayed()
+                onNodeWithText("Zápis: 25´").assertIsDisplayed()
             }
         }
 
@@ -171,7 +171,7 @@ class AppShellTest {
             withLanguage("cs") {
                 setContent { Harness(navigator) }
 
-                onNodeWithText("25´").assertIsDisplayed()
+                onNodeWithText("Zápis: 25´").assertIsDisplayed()
 
                 onNodeWithText("Týmy").performClick()
                 onNodeWithText("Nastavení").performClick()
@@ -180,7 +180,7 @@ class AppShellTest {
 
                 // Only the console draws a minute, so this also says the
                 // console itself came back rather than some other screen.
-                onNodeWithText("25´").assertIsDisplayed()
+                onNodeWithText("Zápis: 25´").assertIsDisplayed()
             }
         }
 
@@ -244,7 +244,7 @@ class AppShellTest {
             withLanguage("cs") {
                 setContent { Harness(navigator) }
 
-                onNodeWithText("25´").assertIsDisplayed()
+                onNodeWithText("Zápis: 25´").assertIsDisplayed()
                 onNodeWithText("Zpět").assertIsDisplayed()
                 onNodeWithText("Zpět").performClick()
 
@@ -281,7 +281,7 @@ class AppShellTest {
                 onNodeWithText("Zpět").assertIsDisplayed()
                 onNodeWithText("Zpět").performClick()
 
-                onNodeWithText("25´").assertIsDisplayed()
+                onNodeWithText("Zápis: 25´").assertIsDisplayed()
             }
         }
 
