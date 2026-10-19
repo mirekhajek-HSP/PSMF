@@ -23,6 +23,7 @@ thing was built the way it was; do not re-run them.
 | 11 | iOS build to TestFlight, the first upgrade on an iPhone | Mac | ran 2026-10-11; 0.2.1 (3) on TestFlight and tested; **report unfinished in git** (Gates 0–1 only) |
 | 12 | Zápasy: select boxes, a date filter, no loading flash; 0.2.1 (3) | WSL container | executed 2026-10-08; Android APK 0.2.1 (3) built; the phone checklist still to do |
 | 13 | The report after the first iPhone test: keyboard, back, lineup, console, signatures; 0.3.0 (4) | WSL container | executed 2026-10-17/18; verified; Android APK 0.3.0 (4) built; the phone checklist still to do |
+| 14 | iOS build 4: 0.3.0 to TestFlight, the upgrade over build 3; finishes 11's report | Mac | **live, next** |
 | 99 | golblok maintenance | separate repo | live, unrelated to this app |
 
 ## Known staleness in the executed ones

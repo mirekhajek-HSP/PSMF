@@ -31,12 +31,13 @@ Grouped by what blocks what, not by size. Last updated 2026-10-17.
       Next prompt: save the partial lineup too.
 - [ ] **The console log does not list the whistles**, though Undo walks back
       through them (prompt 13, Gate 3).
-- [ ] **Prompt 11's report stops at Gate 1 in git** (`de6c4e6`). Build 3
-      reached TestFlight and was tested, so Parts 2–4 ran: the archive, the
-      upload, the upgrade over build 1, the three checklists. None of that is
-      committed. Ask the Mac session to finish the report and push it. **The
-      question it answers: did schema 4 → 6 survive the upgrade on a real
-      iPhone?**
+- [ ] **Prompt 14 on the Mac: iOS build 4, 0.3.0 (4)**,
+      `prompts/14-ios-build-4.md`. The upgrade over build 3 with three
+      reports in it (schema 6 → 7), then the iPhone checklist, §9 of prompt
+      13's report. Its Part 0 finishes prompt 11's report, which stops at
+      Gate 1 in git (`de6c4e6`) although build 3 was uploaded and tested.
+      **The question that report answers: did schema 4 → 6 survive the
+      upgrade on a real iPhone?**
 - [ ] **A photo of a real, filled-in ZoU.** It settles three things at once:
       A28 (what goes in `Číslo RP`; the tester says RP or RČ, never a date of
       birth), whether the captain and the goalkeeper really sit on rows 1
@@ -54,8 +55,9 @@ Grouped by what blocks what, not by size. Last updated 2026-10-17.
       the container because it cannot push and has no credentials, which is
       the only reason running without permission prompts is acceptable. It
       loses the Windows emulator, so emulator checks move to the phone
-      checklist. Build it with prompt 14, and write prompt 14 for cold
-      sessions: a reading list per gate, named STOP conditions.
+      checklist. Build it with the next Windows prompt (15), and write that
+      prompt for cold sessions: a reading list per gate, named STOP
+      conditions.
 - [ ] **At 12:40 of play, `12´` or `13´`?** The app writes 12´. For the
       referee visit. Prompt 13 puts the seconds on screen, which makes the
       question visible: the console now reads `12:40` and, beneath it,
