@@ -6,6 +6,8 @@ import cz.hspinovace.psmf.domain.AppearanceId
 import cz.hspinovace.psmf.domain.CardSubject
 import cz.hspinovace.psmf.domain.ClockReading
 import cz.hspinovace.psmf.domain.JerseyNumber
+import cz.hspinovace.psmf.domain.Kit
+import cz.hspinovace.psmf.domain.Lineup
 import cz.hspinovace.psmf.domain.LoggedWhistle
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchEvent
@@ -19,6 +21,7 @@ import cz.hspinovace.psmf.domain.PlayerName
 import cz.hspinovace.psmf.domain.PowerPlay
 import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.Score
+import cz.hspinovace.psmf.domain.Team
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.Whistle
 import cz.hspinovace.psmf.domain.YellowCard
@@ -57,6 +60,12 @@ data class ConsoleTeam(
     val side: TeamSide,
     val teamName: String,
     val rows: List<ConsoleRow>,
+    /**
+     * The kit this side wears in this match, for the shirt under its name (0.3.1); null before the
+     * lineup is written, or when it cannot be vouched for (see [Lineup.kitWornBy]). **For the screen
+     * only**: the report's *Barva dresů* is the lineup's label snapshot, and never reads this.
+     */
+    val kit: Kit? = null,
 ) {
     fun row(id: AppearanceId): ConsoleRow? = rows.firstOrNull { it.appearanceId == id }
 }
@@ -260,8 +269,8 @@ class BuildConsoleEntry(
 
         val group = fixture.leagueGroup.group
         return ConsoleEntry(
-            home = team(match, TeamSide.HOME, fixture.homeTeam.name, namesByPlayer),
-            away = team(match, TeamSide.AWAY, fixture.awayTeam.name, namesByPlayer),
+            home = team(match, TeamSide.HOME, fixture.homeTeam, namesByPlayer),
+            away = team(match, TeamSide.AWAY, fixture.awayTeam, namesByPlayer),
             score = match.scoreFromGoals(),
             kickoffAt = match.kickoffAt,
             status = match.status,
@@ -278,13 +287,14 @@ class BuildConsoleEntry(
     private fun team(
         match: Match,
         side: TeamSide,
-        teamName: String,
+        team: Team,
         namesByPlayer: Map<PlayerId, PlayerName>,
     ): ConsoleTeam {
         val cards = match.cardEvents
         return ConsoleTeam(
             side = side,
-            teamName = teamName,
+            teamName = team.name,
+            kit = match.lineup(side)?.kitWornBy(team),
             rows =
                 match
                     .lineup(side)
@@ -318,3 +328,12 @@ class BuildConsoleEntry(
 }
 
 private fun CardSubject.isPlayer(id: AppearanceId): Boolean = this is CardSubject.Player && appearance == id
+
+/**
+ * The kit this lineup wore, for the screen to draw a shirt of: the team's own kit that the lineup
+ * names, and only while it still goes by the label the lineup wrote down. A kit the team no longer
+ * has, or one renamed since, may not be what was worn, and a wrong colour is worse than none. The
+ * report is not affected either way: it reads [Lineup.kitLabel], the snapshot, and never this.
+ */
+private fun Lineup.kitWornBy(team: Team): Kit? =
+    if (kitBelongsTo(team) && !kitLabelHasDriftedFrom(team)) team.kit(kitId) else null

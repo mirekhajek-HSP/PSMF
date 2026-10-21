@@ -57,6 +57,7 @@ import cz.hspinovace.psmf.ui.common.PrimaryAction
 import cz.hspinovace.psmf.ui.common.Section
 import cz.hspinovace.psmf.ui.common.Select
 import cz.hspinovace.psmf.ui.common.SignedBanner
+import cz.hspinovace.psmf.ui.common.TeamTabLabel
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.LineupProblem
 import cz.hspinovace.psmf.usecase.TeamLineupEntry
@@ -118,8 +119,10 @@ private fun SideTabs(
                 modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
                 text = {
                     // The team's own name, not "home" and "away": the referee
-                    // is looking at a captain, not at a side of a form.
-                    Text(team.team.name, maxLines = 2, textAlign = TextAlign.Center)
+                    // is looking at a captain, not at a side of a form. And the
+                    // kit picked below, so the colour is on the tab as it is on
+                    // the console.
+                    TeamTabLabel(team.team.name, team.kit)
                 },
             )
         }

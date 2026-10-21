@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import cz.hspinovace.psmf.domain.ClockPhase
 import cz.hspinovace.psmf.domain.ClockReading
+import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.resources.Res
 import cz.hspinovace.psmf.resources.console_before_kickoff
 import cz.hspinovace.psmf.resources.console_clock_added_time
@@ -23,8 +24,10 @@ import cz.hspinovace.psmf.resources.console_clock_finished
 import cz.hspinovace.psmf.resources.console_clock_interval
 import cz.hspinovace.psmf.resources.console_clock_written
 import cz.hspinovace.psmf.resources.console_power_play
+import cz.hspinovace.psmf.ui.common.KitShirt
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.ConsoleEntry
+import cz.hspinovace.psmf.usecase.ConsoleTeam
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Duration
 import kotlin.time.Instant
@@ -54,14 +57,14 @@ fun Scoreboard(
         verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            TeamName(entry.home.teamName, TextAlign.Start, Modifier.weight(1f))
+            TeamName(entry.home, Modifier.weight(1f))
             Text(
                 text = entry.score.asWrittenOnReport,
                 style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = PsmfDimens.itemSpacing),
             )
-            TeamName(entry.away.teamName, TextAlign.End, Modifier.weight(1f))
+            TeamName(entry.away, Modifier.weight(1f))
         }
 
         ClockLines(entry.readingAt(now))
@@ -92,19 +95,31 @@ fun Scoreboard(
     }
 }
 
+/**
+ * A team's name, and under it the shirt of the kit it wears in this match (0.3.1): the home side
+ * at the start edge and the away side at the end, where each one's name is aligned, so the
+ * referee reads colour and name together. With no shirt to show it is the name alone.
+ */
 @Composable
 private fun TeamName(
-    name: String,
-    align: TextAlign,
+    team: ConsoleTeam,
     modifier: Modifier = Modifier,
 ) {
-    Text(
-        text = name,
-        style = MaterialTheme.typography.titleMedium,
-        textAlign = align,
+    val atTheStart = team.side == TeamSide.HOME
+    Column(
         modifier = modifier,
-        maxLines = 2,
-    )
+        horizontalAlignment = if (atTheStart) Alignment.Start else Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap),
+    ) {
+        Text(
+            text = team.teamName,
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = if (atTheStart) TextAlign.Start else TextAlign.End,
+            modifier = Modifier.fillMaxWidth(),
+            maxLines = 2,
+        )
+        KitShirt(team.kit)
+    }
 }
 
 /**

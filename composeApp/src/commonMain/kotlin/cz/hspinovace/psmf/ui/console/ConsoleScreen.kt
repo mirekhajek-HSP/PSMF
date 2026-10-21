@@ -70,6 +70,7 @@ import cz.hspinovace.psmf.resources.console_undo
 import cz.hspinovace.psmf.resources.console_yellows
 import cz.hspinovace.psmf.ui.common.EvenActionContentPadding
 import cz.hspinovace.psmf.ui.common.EvenActionRow
+import cz.hspinovace.psmf.ui.common.TeamTabLabel
 import cz.hspinovace.psmf.ui.common.WithdrawSignaturesDialog
 import cz.hspinovace.psmf.ui.common.brandFilledColors
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
@@ -282,7 +283,7 @@ private fun SideTabs(
                 selected = state.selectedSide == team.side,
                 onClick = { onEvent(ConsoleEvent.SideSelected(team.side)) },
                 modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
-                text = { Text(team.teamName, maxLines = 2, textAlign = TextAlign.Center) },
+                text = { TeamTabLabel(team.teamName, team.kit) },
             )
         }
     }

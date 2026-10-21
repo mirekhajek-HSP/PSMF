@@ -5,6 +5,67 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-21 · 0.3.1, Gate 5: each team's kit colours on the console, as a shirt drawn in code from a table of names (prompt 15)
+
+The testers' point 6 (`reports/2026-10-21-0.3.1-tester-fixes.md`, §Gate 5). Nothing
+earlier is reversed: it carries out the owner's decision of this date ("a small
+shirt, drawn in the colours of the kit worn in this match"), and the rule that a
+report says what was written, never what a table says.
+
+**1. The shirt is drawn, one band for each colour the kit lists.** On a `Canvas`,
+no icon library (as the card glyph is, 2026-09-01). The body is cut into equal
+slices, the first colour on the left, and a sleeve goes with the band beside it, so
+two colours show as two and three as three. The pattern is a choice, because the
+label does not say one: *bílo-modrá* does not say halves, stripes or hoops, and
+slices claim the least. An outline in the theme's outline colour is always drawn,
+so a white shirt shows on a light screen and a black one on a dark one (a test
+looks at the pixels of all twenty, on both themes and on both grounds the shirt
+sits on). **Reverses if** PSMF's data ever says what the pattern is, or referees
+read the slices as a pattern the kit does not have.
+
+**2. Where it goes.** Under each name on the scoreboard (the home side at the
+start edge, the away side at the end, where each name is aligned); before the name
+on each team's tab, on the console and in *Sestavy*. Not under the name on the tab:
+a tab with a picture over its text is taller, on a screen that is open all match.
+The scoreboard grows by about 18 dp (14 at a 130 % font; measured, the tabs go
+from 300 to 318 dp down the screen). In *Sestavy* the tab shows the kit
+picked in the chips, so choosing the other chip changes the shirt; on the console it
+shows the kit the lineup recorded. **Reverses if** the scoreboard is too tall for
+the lists under it (then the shirt goes beside the name there too).
+
+**3. The table is in `composeApp`, and a name it lacks draws nothing.** Twenty names
+(those league 6 uses), each the colour of its name: *světle* lighter and *tmavě*
+darker than the plain name, *rudá* a deeper red than *červená*, *zlatá* duller than
+*žlutá*. Case and the spaces around a name do not matter. Nothing in `shared/` or
+the export reads it, and it could not: it is in the other module. **The colours are
+my reading of the names; no one at PSMF or among the testers has confirmed them**
+(the test pins each to its colour family, not to a hex value). **Reverses if** a
+referee sees a colour that is not their team's: change the row.
+
+**4. An unknown colour is an empty band, and a kit with none known is no shirt.**
+For *bílo-tyrkysová* the white is drawn and the rest of the shirt is left empty. The
+alternative, drawing only what is known, would show a plain white shirt for a
+two-colour kit, and the referee would trust it. A kit with no known colour draws
+nothing and takes no room, so the screen is as it was before. **Reverses if** an
+empty band confuses more than it warns: then a partly known kit draws no shirt.
+
+**5. The console is shown a kit only while it can be vouched for.**
+`ConsoleTeam.kit` is the team's own kit that the lineup names, and only while it
+still goes by the label the lineup wrote down. A kit the team no longer has, or one
+renamed since, may not be what was worn, and a wrong colour is worse than none. The
+importer keeps a kit's id by its label, so a rename there mints a new id and the
+lineup's kit no longer resolves; the label check covers an edit that keeps the id.
+The report is unaffected either way: it reads the snapshot. **Reverses if** kits
+are renamed so often, with their colours unchanged, that shirts vanish from matches
+in progress (then compare the colours instead of the label).
+
+**6. The shirt is described by the kit's label** for a screen reader. Whenever a
+shirt is shown this is also the lineup's snapshot, by 5. **Reverses if** a Czech
+screen reader reads a label like *černo-bílá* badly (then a longer description in
+the strings, which would have to be written in three languages).
+
+---
+
 ## 2026-10-21 · 0.3.1, Gate 4: the console's controls laid out on purpose, the Ukrainian tab, and the whistles in the log (prompt 15)
 
 The testers' points 4 and 5, and the review's *the log does not list the
