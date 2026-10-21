@@ -1,0 +1,43 @@
+-- Version 7 to version 8: a lineup that is not whole yet is kept, so that the
+-- app being killed does not take the marks, the captain and goalkeeper, the
+-- shirt numbers and what was typed in the rows.
+--
+-- (DECISIONS 2026-10-21, "0.3.1, Gate 3", from the testers of 0.3.0.)
+--
+-- WHAT AN EXISTING MATCH GETS
+--
+--   Nothing. Two new tables, empty. No report is touched, and no lineup is
+--   written, rewritten or read differently: lineup_record and appearance_record
+--   are as they were, and still hold a team's lineup only when it is whole. The
+--   first edit on the lineup screen after the update writes that team's draft;
+--   until then the screen is built from the report exactly as it was in 0.3.0.
+--
+-- Nothing is invented for a lineup already written. A draft says what the
+-- screen showed, and for a lineup that was written before there was a draft
+-- the screen showed what was written.
+
+CREATE TABLE lineup_draft (
+    match_id             TEXT    NOT NULL,
+    side                 TEXT    NOT NULL,
+    kit_id               TEXT    NOT NULL,
+    captain_player_id    TEXT,
+    goalkeeper_player_id TEXT,
+    confirmed_at         TEXT,
+    confirmed_by         TEXT,
+    confirmed_as_deputy  INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (match_id, side)
+);
+
+CREATE TABLE lineup_draft_member (
+    match_id              TEXT    NOT NULL,
+    side                  TEXT    NOT NULL,
+    player_id             TEXT    NOT NULL,
+    present               INTEGER NOT NULL,
+    jersey_number         INTEGER,
+    registration_card     INTEGER NOT NULL,
+    card_number_typed     TEXT    NOT NULL,
+    card_number_written   TEXT,
+    date_of_birth_typed   TEXT    NOT NULL,
+    date_of_birth_written TEXT,
+    PRIMARY KEY (match_id, side, player_id)
+);

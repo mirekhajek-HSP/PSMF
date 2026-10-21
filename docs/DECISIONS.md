@@ -5,6 +5,87 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-21 · 0.3.1, Gate 3: a lineup in progress is kept in a draft of its own, and is never a lineup (prompt 15)
+
+The owed item from the review of 0.3.0 (`reports/2026-10-21-0.3.1-tester-fixes.md`,
+§Gate 3). It ends one half of *Marks are written once the block is whole*
+(2026-10-17, *The lineup, as built*) and keeps the other: **the report's block
+is still written only when it is whole**; what is no longer true is "killing the
+app between the first tap and the last loses them". Nothing in 2026-10-17 is
+reversed.
+
+**1. The draft lives in two tables of its own, `lineup_draft` and
+`lineup_draft_member` (schema 8), and not in `lineup_record`.** A row in
+`lineup_record` *is* the team's lineup: `Match.homeLineup` is read from it and
+the console, the export and the signatures read that, and the type
+(`Lineup`) refuses to hold a block that is not whole. Putting a half-marked
+squad there would make every reader responsible for telling it from a finished
+one, and one that forgot would take a squad of three for the team. In tables
+that nothing but the lineup screen's two use cases (`SaveLineupDraft`,
+`RestoreLineupDraft`) reads, the draft cannot be mistaken for a lineup by
+construction: the types (`LineupDraft`, `DraftedMember`) are in `data.match`,
+not `domain`, so nothing the report is built from can hold one. Delete every
+row in them and no report changes. The brief allowed a schema change "if the
+work needs one"; it could have been done without (a JSON text per match and side
+in `preference_record`), and I did not, because that table is documented as the
+app's two settings, a match deleted would need a key-prefix delete to take its
+draft, and the repository's own rule is rows over blobs (`MatchRecord.sq`'s
+header). `7.db` was recorded first, `7.sqm` creates the tables and touches no
+row, `8.db` generated, and `SchemaMigrationTest` opens a report written by
+0.3.0 across it. **Reverses if** a draft has to be something other than
+per-match rows -- shared between devices, say -- or schema 8 proves a burden on
+the iPhone that a settings row would not have been.
+
+**2. The draft is the screen's working copy, written whole on every change and
+before the lineup is.** Every member of the squad is in it, marked or not: a
+row whose mark was taken back keeps what was typed in it, as it does in the
+view model (Gate 2). The text in each field is kept as typed, half-typed
+included, **and so is what that text wrote in the `Číslo RP` column**, because a
+row read from a saved lineup has a value written and an empty field, and
+working the value out again from the empty text would erase it. Players, not
+appearance ids: the ids goals and cards point at are the report's, and a
+draft cannot change them. Written *before* the lineup, so that a draft is
+never older than the lineup written from it; the other order could leave the
+screen coming back as an earlier state than the one the console is reading.
+The one place it is the other way round is adding a player, where the use case
+writes the lineup itself and the draft follows at once. **Reverses if** the
+write on every keystroke is slow on a phone (it is one transaction of about
+twenty-five small rows) or a draft has to carry something the view model's
+state does not.
+
+**3. The draft is put back over a lineup built from the report, not the other
+way round, and never trusted past it.** `BuildLineupEntry` is unchanged: the
+report says who is in the squad, which appearance ids exist and what the names
+are. A draft then says what the screen showed -- marks, roles, numbers, text,
+the kit, the captain's tap. A player or a kit the report no longer has is
+dropped (a captain who has left the squad list is nobody, not a stale id), a
+player the draft knows nothing of stays as built, and a team with no draft is
+as built -- which is how every report written before this opens. **A draft is
+kept after the lineup is whole**, not deleted: one way to reopen, and the text
+in unmarked rows survives. **Reverses if** something other than the lineup
+screen ever writes a lineup: the draft would then be older than the report and
+the screen would show it over a newer one.
+
+**4. Writes are queued.** The view model takes a lock around each draft and
+lineup write, so that two quick edits finish in the order they were made. The
+repository writes off the main thread, and without the queue the edit that
+finished *last*, not the one made last, was what the disk kept; the same
+unqueued writes also read and replaced `match` in turn, which two at once may
+not. A latent fault of 0.3.0 that this gate makes matter more, because a draft
+written out of order would be a screen that comes back wrong. **Reverses if**
+the queue is seen to hold up a tap (it is only the writes that wait).
+
+**5. A restored team is not written on opening.** A draft whole at the moment
+of the kill, whose lineup write had not landed, comes back whole on the screen
+and the report has the earlier lineup, or none, until the next edit or
+*Pokračovat* writes it. No "healing" write on opening: that would change the
+report -- and take the signatures back -- from a screen the referee has only
+looked at. The window is the write between the draft and the lineup. **Reverses
+if** a referee can be seen to go to the console from a screen that looked
+whole without pressing anything.
+
+---
+
 ## 2026-10-21 · 0.3.1, Gate 2: a squad row is one line until the player is marked, and opens downwards (prompt 15)
 
 The testers' third point on 0.3.0 (`reports/2026-10-21-0.3.1-tester-fixes.md`,

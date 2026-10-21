@@ -4,7 +4,9 @@ import cz.hspinovace.psmf.data.db.DatabaseDriverFactory
 import cz.hspinovace.psmf.data.league.JerseyOverridingLeagueRepository
 import cz.hspinovace.psmf.data.league.LeagueRepository
 import cz.hspinovace.psmf.data.league.SeedLeagueRepository
+import cz.hspinovace.psmf.data.match.LineupDraftRepository
 import cz.hspinovace.psmf.data.match.MatchRepository
+import cz.hspinovace.psmf.data.match.SqlDelightLineupDraftRepository
 import cz.hspinovace.psmf.data.match.SqlDelightMatchRepository
 import cz.hspinovace.psmf.data.player.AddedPlayerRepository
 import cz.hspinovace.psmf.data.player.RememberedCardNumberRepository
@@ -55,8 +57,10 @@ import cz.hspinovace.psmf.usecase.NewId
 import cz.hspinovace.psmf.usecase.ObserveReportInProgress
 import cz.hspinovace.psmf.usecase.RememberCardNumber
 import cz.hspinovace.psmf.usecase.RememberDateOfBirth
+import cz.hspinovace.psmf.usecase.RestoreLineupDraft
 import cz.hspinovace.psmf.usecase.SaveAssessment
 import cz.hspinovace.psmf.usecase.SaveLineup
+import cz.hspinovace.psmf.usecase.SaveLineupDraft
 import cz.hspinovace.psmf.usecase.SaveMatchHeader
 import cz.hspinovace.psmf.usecase.SetDefaultJerseyNumber
 import cz.hspinovace.psmf.usecase.StartMatch
@@ -86,6 +90,7 @@ val appModule: Module =
         // for the database.
         single { PsmfDatabase(get<DatabaseDriverFactory>().create()) }
         single<MatchRepository> { SqlDelightMatchRepository(get()) }
+        single<LineupDraftRepository> { SqlDelightLineupDraftRepository(get()) }
         single<AddedPlayerRepository> { SqlDelightAddedPlayerRepository(get()) }
         single<SettingsRepository> { SqlDelightSettingsRepository(get()) }
         single<FollowedTeamRepository> { SqlDelightFollowedTeamRepository(get()) }
@@ -123,7 +128,9 @@ val appModule: Module =
 
         viewModel { FixturesViewModel(get(), get()) }
         viewModel { (matchId: MatchId) -> MatchHeaderViewModel(matchId, get(), get(), get()) }
-        viewModel { (matchId: MatchId) -> LineupViewModel(matchId, get(), get(), get(), get(), get(), get()) }
+        viewModel { (matchId: MatchId) ->
+            LineupViewModel(matchId, get(), get(), get(), get(), get(), get(), get(), get())
+        }
         viewModel { (matchId: MatchId) ->
             ConsoleViewModel(matchId, get(), get(), get(), get(), get(), get(), get(), get(), get())
         }
@@ -153,6 +160,8 @@ private fun Module.factoryOfUseCases() {
     factory { RememberDateOfBirth(get()) }
     factory { RememberCardNumber(get()) }
     factory { SaveLineup(get()) }
+    factory { SaveLineupDraft(get()) }
+    factory { RestoreLineupDraft(get()) }
     factory { AddPlayerAtThePitch(get(), get()) }
     factory { AddPlayerToLineup(get(), get(), get()) }
     factory { BuildConsoleEntry(get(), get()) }

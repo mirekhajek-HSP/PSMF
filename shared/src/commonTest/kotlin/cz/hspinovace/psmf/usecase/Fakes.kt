@@ -2,6 +2,8 @@ package cz.hspinovace.psmf.usecase
 
 import cz.hspinovace.psmf.data.league.LeagueRepository
 import cz.hspinovace.psmf.data.league.LoadedFixture
+import cz.hspinovace.psmf.data.match.LineupDraft
+import cz.hspinovace.psmf.data.match.LineupDraftRepository
 import cz.hspinovace.psmf.data.match.MatchRepository
 import cz.hspinovace.psmf.data.match.MatchSummary
 import cz.hspinovace.psmf.data.player.RememberedCardNumberRepository
@@ -21,6 +23,7 @@ import cz.hspinovace.psmf.domain.MatchStatus
 import cz.hspinovace.psmf.domain.PlayerId
 import cz.hspinovace.psmf.domain.Season
 import cz.hspinovace.psmf.domain.TeamId
+import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.Venue
 import cz.hspinovace.psmf.domain.VenueCode
 import kotlinx.coroutines.flow.Flow
@@ -266,4 +269,15 @@ object TestLeague {
      * quietly about dates.
      */
     val beforeTheSeason = PinnedClock(LocalDate(2026, 8, 1))
+}
+
+/** Lineups in progress, kept in memory. */
+class FakeLineupDraftRepository : LineupDraftRepository {
+    private val stored = mutableMapOf<Pair<MatchId, TeamSide>, LineupDraft>()
+
+    override suspend fun save(draft: LineupDraft) {
+        stored[draft.matchId to draft.side] = draft
+    }
+
+    override suspend fun forMatch(matchId: MatchId): List<LineupDraft> = stored.values.filter { it.matchId == matchId }
 }

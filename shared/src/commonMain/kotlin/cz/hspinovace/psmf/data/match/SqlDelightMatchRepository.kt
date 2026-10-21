@@ -126,6 +126,9 @@ class SqlDelightMatchRepository(
                 // save: a pitch-added player is not one of the report's own
                 // rows and must survive the report being rewritten.
                 queries.deleteAddedPlayersForMatch(id.value)
+                // Likewise: a lineup in progress is the lineup screen's, not
+                // a row of the report, and saving the report leaves it be.
+                queries.deleteLineupDraftsOf(id.value)
                 queries.deleteMatch(id.value)
             }
         }

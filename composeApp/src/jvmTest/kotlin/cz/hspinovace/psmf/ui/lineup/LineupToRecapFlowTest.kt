@@ -28,7 +28,9 @@ import cz.hspinovace.psmf.usecase.ConfirmReport
 import cz.hspinovace.psmf.usecase.NewId
 import cz.hspinovace.psmf.usecase.RememberCardNumber
 import cz.hspinovace.psmf.usecase.RememberDateOfBirth
+import cz.hspinovace.psmf.usecase.RestoreLineupDraft
 import cz.hspinovace.psmf.usecase.SaveLineup
+import cz.hspinovace.psmf.usecase.SaveLineupDraft
 import cz.hspinovace.psmf.usecase.WithdrawNoCards
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -107,6 +109,7 @@ class LineupToRecapFlowTest {
     private val added = InMemoryAddedPlayers()
     private val rememberedDates = InMemoryRememberedDates()
     private val rememberedNumbers = InMemoryRememberedNumbers()
+    private val drafts = InMemoryLineupDrafts()
     private val matchId = MatchId("m1")
     private var counter = 0
 
@@ -124,7 +127,9 @@ class LineupToRecapFlowTest {
             matchId = matchId,
             matches = matches,
             buildLineupEntry = build,
+            restoreLineupDraft = RestoreLineupDraft(drafts),
             saveLineup = save,
+            saveLineupDraft = SaveLineupDraft(drafts),
             addPlayerToLineup = AddPlayerToLineup(AddPlayerAtThePitch(added, newId), save, newId),
             rememberDateOfBirth = RememberDateOfBirth(rememberedDates),
             rememberCardNumber = RememberCardNumber(rememberedNumbers),
@@ -292,7 +297,7 @@ class LineupToRecapFlowTest {
         }
 }
 
-private class InMemoryAddedPlayers : AddedPlayerRepository {
+internal class InMemoryAddedPlayers : AddedPlayerRepository {
     private val stored = mutableListOf<Pair<MatchId, Player>>()
 
     override suspend fun add(
@@ -310,7 +315,7 @@ private class InMemoryAddedPlayers : AddedPlayerRepository {
     }
 }
 
-private class InMemoryRememberedDates : RememberedDateOfBirthRepository {
+internal class InMemoryRememberedDates : RememberedDateOfBirthRepository {
     private val dates = mutableMapOf<PlayerId, LocalDate>()
 
     override suspend fun all(): Map<PlayerId, LocalDate> = dates.toMap()
@@ -323,7 +328,7 @@ private class InMemoryRememberedDates : RememberedDateOfBirthRepository {
     }
 }
 
-private class InMemoryRememberedNumbers : RememberedCardNumberRepository {
+internal class InMemoryRememberedNumbers : RememberedCardNumberRepository {
     private val numbers = mutableMapOf<PlayerId, String>()
 
     override suspend fun all(): Map<PlayerId, String> = numbers.toMap()

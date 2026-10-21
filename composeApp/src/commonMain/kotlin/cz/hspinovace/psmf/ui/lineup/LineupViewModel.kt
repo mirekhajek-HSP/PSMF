@@ -19,7 +19,9 @@ import cz.hspinovace.psmf.usecase.LineupProblem
 import cz.hspinovace.psmf.usecase.NewPlayerRequest
 import cz.hspinovace.psmf.usecase.RememberCardNumber
 import cz.hspinovace.psmf.usecase.RememberDateOfBirth
+import cz.hspinovace.psmf.usecase.RestoreLineupDraft
 import cz.hspinovace.psmf.usecase.SaveLineup
+import cz.hspinovace.psmf.usecase.SaveLineupDraft
 import cz.hspinovace.psmf.usecase.TeamLineupEntry
 import cz.hspinovace.psmf.usecase.parseCardNumber
 import cz.hspinovace.psmf.usecase.parseDateOfBirth
@@ -28,6 +30,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
@@ -165,13 +169,20 @@ sealed interface LineupEvent {
  * screen -- except while a block is not whole: a team is written once it
  * has somebody present, a captain, a goalkeeper and an answer in every
  * row's `Číslo RP`. See [SaveLineup].
+ *
+ * What is done before then is kept apart, as a draft, and put back over the
+ * lineup built from the report when the screen is opened again -- by a new
+ * view model or a new process (prompt 15, Gate 3). A draft is never a lineup:
+ * see [SaveLineupDraft].
  */
 @OptIn(ExperimentalTime::class)
 class LineupViewModel(
     private val matchId: MatchId,
     private val matches: MatchRepository,
     private val buildLineupEntry: BuildLineupEntry,
+    private val restoreLineupDraft: RestoreLineupDraft,
     private val saveLineup: SaveLineup,
+    private val saveLineupDraft: SaveLineupDraft,
     private val addPlayerToLineup: AddPlayerToLineup,
     private val rememberDateOfBirth: RememberDateOfBirth,
     private val rememberCardNumber: RememberCardNumber,
@@ -182,6 +193,15 @@ class LineupViewModel(
 
     private var match: Match? = null
 
+    /**
+     * One write at a time, in the order the changes were made. The writes run
+     * off the main thread, so two quick changes (two keystrokes) could finish
+     * in either order, and the one that finished last would be what the disk
+     * kept -- an earlier state than the screen's. They also read and replace
+     * [match], which must not be done by two at once.
+     */
+    private val writes = Mutex()
+
     init {
         viewModelScope.launch { load() }
     }
@@ -189,7 +209,10 @@ class LineupViewModel(
     private suspend fun load() {
         val loaded = matches.load(matchId)
         match = loaded
-        val entry = loaded?.let { buildLineupEntry(it) }
+        // Built from the report, then what was done on the screen and not yet
+        // written down put back over it: the report says who is in the squad
+        // and which ids goals point at, the draft says what the referee did.
+        val entry = loaded?.let { buildLineupEntry(it) }?.let { restoreLineupDraft(matchId, it) }
         _state.value =
             LineupUiState(
                 loading = false,
@@ -314,30 +337,39 @@ class LineupViewModel(
             _state.update { it.copy(newPlayerRejected = true) }
             return
         }
-        val current = match ?: return
+        if (match == null) return
         val team = _state.value.selected ?: return
         viewModelScope.launch {
-            // Returns null only if the request was unusable, which the check
-            // above has already ruled out -- but the use case is the
-            // authority, not the form.
-            val added = addPlayerToLineup(current, team, request)
-            if (added == null) {
-                _state.update { it.copy(newPlayerRejected = true) }
-                return@launch
-            }
-            match = added.match
-            _state.update { it.copy(signed = added.match.isSigned) }
-            // The entry the screen holds, with the player in it -- not one
-            // rebuilt from the database, which has none of the marks that are
-            // not saved yet.
-            _state.update { state ->
-                val entry = state.entry?.with(added.team)
-                state.copy(
-                    entry = entry,
-                    problems = entry?.problems().orEmpty(),
-                    newPlayer = null,
-                    newPlayerRejected = false,
-                )
+            writes.withLock {
+                // Read inside the lock: a change made while this waited has
+                // already been written, and the report it left is the one to go on from.
+                val current = match ?: return@launch
+                // Returns null only if the request was unusable, which the check
+                // above has already ruled out -- but the use case is the
+                // authority, not the form.
+                val added = addPlayerToLineup(current, team, request)
+                if (added == null) {
+                    _state.update { it.copy(newPlayerRejected = true) }
+                    return@launch
+                }
+                match = added.match
+                _state.update { it.copy(signed = added.match.isSigned) }
+                // The entry the screen holds, with the player in it -- not one
+                // rebuilt from the database, which has none of the marks that are
+                // not saved yet.
+                _state.update { state ->
+                    val entry = state.entry?.with(added.team)
+                    state.copy(
+                        entry = entry,
+                        problems = entry?.problems().orEmpty(),
+                        newPlayer = null,
+                        newPlayerRejected = false,
+                    )
+                }
+                // The lineup has been written, if it is whole, by the use case;
+                // the draft follows at once. The one write between is the only
+                // time a draft is behind a lineup.
+                saveLineupDraft(matchId, added.team)
             }
         }
     }
@@ -381,14 +413,21 @@ class LineupViewModel(
 
     private fun editTeam(change: (TeamLineupEntry) -> TeamLineupEntry) {
         val entry = _state.value.entry ?: return
-        val updated = entry.with(change(entry.side(_state.value.selectedSide)))
+        val edited = change(entry.side(_state.value.selectedSide))
+        val updated = entry.with(edited)
         _state.update { it.copy(entry = updated, problems = updated.problems()) }
 
         viewModelScope.launch {
-            val current = match ?: return@launch
-            match = saveLineup(current, updated.side(_state.value.selectedSide))
-            // The first change took the signatures back, and the notice goes.
-            _state.update { it.copy(signed = match?.isSigned == true) }
+            writes.withLock {
+                // The draft first, whole or not, and the lineup after it, so that
+                // the one is never older than the other. The lineup is written
+                // only while the block is whole; the draft is what keeps the rest.
+                saveLineupDraft(matchId, edited)
+                val current = match ?: return@launch
+                match = saveLineup(current, edited)
+                // The first change took the signatures back, and the notice goes.
+                _state.update { it.copy(signed = match?.isSigned == true) }
+            }
         }
     }
 }

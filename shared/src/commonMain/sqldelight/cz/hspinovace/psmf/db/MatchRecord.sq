@@ -113,6 +113,64 @@ CREATE TABLE appearance_record (
     identification_source TEXT    NOT NULL
 );
 
+-- The lineup screen's working copy of one team (version 8; DECISIONS
+-- 2026-10-21, "0.3.1, Gate 3").
+--
+-- WHY THIS IS NOT lineup_record. A row in lineup_record IS the team's lineup:
+-- the console, the export and the signatures all read it as a finished one,
+-- and the app writes it only once the block is whole (somebody present, a
+-- captain, a goalkeeper, and a Číslo RP in every row). A half-marked squad
+-- put there would be read as a squad that is complete. So what is done on the
+-- way to a whole lineup is kept here, in two tables that nothing but the
+-- lineup screen reads. Delete every row in them and the work in progress is
+-- gone and no report has changed.
+--
+-- Rewritten whole on every change to the screen, and BEFORE the lineup itself
+-- is written, so it is never older than lineup_record. When both exist the
+-- screen shows this one; the report always reads the other. Deliberately not
+-- in clearChildren, which runs on every save of the report: saving the report
+-- must not touch it. Deleted with the match.
+--
+-- Player ids, not appearance ids: a draft is a row that has not been written
+-- as an appearance yet, and the id goals and cards point at is the one the
+-- saved lineup already has, or is minted when the lineup is first written.
+CREATE TABLE lineup_draft (
+    match_id             TEXT    NOT NULL,
+    side                 TEXT    NOT NULL,
+    kit_id               TEXT    NOT NULL,
+    captain_player_id    TEXT,
+    goalkeeper_player_id TEXT,
+    -- The captain's tap under the lineup, as lineup_record keeps it.
+    confirmed_at         TEXT,
+    confirmed_by         TEXT,
+    confirmed_as_deputy  INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (match_id, side)
+);
+
+-- One row of the squad as the screen holds it, every player in it, present or
+-- not: a row whose mark was taken back keeps what was typed in it.
+--
+-- The *_typed columns are the text in the field, half typed if that is how it
+-- stands. The *_written columns are what that text puts in the Číslo RP column
+-- once it is a whole number or a real date -- the value only, the kind is
+-- RP_TYPED for the card number and DATE_OF_BIRTH for the date. They are kept
+-- rather than worked out again because a row read back from a saved lineup has
+-- a value written and an empty field, and the two must come back as they were.
+-- NOT THE PLAYER'S RP NUMBER: see remembered_card_number.
+CREATE TABLE lineup_draft_member (
+    match_id              TEXT    NOT NULL,
+    side                  TEXT    NOT NULL,
+    player_id             TEXT    NOT NULL,
+    present               INTEGER NOT NULL,
+    jersey_number         INTEGER,
+    registration_card     INTEGER NOT NULL,
+    card_number_typed     TEXT    NOT NULL,
+    card_number_written   TEXT,
+    date_of_birth_typed   TEXT    NOT NULL,
+    date_of_birth_written TEXT,
+    PRIMARY KEY (match_id, side, player_id)
+);
+
 -- When a period ended, and -- once pressed -- when the next one started.
 --
 -- Own table for the same reason power_play_record is: a match may have
@@ -304,6 +362,34 @@ SELECT * FROM appearance_record WHERE match_id = ? ORDER BY side, position;
 
 deleteAppearances:
 DELETE FROM appearance_record WHERE match_id = ?;
+
+upsertLineupDraft:
+INSERT OR REPLACE INTO lineup_draft (
+    match_id, side, kit_id, captain_player_id, goalkeeper_player_id,
+    confirmed_at, confirmed_by, confirmed_as_deputy
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+insertLineupDraftMember:
+INSERT OR REPLACE INTO lineup_draft_member (
+    match_id, side, player_id, present, jersey_number, registration_card,
+    card_number_typed, card_number_written, date_of_birth_typed, date_of_birth_written
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectLineupDrafts:
+SELECT * FROM lineup_draft WHERE match_id = ?;
+
+selectLineupDraftMembers:
+SELECT * FROM lineup_draft_member WHERE match_id = ?;
+
+deleteLineupDraftMembersOf:
+DELETE FROM lineup_draft_member WHERE match_id = ? AND side = ?;
+
+-- Only on deleting the whole match; see the table.
+deleteLineupDraftsForMatch:
+DELETE FROM lineup_draft WHERE match_id = ?;
+
+deleteLineupDraftMembersForMatch:
+DELETE FROM lineup_draft_member WHERE match_id = ?;
 
 insertAddedPlayer:
 INSERT OR REPLACE INTO added_player_record (

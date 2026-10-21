@@ -1,6 +1,7 @@
 package cz.hspinovace.psmf.data.db
 
 import cz.hspinovace.psmf.data.match.MatchRepository
+import cz.hspinovace.psmf.data.match.SqlDelightLineupDraftRepository
 import cz.hspinovace.psmf.data.match.SqlDelightMatchRepository
 import cz.hspinovace.psmf.data.player.SqlDelightAddedPlayerRepository
 import cz.hspinovace.psmf.db.PsmfDatabase
@@ -38,6 +39,8 @@ import cz.hspinovace.psmf.usecase.FakeRememberedCardNumberRepository
 import cz.hspinovace.psmf.usecase.FakeRememberedDateOfBirthRepository
 import cz.hspinovace.psmf.usecase.LineupEntry
 import cz.hspinovace.psmf.usecase.LogGoal
+import cz.hspinovace.psmf.usecase.RestoreLineupDraft
+import cz.hspinovace.psmf.usecase.SaveLineupDraft
 import cz.hspinovace.psmf.usecase.UndoLastEvent
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate
@@ -586,6 +589,52 @@ class SchemaMigrationTest {
             )
             assertEquals(report.homeLineup?.kitLabel, restored.homeLineup?.kitLabel)
             assertEquals(report.awayLineup?.kitLabel, restored.awayLineup?.kitLabel)
+        }
+
+    /**
+     * 7.sqm adds two tables and touches no row (prompt 15, Gate 3). A report
+     * written by 0.3.0 opens equal to what it was, the lineup screen is built
+     * from it exactly as before because there is no draft, and a draft can then
+     * be kept without the report knowing.
+     */
+    @Test
+    fun aReportWrittenByTheLastReleaseOpensExactlyAsItWasAndThenTakesADraft() =
+        runTest {
+            val database = databaseAtVersion(7)
+            val inProgress = oldMatch("m-play", MatchStatus.IN_PROGRESS, emptyList())
+            beforeTheUpdate(database) { it.save(inProgress) }
+            assertEquals(7, userVersion(database))
+            assertFalse("lineup_draft" in tableNames(database), "7.db already had the draft tables")
+
+            val restored = afterTheUpdate(database) { assertNotNull(it.load(inProgress.id)) }
+
+            assertEquals(current, userVersion(database), "7.sqm did not run")
+            assertContains(tableNames(database), "lineup_draft")
+            assertContains(tableNames(database), "lineup_draft_member")
+            assertEquals(inProgress, restored, "the upgrade changed a report")
+            assertEquals(inProgress.reportProblems(), restored.reportProblems())
+
+            afterTheUpdateIn(database) { db ->
+                val drafts = SqlDelightLineupDraftRepository(db)
+                val entry = presenceOf(restored)
+                // Nothing was invented for a lineup that was written before drafts.
+                assertEquals(emptyList(), drafts.forMatch(inProgress.id))
+                assertEquals(entry, RestoreLineupDraft(drafts)(inProgress.id, entry))
+
+                val first =
+                    entry.home.members
+                        .first()
+                        .player.id
+                val edited = entry.home.withPresence(first, true).withMember(first) { it.withCardNumberTyped("59") }
+                SaveLineupDraft(drafts)(inProgress.id, edited)
+
+                assertEquals(edited, RestoreLineupDraft(drafts)(inProgress.id, entry).home)
+                assertEquals(
+                    inProgress,
+                    SqlDelightMatchRepository(db).load(inProgress.id),
+                    "a draft changed the report",
+                )
+            }
         }
 
     @Test
