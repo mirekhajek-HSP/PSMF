@@ -1,5 +1,12 @@
 package cz.hspinovace.psmf.ui.common
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -8,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.test.ComposeUiTest
@@ -16,6 +24,7 @@ import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotFocused
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.isFocused
@@ -26,6 +35,8 @@ import androidx.compose.ui.test.performImeAction
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipeUp
 import androidx.compose.ui.test.v2.runComposeUiTest
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.ui.UiTestData
@@ -40,6 +51,7 @@ import cz.hspinovace.psmf.ui.navigation.AppNavigator
 import cz.hspinovace.psmf.ui.navigation.Destination
 import cz.hspinovace.psmf.ui.navigation.Tab
 import cz.hspinovace.psmf.ui.shell.AppShell
+import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.ui.theme.PsmfTheme
 import cz.hspinovace.psmf.ui.withLanguage
 import cz.hspinovace.psmf.usecase.AssessmentDraft
@@ -398,6 +410,130 @@ class KeyboardTest {
         }
 
     // -----------------------------------------------------------------
+    // A field low on the screen (0.3.1, Gate 1)
+    // -----------------------------------------------------------------
+
+    /**
+     * A list with a field low on it, in a window the keyboard can shrink.
+     *
+     * The host has no software keyboard, so [inset] stands in for the room it
+     * takes -- the bottom padding `imePadding` is on a phone. Growing it
+     * shrinks the list, and a list that holds the focused field scrolls to
+     * keep it in view: the same scroll that runs when a referee taps a field
+     * the keyboard is about to cover.
+     */
+    @Composable
+    private fun LowFieldInList(
+        keyboard: RecordingKeyboard,
+        inset: () -> Dp,
+    ) {
+        PsmfTheme {
+            CompositionLocalProvider(LocalSoftwareKeyboardController provides keyboard) {
+                KeyboardDismissal(modifier = Modifier.fillMaxSize().padding(bottom = inset())) {
+                    Column(Modifier.verticalScroll(rememberScrollState())) {
+                        Spacer(Modifier.height(ABOVE_THE_FIELD))
+                        PsmfTextField(value = "", onValueChange = {})
+                        Spacer(Modifier.height(BELOW_THE_FIELD))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun ComposeUiTest.theList(): SemanticsNodeInteraction = onNode(hasScrollAction())
+
+    private fun ComposeUiTest.bottomOfTheField(): Float = referee().getUnclippedBoundsInRoot().bottom.value
+
+    private fun ComposeUiTest.bottomOfTheList(): Float = theList().getUnclippedBoundsInRoot().bottom.value
+
+    @Test
+    fun aFieldTheListScrollsIntoViewKeepsItsFocus() =
+        runComposeUiTest {
+            // The tester: "the keyboard disappears when I tap a field low on
+            // the screen". The field asks to be seen, the list obliges, and
+            // the dismissal must not take that for the referee scrolling.
+            val keyboard = RecordingKeyboard()
+            var inset by mutableStateOf(0.dp)
+            setContent { LowFieldInList(keyboard) { inset } }
+
+            referee().performClick().assertIsFocused()
+            assertTrue(bottomOfTheField() <= bottomOfTheList(), "the field starts in view")
+
+            inset = KEYBOARD
+            waitForIdle()
+
+            // The field and the keyboard are still there ...
+            referee().assertIsFocused()
+            assertEquals(0, keyboard.hidden, "the keyboard was asked to go")
+            // ... and the list did bring the field into view -- otherwise
+            // the two above say nothing.
+            assertTrue(
+                bottomOfTheField() <= bottomOfTheList(),
+                "the list did not bring the field into view: ${bottomOfTheField()} below ${bottomOfTheList()}",
+            )
+        }
+
+    @Test
+    fun theRoomForTheButtonUnderALowFieldComesUpWithItAboveTheKeyboard() =
+        runComposeUiTest {
+            // "The field and the button under it are above the keyboard."
+            // Scrolling the field just into view leaves it flush with the
+            // keyboard and the button behind it.
+            val keyboard = RecordingKeyboard()
+            var inset by mutableStateOf(0.dp)
+            setContent { LowFieldInList(keyboard) { inset } }
+
+            referee().performClick().assertIsFocused()
+            inset = KEYBOARD
+            waitForIdle()
+
+            val room = (PsmfDimens.minTouchTarget + PsmfDimens.itemSpacing).value
+            referee().assertIsFocused()
+            assertTrue(
+                bottomOfTheField() + room <= bottomOfTheList(),
+                "no room under the field: its bottom ${bottomOfTheField()}, the list's ${bottomOfTheList()}",
+            )
+        }
+
+    @Test
+    fun aFingerDraggingTheSameListStillTakesTheFocusAway() =
+        runComposeUiTest {
+            val keyboard = RecordingKeyboard()
+            var inset by mutableStateOf(0.dp)
+            setContent { LowFieldInList(keyboard) { inset } }
+
+            referee().performClick().assertIsFocused()
+            inset = KEYBOARD
+            waitForIdle()
+            referee().assertIsFocused()
+
+            theList().performTouchInput { swipeUp(startY = centerY, endY = centerY - SWIPE) }
+
+            nothingIsFocused()
+            assertTrue(keyboard.hidden > 0, "the keyboard was never asked to go")
+        }
+
+    @Test
+    fun aSingleQuickFlickTakesTheFocusAwayToo() =
+        runComposeUiTest {
+            // One move and the finger is up: the scroll it starts is
+            // dispatched inside that move, so a dismissal that learned of the
+            // finger a moment later would let this one by.
+            val keyboard = RecordingKeyboard()
+            setContent { LowFieldInList(keyboard) { 0.dp } }
+
+            referee().performClick().assertIsFocused()
+            theList().performTouchInput {
+                down(Offset(centerX, centerY))
+                moveTo(Offset(centerX, centerY - SWIPE))
+                up()
+            }
+
+            nothingIsFocused()
+            assertTrue(keyboard.hidden > 0, "the keyboard was never asked to go")
+        }
+
+    // -----------------------------------------------------------------
     // None missing
     // -----------------------------------------------------------------
 
@@ -443,6 +579,11 @@ class KeyboardTest {
 
     private companion object {
         const val SWIPE = 200f
+
+        /** The list is 768 dp high; the field is at 500 dp, in view until the keyboard comes. */
+        val ABOVE_THE_FIELD = 500.dp
+        val BELOW_THE_FIELD = 700.dp
+        val KEYBOARD = 400.dp
 
         /**
          * Counted per file rather than allowed wholesale, so that an

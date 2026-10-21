@@ -5,6 +5,56 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-21 · 0.3.1, Gate 1: typing lands at the cursor, and only a finger on the list takes the keyboard away (prompt 15)
+
+Two of the testers' points on 0.3.0, both reproduced on the JVM before they
+were changed (`reports/2026-10-21-0.3.1-tester-fixes.md`, §Gate 1).
+
+**1. The cursor is the referee's, the text is the screen's** (`PsmfTextField`).
+Every field in the app gets its text from a ViewModel's `StateFlow`, so a
+field is told what it asked for a frame after it asked. Material's `String`
+text field keeps a `TextFieldValue` of its own and, whenever it is recomposed
+with a text that differs from its own, fits its cursor to that text *and
+writes the fit back*. Recomposed once with the old, empty text after "M" was
+typed, it wrote the cursor at 0 back, and "arek" went in front of the "M":
+"arekM", to the letter what the testers saw. `PsmfTextField` now keeps the
+`TextFieldValue` itself, shows the screen's text with it, and never writes
+the fit back. A change the screen refuses, and a text it sets itself, still
+show as the screen says. **Reverses if:** a state may arrive after the *next*
+keystroke, which is a longer wait than this was built for -- the field then
+shows the IME the older text and a character is lost, as it was before. Fixing
+that means treating the typed text as the truth until the screen has answered,
+which needs a way to tell a late answer from a refusal, and is not built.
+
+**2. A scroll is the referee's when a finger moved it** (`KeyboardDismissal`).
+The dismissal took any `NestedScrollSource.UserInput` scroll for the referee
+scrolling, on the belief that a list scrolling a focused field into view is
+not `UserInput`. It is: measured on the JVM, the foundation's bring-into-view
+reports `UserInput` through the nested-scroll chain exactly as a finger does,
+so the keyboard went the moment it came for a field low on the screen. Now a
+scroll counts only when a finger has also moved past touch slop since it last
+touched down. That is read in the pointer handler's first pass, and kept
+until the next touch rather than cleared on lift, because the list hands a
+drag's last distance on after the event that carried it and a quick flick is
+over by then. A tap outside a field, leaving the step and the action key
+dismiss as they did. **Reverses if:** a referee scrolls with something that is
+not a finger on a touch screen (a mouse wheel, a hardware keyboard, an
+accessibility action) and expects the keyboard to go; or a later foundation
+reports the list's own scrolls as something other than `UserInput`, in which
+case the finger test is redundant and harmless.
+
+**3. Room for the control under the field.** The outcome was "the field and
+the button under it are above the keyboard", and the foundation scrolls a
+focused field only *just* into view, leaving it flush with the keyboard.
+When the area a screen lives in gets shorter while a field has the focus --
+the keyboard coming up -- the field is now kept in view with
+`minTouchTarget + itemSpacing` (68 dp) below it. Fields report their focus to
+`KeyboardDismissal` for this. **Reverses if:** a field has more than one
+control under it that belongs with it, or it scrolls a screen for nothing
+where nothing sits under the field. It is one constant, `roomBelow`.
+
+---
+
 ## 2026-10-18 · The assessment and the recap: a note per team, a result from the goals, three taps, and what takes a signature back (prompt 13, Part 4)
 
 **1. A note per team.** In *Hodnocení*, under each team's ratings: optional, for
