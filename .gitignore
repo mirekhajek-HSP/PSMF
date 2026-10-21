@@ -34,3 +34,6 @@ Thumbs.db
 
 # league importer: raw psmf.cz pages, so development re-runs do not hit the site
 tools/league-import/cache/
+
+# Unattended gate runs: logs, and the STOP a session writes (prompts/15)
+.runner/

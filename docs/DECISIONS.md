@@ -404,6 +404,44 @@ it on a scroll only past some distance is one condition in `KeyboardDismissal`.
 
 ---
 
+## 2026-10-21 · From the testers of 0.3.0: a lineup row opens downwards, a drawn shirt shows the kit, and one session per gate
+
+**The lineup row: a correction to my own brief.** Prompt 13 said rows must
+not jump under the thumb while the referee is marking. The session read
+that as "nothing below may move". It gave every unmarked player the full
+height of a marked row, about 160 dp of blank, so a squad of twenty became
+four screens of scrolling, and the testers found it. What was meant: the
+row being tapped stays where it is. Rows below opening downwards is what
+every list does, and that is fine.
+
+**The kit's colours on the console** (owner, from the testers). A small
+shirt, drawn in the colours of the kit worn in this match, goes under each
+team's name on the scoreboard and on the team tabs. `Kit.colours` exists for
+exactly this ("for the app only"). The report keeps the label snapshot and
+never reads a colour. If the app has no colour for a name, it draws nothing:
+a wrong colour is worse than none, because the referee would trust it.
+
+**One fresh session per gate** (owner, 2026-10-18). Every step of a long
+session re-sends its whole history, and Sonnet managed about three gates per
+five-hour window that way. Gated prompts are now written to run cold:
+
+- a reading list for each gate;
+- one commit per gate, its subject starting "Prompt N, Gate M:";
+- an uncommitted tree at the start is an interrupted attempt;
+- named STOP conditions instead of questions.
+
+The owner also wants gates to run overnight without anyone typing "go". The
+runner for that is designed but not built (TODO).
+
+**Reverses if:**
+
+- referees would rather the rows never move, at the cost of the scrolling;
+- the colour table misleads more than it helps, for example where a kit's
+  name does not match what the team wears;
+- a cold session misses context a long one had, gate after gate.
+
+---
+
 ## 2026-10-17 · From the first iPhone test: Číslo RP takes the number on the card, the lineup marks who came, and the score comes from the goals
 
 **Owner's decisions**, on points the tester raised after using 0.2.1 (3) on

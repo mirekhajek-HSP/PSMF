@@ -1,11 +1,21 @@
 # TODO
 
-Grouped by what blocks what, not by size. Last updated 2026-10-17.
+Grouped by what blocks what, not by size. Last updated 2026-10-21.
 
 ---
 
 ## Next
 
+- [ ] **Prompt 15: what the testers found in 0.3.0, and the kits' colours**,
+      0.3.1 (5). `prompts/15-tester-fixes-0.3.1.md`. Seven gates, written
+      for one fresh session each: typing (the cursor jump, the keyboard on a
+      low field), compact lineup rows, a lineup that survives a kill, the
+      console's buttons and the Ukrainian tab, the whistles in the log, the
+      kit shirt, and dropping `materialIconsExtended`.
+- [x] **0.3.0 (4) is with testers on Android and iPhone** (owner,
+      2026-10-21). iOS build 4 was uploaded by the owner; the Mac's
+      checklists were skipped at the owner's request
+      (`reports/2026-10-19-ios-build-4.md`). Their six points became prompt 15.
 - [x] **Prompt 13: the report after the first iPhone test**, 0.3.0 (4).
       Done 2026-10-18, `fbae266`, `reports/2026-10-17-report-flow-after-iphone-test.md`.
       Sixteen of the tester's eighteen points built; the code/PIN not
@@ -17,19 +27,19 @@ Grouped by what blocks what, not by size. Last updated 2026-10-17.
       first**, with three reports recorded in 0.2.1 beforehand (in progress,
       finished, CONFIRMED). The checklist is §8 of prompt 13's report. The
       clock steps (§8 B13) have never been seen past the first minute.
-- [ ] **The lineup's unmarked rows are tall blanks**, about 160 dp each, so
+- [ ] **The lineup's unmarked rows are tall blanks**, in prompt 15: about 160 dp each, so
       that marking a player never moves the rows below. A squad of 20 with 8
       present is about 1,900 dp of empty space (see the lineup render). Prompt
       13 asked for "rows do not jump under the thumb", and that was taken more
       literally than meant: the tapped row must stay put, but rows below
       opening downwards is normal. Judge it on the phone, then fix it in the
       next prompt.
-- [ ] **A lineup is saved only once it is whole** (everyone marked present has
+- [ ] **A lineup is saved only once it is whole**, in prompt 15 (everyone marked present has
       a number or date, plus a captain and a goalkeeper). Marks made before
       that are lost if the app is killed. The coder called it "a minute's
       work"; a phone call during the lineup is exactly when Android kills apps.
       Next prompt: save the partial lineup too.
-- [ ] **The console log does not list the whistles**, though Undo walks back
+- [ ] **The console log does not list the whistles**, in prompt 15, though Undo walks back
       through them (prompt 13, Gate 3).
 - [ ] **Prompt 14 on the Mac: iOS build 4, 0.3.0 (4)**,
       `prompts/14-ios-build-4.md`. The upgrade over build 3 with three
@@ -49,7 +59,10 @@ Grouped by what blocks what, not by size. Last updated 2026-10-17.
       at its foot, so a re-export reads as a copy and a correction as a new
       version. A code that PSMF issue and check goes to PSMF with A7.
 - [ ] **Run gated prompts overnight, one fresh session per gate** (owner,
-      2026-10-18). A runner script in the `psmf-work` container: `claude -p`
+      2026-10-18). Prompt 15 is the first written for cold sessions, and
+      runs gate by gate with a cleared context. **The runner is not built:**
+      creating it was held for the owner's explicit go-ahead on 2026-10-21,
+      because it starts sessions with permission prompts off. A runner script in the `psmf-work` container: `claude -p`
       once per gate; check the gate's commit landed; wait and retry when the
       usage limit stops a run; halt on a failed gate or a STOP file. Inside
       the container because it cannot push and has no credentials, which is
@@ -115,7 +128,7 @@ Grouped by what blocks what, not by size. Last updated 2026-10-17.
       - **Install over the last one.** Another live migration test, free.
       - The card control stayed **one icon**, decided on an emulator against its
         own reversal condition. That decision wants a real thumb.
-- [ ] **Drop `materialIconsExtended`** — five icons are costing 31 MB, and
+- [ ] **Drop `materialIconsExtended`**, in prompt 15 (Gate 6): — five icons are costing 31 MB, and
       the 0.2.0 debug APK is 52 KB under 70 MB. The debug
       APK went 38 → 70 MB and is 64 MB of DEX. Copy the five vectors locally.
       Mostly a debug-build artifact, but this project has never built a release and
