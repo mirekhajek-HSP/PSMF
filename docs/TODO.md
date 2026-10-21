@@ -39,8 +39,9 @@ Grouped by what blocks what, not by size. Last updated 2026-10-21.
       that are lost if the app is killed. The coder called it "a minute's
       work"; a phone call during the lineup is exactly when Android kills apps.
       Next prompt: save the partial lineup too.
-- [ ] **The console log does not list the whistles**, in prompt 15, though Undo walks back
-      through them (prompt 13, Gate 3).
+- [x] **The console log does not list the whistles**, though Undo walks back
+      through them (prompt 13, Gate 3). Done in prompt 15, Gate 4 (2026-10-21);
+      see the report's §Gate 4.
 - [ ] **Prompt 14 on the Mac: iOS build 4, 0.3.0 (4)**,
       `prompts/14-ios-build-4.md`. The upgrade over build 3 with three
       reports in it (schema 6 → 7), then the iPhone checklist, §9 of prompt
@@ -75,12 +76,12 @@ Grouped by what blocks what, not by size. Last updated 2026-10-21.
       referee visit. Prompt 13 puts the seconds on screen, which makes the
       question visible: the console now reads `12:40` and, beneath it,
       *Zápis: 12´*.
-- [ ] **The console log does not list the whistles, though Undo walks back
+- [x] **The console log does not list the whistles, though Undo walks back
       through them** (prompt 13, part 3). A mis-tapped half-time noticed
-      three goals later costs three Undos, and the log does not say what the
-      next one would take. If the referee visit shows that matters: list the
-      whistles in the log, or let Undo show what it would take back. Not
-      done: the dialog already names a whistle before it goes.
+      three goals later costs three Undos, and the log did not say what the
+      next one would take. Done in prompt 15, Gate 4: the log lists the
+      whistles. (It is still in the form's minute order, not Undo's recording
+      order: DECISIONS 2026-10-21, *0.3.1, Gate 4*, §6.)
 - [x] **Prompt 10: red cards, the clock, league 6, build 0.2.0 (2).** Done
       2026-10-08, `c8bafd4`. Verified independently from a clean, uncached
       build: 436 shared JVM · 383 Android host · 194 UI · 23 importer tests,
@@ -285,9 +286,11 @@ None blocking, all from the build reports.
       component that uses them (menus, dialogs, sheets) is drawn in Material's
       baseline lavender. The Zápasy menus spell out `surface` (prompt 12); the
       rest still fall back. One fix in `PsmfTheme`, light and dark.
-- [ ] **"Налаштування" breaks mid-word on a 360 dp phone** in the tab bar
+- [x] **"Налаштування" breaks mid-word on a 360 dp phone** in the tab bar
       (`Налаштуван` / `ня`), seen on the emulator at 360 dp during prompt 12.
-      The 2026-08-31 tab-label test measures 411 dp. Pre-existing.
+      The 2026-08-31 tab-label test measures 411 dp. Done in prompt 15, Gate 4:
+      the tab says *Опції* (the screen's title is unchanged; not read by a
+      native speaker) and the bar shares its width by what each label needs.
 - [ ] **The commentary field is a placeholder**, not a design. Blocked on **A6**.
 - [ ] **TXT/CSV/JSON are a stand-in.** Blocked on **A8**.
 - [ ] **One deprecation warning** — `BackHandler`.

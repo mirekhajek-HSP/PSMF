@@ -190,7 +190,7 @@ class ConsoleScreenTest {
             // The clock holds at the break rather than climbing through it.
             onNodeWithText("30:00").assertIsDisplayed()
             onNodeWithText("Poločas · zápis 30´+").assertIsDisplayed()
-            onNodeWithText("Zahájit 2. poločas").performClick()
+            onNodeWithText("Zahájit 2.\u00A0poločas").performClick()
 
             assertTrue(events.contains(ConsoleEvent.StartNextPeriodPressed))
         }

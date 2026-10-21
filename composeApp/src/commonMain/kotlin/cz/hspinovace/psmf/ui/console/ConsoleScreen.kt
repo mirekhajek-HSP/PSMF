@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SportsSoccer
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,6 +42,7 @@ import cz.hspinovace.psmf.domain.CardEvent
 import cz.hspinovace.psmf.domain.CardSubject
 import cz.hspinovace.psmf.domain.Dismissal
 import cz.hspinovace.psmf.domain.GoalEvent
+import cz.hspinovace.psmf.domain.LoggedWhistle
 import cz.hspinovace.psmf.domain.MatchEvent
 import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.TeamSide
@@ -66,12 +68,14 @@ import cz.hspinovace.psmf.resources.console_start
 import cz.hspinovace.psmf.resources.console_start_next_period
 import cz.hspinovace.psmf.resources.console_undo
 import cz.hspinovace.psmf.resources.console_yellows
-import cz.hspinovace.psmf.ui.common.ActionRow
+import cz.hspinovace.psmf.ui.common.EvenActionContentPadding
+import cz.hspinovace.psmf.ui.common.EvenActionRow
 import cz.hspinovace.psmf.ui.common.WithdrawSignaturesDialog
 import cz.hspinovace.psmf.ui.common.brandFilledColors
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.ConsoleRow
 import cz.hspinovace.psmf.usecase.ConsoleTeam
+import cz.hspinovace.psmf.usecase.LogLine
 import cz.hspinovace.psmf.usecase.PeriodAction
 import org.jetbrains.compose.resources.stringResource
 import kotlin.time.Instant
@@ -128,6 +132,20 @@ fun ConsoleScreen(
     }
 }
 
+/**
+ * What moves the match on, and Undo (0.3.1; the testers found the buttons
+ * ragged: *"to the right, below or beside each other"*).
+ *
+ * **Two lines, the same in every state.** The first is the whistles: the end
+ * of the half, the start of the next, the end of the match, or the one that
+ * carries on to the assessment. One or two buttons in a row as wide as the
+ * lists below, the same width and height where there are two ([EvenActionRow]).
+ * The second is Undo, **apart** (a gap wider than the one between whistles)
+ * and **quieter** (text, no outline, no fill), at the start edge, **only as
+ * wide as its word**: a full-width Undo is a target a stray thumb takes a goal
+ * back with. It is at the left, where a right thumb reaches least, which is
+ * where a control for mistakes belongs.
+ */
 @Composable
 private fun Controls(
     state: ConsoleUiState,
@@ -145,74 +163,110 @@ private fun Controls(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        ActionRow {
-            // Undo, never edit. Amending a finished report is screen 9 and
-            // is out of the demo.
-            TextButton(
-                onClick = { onEvent(ConsoleEvent.UndoPressed) },
-                modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
-            ) {
-                Text(stringResource(Res.string.console_undo))
-            }
+        EvenActionRow { each ->
             // Not a pause: a half-time exists, but nothing here stops the
             // clock inside a period. See PeriodAction and ConsoleEntry.minuteAt.
             when (entry.periodAction) {
                 PeriodAction.END_PERIOD -> {
-                    OutlinedButton(
+                    WhistleButton(
+                        text = stringResource(Res.string.console_end_period),
                         onClick = { onEvent(ConsoleEvent.EndPeriodPressed) },
-                        modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
-                    ) {
-                        Text(stringResource(Res.string.console_end_period))
-                    }
+                        modifier = each,
+                    )
                 }
 
                 PeriodAction.START_NEXT_PERIOD -> {
-                    OutlinedButton(
-                        onClick = { onEvent(ConsoleEvent.StartNextPeriodPressed) },
-                        modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
-                    ) {
-                        Text(
+                    WhistleButton(
+                        text =
                             stringResource(
                                 Res.string.console_start_next_period,
                                 (entry.periodBreaks.size + 1).toString(),
                             ),
-                        )
-                    }
+                        onClick = { onEvent(ConsoleEvent.StartNextPeriodPressed) },
+                        modifier = each,
+                    )
                 }
 
                 PeriodAction.NONE -> {}
             }
             when {
                 !entry.started -> {
-                    Button(
+                    WhistleButton(
+                        text = stringResource(Res.string.console_start),
                         onClick = { onEvent(ConsoleEvent.StartPressed) },
-                        modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
-                        colors = brandFilledColors(),
-                    ) {
-                        Text(stringResource(Res.string.console_start))
-                    }
+                        modifier = each,
+                        filled = true,
+                    )
                 }
 
                 entry.status.isPastTheFinalWhistle -> {
-                    Button(
+                    WhistleButton(
+                        text = stringResource(Res.string.console_continue),
                         onClick = { onEvent(ConsoleEvent.ContinuePressed) },
-                        modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
-                        colors = brandFilledColors(),
-                    ) {
-                        Text(stringResource(Res.string.console_continue))
-                    }
+                        modifier = each,
+                        filled = true,
+                    )
                 }
 
                 else -> {
-                    OutlinedButton(
+                    WhistleButton(
+                        text = stringResource(Res.string.console_finish),
                         onClick = { onEvent(ConsoleEvent.FinishPressed) },
-                        modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
-                    ) {
-                        Text(stringResource(Res.string.console_finish))
-                    }
+                        modifier = each,
+                    )
                 }
             }
         }
+        // Undo, never edit. Amending a finished report is screen 9 and
+        // is out of the demo.
+        TextButton(
+            onClick = { onEvent(ConsoleEvent.UndoPressed) },
+            modifier =
+                Modifier
+                    .padding(top = PsmfDimens.itemSpacing - PsmfDimens.labelGap)
+                    .heightIn(min = PsmfDimens.minTouchTarget),
+            // The word starts where the whistles' edge does, and is in the secondary text colour.
+            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+            contentPadding = UndoPadding,
+        ) {
+            Text(stringResource(Res.string.console_undo))
+        }
+    }
+}
+
+/** Nothing before the word, so it starts at the edge the whistles do; a little after it, to tap. */
+private val UndoPadding =
+    PaddingValues(
+        start = 0.dp,
+        top = PsmfDimens.labelGap * 2,
+        end = PsmfDimens.itemSpacing * 2,
+        bottom = PsmfDimens.labelGap * 2,
+    )
+
+/** One of the whistles: outlined, or filled in the brand's yellow for the one that carries on. */
+@Composable
+private fun WhistleButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier,
+    filled: Boolean = false,
+) {
+    val label = @Composable { Text(text, textAlign = TextAlign.Center) }
+    if (filled) {
+        Button(
+            onClick = onClick,
+            modifier = modifier,
+            colors = brandFilledColors(),
+            contentPadding = EvenActionContentPadding,
+            content = { label() },
+        )
+    } else {
+        OutlinedButton(
+            onClick = onClick,
+            modifier = modifier,
+            contentPadding = EvenActionContentPadding,
+            content = { label() },
+        )
     }
 }
 
@@ -292,7 +346,7 @@ private fun Body(
             )
         }
 
-        val log = state.entry?.log.orEmpty()
+        val log = state.entry?.logLines.orEmpty()
         if (log.isEmpty()) {
             item(key = "log-empty") {
                 Text(
@@ -423,6 +477,32 @@ private fun RowStatus(row: ConsoleRow) {
 
 @Composable
 private fun LogRow(
+    state: ConsoleUiState,
+    line: LogLine,
+) {
+    when (line) {
+        is LogLine.Recorded -> EventLogRow(state, line.event)
+        is LogLine.Whistled -> WhistleLogRow(line.whistle)
+    }
+}
+
+/**
+ * A whistle in the log: its minute as the form writes it, and its name as Undo's
+ * question gives it. In the quieter colour, so the goals and cards, which are what
+ * the referee looks the log up for, stay what the eye finds.
+ */
+@Composable
+private fun WhistleLogRow(whistle: LoggedWhistle) {
+    Text(
+        text = "${whistle.minute.written} · ${whistleName(whistle.whistle, whistle.period)}",
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.fillMaxWidth().padding(vertical = PsmfDimens.labelGap),
+    )
+}
+
+@Composable
+private fun EventLogRow(
     state: ConsoleUiState,
     event: MatchEvent,
 ) {

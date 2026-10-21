@@ -88,7 +88,10 @@ class ConsoleClockTest {
         runComposeUiTest {
             // Found by drawing the console at 360 dp: *Undo*, *End the half* and
             // *End the match* did not fit on one row, and the last was squeezed
-            // into a strip a letter wide. The row wraps instead.
+            // into a strip a letter wide. (Since 0.3.1 the two whistles share a
+            // row of equal buttons and Undo has a line of its own;
+            // `ConsoleControlsTest` pins that. This stays as the plain check
+            // that nothing is a strip.)
             withLanguage("cs") {
                 setContent {
                     Box(modifier = Modifier.requiredSize(width = 360.dp, height = 800.dp)) {

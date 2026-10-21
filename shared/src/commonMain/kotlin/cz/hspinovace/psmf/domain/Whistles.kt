@@ -20,6 +20,23 @@ enum class Whistle {
     FINAL,
 }
 
+/**
+ * A whistle as the console's log lists it (0.3.1, Gate 4).
+ *
+ * [period] numbers as [UndoStep.TakesBackWhistle] does, so the log and the
+ * question Undo asks name the same whistle the same way. [minute] is the
+ * form's own minute for the boundary, the one the console's clock writes at it
+ * (`PlayClock.minuteAt`), so it needs no instant and a whistle pressed before
+ * 0.3.0 has one too. [sequence] is its place in the recording order goals and
+ * cards have ([MatchEvent.sequence]); null for a whistle pressed before 0.3.0.
+ */
+data class LoggedWhistle(
+    val whistle: Whistle,
+    val period: Int,
+    val minute: Minute,
+    val sequence: Int?,
+)
+
 /** What Undo would take back next. */
 sealed interface UndoStep {
     /** A goal or a card: taken back at once, as it always was. */
@@ -88,6 +105,37 @@ private fun Match.earliestPressedWhistleWithNoSequence(): UndoStep.TakesBackWhis
         else -> null
     }
 }
+
+/**
+ * Every whistle this match has had, in the order they were pressed, for the
+ * console's log. The same whistles, numbered the same way, that [nextUndoStep]
+ * walks back through; a test holds the two together.
+ *
+ * Each has the minute the clock writes at it ([PlayClock.minuteAt]): `0´` at
+ * the kickoff, `30´+` for any interval, the first minute of the next period at
+ * its start, `60´+` after the final whistle. [halfLengthMinutes] is the
+ * group's own.
+ */
+fun Match.loggedWhistles(halfLengthMinutes: Int): List<LoggedWhistle> =
+    buildList {
+        if (kickoffAt != null) add(LoggedWhistle(Whistle.KICKOFF, 1, Minute.Played(0), kickoffSequence))
+        periodBreaks.forEachIndexed { index, brk ->
+            add(LoggedWhistle(Whistle.END_OF_PERIOD, index + 1, Minute.HalfTime, brk.endedSequence))
+            if (brk.nextStartedAt != null) {
+                add(
+                    LoggedWhistle(
+                        Whistle.START_OF_PERIOD,
+                        index + 2,
+                        Minute.Played((index + 1) * halfLengthMinutes),
+                        brk.nextStartedSequence,
+                    ),
+                )
+            }
+        }
+        if (status.isPastTheFinalWhistle) {
+            add(LoggedWhistle(Whistle.FINAL, periodBreaks.size + 1, Minute.AfterFinalWhistle, finishedSequence))
+        }
+    }
 
 /**
  * This match with the last [whistle] of that kind gone, and the clock what the

@@ -62,7 +62,17 @@ fun TakeBackDialog(
 }
 
 @Composable
-private fun UndoStep.TakesBackWhistle.named(): String =
+private fun UndoStep.TakesBackWhistle.named(): String = whistleName(whistle, period)
+
+/**
+ * A whistle in words, as Undo's question names it and the log lists it: one place
+ * for the wording, so the question and the line it is about cannot differ.
+ */
+@Composable
+internal fun whistleName(
+    whistle: Whistle,
+    period: Int,
+): String =
     when (whistle) {
         Whistle.KICKOFF -> stringResource(Res.string.console_whistle_kickoff)
         Whistle.END_OF_PERIOD -> stringResource(Res.string.console_whistle_end_period, period.toString())

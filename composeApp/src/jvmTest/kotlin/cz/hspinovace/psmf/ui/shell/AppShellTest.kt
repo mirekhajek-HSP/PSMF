@@ -4,13 +4,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
@@ -20,7 +18,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import cz.hspinovace.psmf.domain.AppearanceId
 import cz.hspinovace.psmf.domain.JerseyNumber
@@ -43,7 +40,6 @@ import cz.hspinovace.psmf.usecase.ConsoleRow
 import cz.hspinovace.psmf.usecase.ConsoleTeam
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Instant
 
@@ -89,7 +85,8 @@ class AppShellTest {
     @Test
     fun theTabsAreTranslatedAndTheLongestLanguageIsUkrainian() =
         runComposeUiTest {
-            // `Налаштування` against `Nastavení` is why the bar is not
+            // `Налаштування` (the screen's title; the tab says `Опції`, see
+            // `TabBarTest`) against `Nastavení` is why the bar is not
             // Material's, which gives a label one line in a quarter of the
             // screen width and clips whatever does not fit.
             val navigator = AppNavigator()
@@ -99,7 +96,7 @@ class AppShellTest {
                 onNodeWithText("Матчі").assertIsDisplayed()
                 onNodeWithText("Протокол").assertIsDisplayed()
                 onNodeWithText("Команди").assertIsDisplayed()
-                onNodeWithText("Налаштування").assertIsDisplayed()
+                onNodeWithText("Опції").assertIsDisplayed()
             }
         }
 
@@ -306,35 +303,6 @@ class AppShellTest {
             }
         }
 
-    @Test
-    fun theTabsStillReadAtAOneHundredAndThirtyPercentFontScale() =
-        runComposeUiTest {
-            // The referee population skews older and many will have the
-            // system font scale turned up. Two lines are allowed here --
-            // the bar has no fixed height, which is the reason it is not
-            // Material's -- but a third would mean the bar is eating the
-            // screen, and a clipped label would mean the setting is not
-            // being honoured at all.
-            val navigator = AppNavigator()
-            withLanguage("uk") {
-                setContent {
-                    Phone {
-                        CompositionLocalProvider(
-                            LocalDensity provides Density(density = 2.625f, fontScale = 1.3f),
-                        ) {
-                            Harness(navigator)
-                        }
-                    }
-                }
-
-                TABS_UK.forEach { label ->
-                    onNodeWithText(label).assertIsDisplayed()
-                    val lines = onNodeWithText(label).lineCount()
-                    assertTrue(lines <= 2, "\"$label\" took $lines lines")
-                }
-            }
-        }
-
     // -----------------------------------------------------------------
     // Harness
     // -----------------------------------------------------------------
@@ -458,6 +426,6 @@ class AppShellTest {
         /** A Medium Phone, which is what the emulator and the demo use. */
         val PHONE_WIDTH = 411.dp
 
-        val TABS_UK = listOf("Матчі", "Протокол", "Команди", "Налаштування")
+        val TABS_UK = listOf("Матчі", "Протокол", "Команди", "Опції")
     }
 }

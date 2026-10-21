@@ -5,6 +5,109 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-21 · 0.3.1, Gate 4: the console's controls laid out on purpose, the Ukrainian tab, and the whistles in the log (prompt 15)
+
+The testers' points 4 and 5, and the review's *the log does not list the
+whistles* (`reports/2026-10-21-0.3.1-tester-fixes.md`, §Gate 4). Nothing earlier
+is reversed. The clock rule is untouched: there is still no pause, stop or
+adjust anywhere, and the screen test that looks for one passes unchanged.
+
+**1. The whistles are one row of equal buttons; Undo has a line of its own.**
+Every state has the same two lines. The first is what moves the match on: the
+end of the half, the start of the next, the end of the match, or the button
+that carries on to the assessment (the kickoff before the match). One or two
+buttons, as wide as the lists below them, the same width and the same height
+where there are two, `EvenActionRow`. A label that does not fit on one line
+wraps *inside* its button, at a space, and its neighbour grows to match. The
+second line is Undo. Rejected: one row of three (Undo, a half's end, the end of
+the match) did not fit at 360 dp even at the standard font (0.3.0's own render
+showed the end-of-match button squeezed to a strip), and `ActionRow`'s wrapping
+was the ragged look itself; full-width buttons stacked one under another
+were regular and cost 180 dp of a screen that is open all match; a row that
+decides between side by side and stacked by measuring the labels would lay out
+differently from one state to the next, and "the same in every state" was the
+point. The price of the chosen one: with one-line labels the first half's controls are
+132 dp tall (124 before; 144 when the labels take two lines), and the state before
+the kickoff is a button's height (60 dp) taller than it was.
+**Reverses if** a referee on a phone finds the console's top too tall for the
+list under it, in which case Undo goes beside the whistles again at the cost of
+one of them wrapping below.
+
+**2. Undo is apart, quiet, at the start edge, and only as wide as its word.**
+Apart: 12 dp above it where the whistles have 12 dp between them. Quiet: text in
+the secondary colour, no outline, no fill (a test looks at the pixels, so it
+cannot be turned back into a button by accident). Its word starts where the
+whistles' edge does. **Not full-width**: Undo takes back the last goal at
+once, and a stray thumb on a target as wide as the screen would. It is at the
+left, where a right thumb reaches least, which is where a control for mistakes
+belongs; that is the 0.3.0 place too. **Reverses if** referees reach for it more
+than for a whistle, or find it too easy to miss (then it is a button, and the
+test of the pixels changes with it).
+
+**3. The ordinal does not part from its noun.** *Zahájit 2.⎵poločas* and
+*Розпочати 2.⎵тайм* have a no-break space after the number: at 360 dp and 130 %
+the label wraps, and a break after "2." leaves the number alone on the first
+line. One character in two strings; the English *Start half 2* has no such
+break to prevent. **Reverses if** a native reader would rather have it
+otherwise.
+
+**4. The Ukrainian Settings tab says *Опції*; the screen's title is still
+*Налаштування*.** The brief's choice between a shorter word, a break between
+words (there is only one word) and something else. The measure, in the app's
+Noto Sans at the bar's 12 sp: the four labels take 325 dp of text at 130 %, 32
+dp of tab padding and 14 dp for the dot on the Report tab, 371 dp against a
+360 dp phone, so **no layout shows *Налаштування* whole at 360 dp and 130 %
+without shrinking the text or leaving about 1 % to spare**, which a different
+text stack on a real phone would spend. *Опції* has 69 dp to spare there and
+still fits at 150 %. Considered: *Параметри*, which is the nearer word and has 20
+dp (5 %) to spare at 130 % and breaks at 150 %. **Not read by a native
+speaker**; it is one string (`tab_settings` in `values-uk`) and a comment says
+so. **Reverses if** a Ukrainian reader prefers *Параметри* or anything else of
+up to nine letters; the bar will take it at 130 % on a 360 dp phone.
+
+**5. The bar gives each tab a quarter, unless its label needs more.**
+`TabBarRow` / `shareOutTheWidth`: equal shares; a tab whose label needs more keeps
+what it needs, the others share the rest, repeated until none falls short; if
+the labels together need more than the bar has they are scaled together (which is
+where a word may break). Czech and English need no more than a quarter, so
+their bars are the four equal quarters they were. It is needed whatever the
+word in the Settings tab: at HEAD *Протокол* with the dot on its tab broke in two
+at 130 % on a 360 dp phone, too. **Reverses if** a bar whose tabs differ in width
+confuses referees who change language; then the bar is four quarters and the
+labels are chosen to fit.
+
+**6. The log lists the whistles, by the form's minute, in the quieter colour.**
+Kickoff `0´`, the end of a half `30´+`, the start of the next `30´`, the final
+whistle `60´+`: the minute the console's clock writes at each (`PlayClock.minuteAt`),
+so a whistle needs no instant and one pressed before 0.3.0 is listed too. They
+stand among the goals and cards by that minute and, within a minute, by recording
+order: the end of the half after everything written `30´+` before it, a goal
+written `30´+` in the interval after it, the start of the next before the second
+half's first minute. The words are Undo's question's (one function names a whistle
+for both). **They are not the same order as Undo's**: Undo walks back by recording
+order, the log by minute, as it always was for goals. A test holds the two
+together where it can: the log lists exactly the whistles Undo walks back through,
+with the same period numbers. **Reverses if** referees want the log in strict
+recording order, so that Undo's next step is always on top.
+
+**7. *Save to device* and *Send to PSMF* are laid out the same way.** The brief
+said to change the other `ActionRow` users only if they showed the same fault.
+Five hold one `PrimaryAction` and cannot (a lone button right-aligned at its own
+width is what it was). Export's pair showed it: at 360 dp they stacked,
+right-aligned, 205 and 197 dp wide and 56 and 64 tall in Ukrainian. They are
+`EvenActionRow` now, and `PrimaryAction` centres its text and takes a padding.
+**Reverses if** `ActionRow` is wanted back for it: the test names what a
+right-aligned pair got wrong.
+
+**8. A test that could not fail is gone.** `theTabsStillReadAtAOneHundredAndThirtyPercentFontScale`
+put its width box *outside* the density it then changed (so the bar was about 156
+dp wide, not 411) and asserted `lineCount <= 2` of a label whose `maxLines` is 2:
+it passed at HEAD, where the word is broken. `TabBarTest` asks where the lines
+broke, at a true width. **Reverses if** never: it is the repo's own rule that a
+test that cannot fail is worse than none.
+
+---
+
 ## 2026-10-21 · 0.3.1, Gate 3: a lineup in progress is kept in a draft of its own, and is never a lineup (prompt 15)
 
 The owed item from the review of 0.3.0 (`reports/2026-10-21-0.3.1-tester-fixes.md`,

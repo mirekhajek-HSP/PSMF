@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import cz.hspinovace.psmf.domain.ConfirmingParty
 import cz.hspinovace.psmf.domain.ReportProblem
 import cz.hspinovace.psmf.domain.TeamSide
@@ -53,7 +54,8 @@ import cz.hspinovace.psmf.resources.export_send_error
 import cz.hspinovace.psmf.resources.export_send_no_recipient_note
 import cz.hspinovace.psmf.resources.export_sent
 import cz.hspinovace.psmf.resources.export_shared_no_recipient
-import cz.hspinovace.psmf.ui.common.ActionRow
+import cz.hspinovace.psmf.ui.common.EvenActionContentPadding
+import cz.hspinovace.psmf.ui.common.EvenActionRow
 import cz.hspinovace.psmf.ui.common.PrimaryAction
 import cz.hspinovace.psmf.ui.common.Section
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
@@ -137,16 +139,19 @@ fun ExportScreen(
                 // Save first, send second: a copy on the device the
                 // referee can get back to on their own, then the mail
                 // draft that still needs their own tap to actually go.
-                ActionRow {
+                EvenActionRow { each ->
                     OutlinedButton(
                         onClick = { onEvent(ExportEvent.SavePressed) },
-                        modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
+                        modifier = each,
+                        contentPadding = EvenActionContentPadding,
                     ) {
-                        Text(stringResource(Res.string.export_save))
+                        Text(stringResource(Res.string.export_save), textAlign = TextAlign.Center)
                     }
                     PrimaryAction(
                         text = stringResource(Res.string.export_send),
                         onClick = { onEvent(ExportEvent.SendPressed) },
+                        modifier = each,
+                        contentPadding = EvenActionContentPadding,
                     )
                 }
             }

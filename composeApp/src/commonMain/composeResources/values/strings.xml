@@ -101,7 +101,7 @@
     <string name="console_start">Zahájit utkání</string>
     <string name="console_finish">Ukončit utkání</string>
     <string name="console_end_period">Ukončit poločas</string>
-    <string name="console_start_next_period">Zahájit %1$s. poločas</string>
+    <string name="console_start_next_period">Zahájit %1$s. poločas</string>
     <string name="console_continue">Pokračovat na hodnocení</string>
     <string name="console_finished">Utkání ukončeno</string>
     <string name="console_undo">Vzít zpět</string>

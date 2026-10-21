@@ -6,6 +6,7 @@ import cz.hspinovace.psmf.domain.AppearanceId
 import cz.hspinovace.psmf.domain.CardSubject
 import cz.hspinovace.psmf.domain.ClockReading
 import cz.hspinovace.psmf.domain.JerseyNumber
+import cz.hspinovace.psmf.domain.LoggedWhistle
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchEvent
 import cz.hspinovace.psmf.domain.MatchStatus
@@ -19,9 +20,11 @@ import cz.hspinovace.psmf.domain.PowerPlay
 import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.Score
 import cz.hspinovace.psmf.domain.TeamSide
+import cz.hspinovace.psmf.domain.Whistle
 import cz.hspinovace.psmf.domain.YellowCard
 import cz.hspinovace.psmf.domain.isPastTheFinalWhistle
 import cz.hspinovace.psmf.domain.latestGoalMinuteAt
+import cz.hspinovace.psmf.domain.loggedWhistles
 import cz.hspinovace.psmf.domain.readingAt
 import kotlin.time.Duration
 import kotlin.time.Instant
@@ -57,6 +60,72 @@ data class ConsoleTeam(
 ) {
     fun row(id: AppearanceId): ConsoleRow? = rows.firstOrNull { it.appearanceId == id }
 }
+
+/**
+ * One line of the console's log: something the referee wrote down, or a whistle.
+ *
+ * Whistles are in the log because Undo walks back through them (prompt 13,
+ * part 3): a referee who sees what Undo will take next can say whether it is
+ * what they meant.
+ */
+sealed interface LogLine {
+    val minute: Minute
+
+    /** Its place in the recording order; null for what was recorded before 0.3.0. */
+    val sequence: Int?
+
+    data class Recorded(
+        val event: MatchEvent,
+    ) : LogLine {
+        override val minute: Minute get() = event.minute
+        override val sequence: Int? get() = event.sequence
+    }
+
+    data class Whistled(
+        val whistle: LoggedWhistle,
+    ) : LogLine {
+        override val minute: Minute get() = whistle.minute
+        override val sequence: Int? get() = whistle.sequence
+    }
+}
+
+/**
+ * [events] (newest first, as [ConsoleEntry.log] has them) and [whistles] in one
+ * list, newest first.
+ *
+ * **By minute, then by recording order, as the log always was**; a whistle
+ * takes the minute the console's clock writes at it, so the end of the half
+ * stands after everything written `30´+` before it and the start of the next
+ * before everything written at `30´` after it. What has no recording order (a
+ * whistle or a goal from before 0.3.0) comes first among its minute's lines,
+ * and a tie is broken by what a whistle is: those that open something
+ * (the kickoff, the start of a period) before the goals of that minute, those
+ * that close it after.
+ */
+internal fun logLinesOf(
+    events: List<MatchEvent>,
+    whistles: List<LoggedWhistle>,
+): List<LogLine> =
+    (events.reversed().map { LogLine.Recorded(it) } + whistles.map { LogLine.Whistled(it) })
+        .sortedWith(
+            compareBy<LogLine> { it.minute }
+                .thenBy { it.sequence ?: Int.MIN_VALUE }
+                .thenBy { it.tiebreak() },
+        ).reversed()
+
+private fun LogLine.tiebreak(): Int =
+    when (this) {
+        is LogLine.Recorded -> {
+            1
+        }
+
+        is LogLine.Whistled -> {
+            when (whistle.whistle) {
+                Whistle.KICKOFF, Whistle.START_OF_PERIOD -> 0
+                Whistle.END_OF_PERIOD, Whistle.FINAL -> 2
+            }
+        }
+    }
 
 /** What the console offers next for the period the match is in. */
 enum class PeriodAction {
@@ -95,8 +164,13 @@ data class ConsoleEntry(
     val periods: Int = 2,
     /** When the final whistle went, if it has and it is known; see [Match.finishedAt]. */
     val finishedAt: Instant? = null,
+    /** The whistles pressed so far, for [logLines]; see [Match.loggedWhistles]. */
+    val whistles: List<LoggedWhistle> = emptyList(),
 ) {
     val started: Boolean get() = kickoffAt != null
+
+    /** What the console's log lists, newest first: [log] and the [whistles] in their places. */
+    val logLines: List<LogLine> get() = logLinesOf(log, whistles)
 
     /**
      * The same clock [Match.clock] is, rebuilt from this snapshot's
@@ -197,6 +271,7 @@ class BuildConsoleEntry(
             halfLengthMinutes = group.halfLengthMinutes,
             periods = group.periods,
             finishedAt = match.finishedAt,
+            whistles = match.loggedWhistles(group.halfLengthMinutes),
         )
     }
 

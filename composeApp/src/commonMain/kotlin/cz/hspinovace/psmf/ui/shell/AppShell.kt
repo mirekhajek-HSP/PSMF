@@ -35,10 +35,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import cz.hspinovace.psmf.resources.Res
 import cz.hspinovace.psmf.resources.action_back
@@ -161,7 +163,10 @@ private fun ShellTopBar(
  * half again as long as the Czech ones (`Налаштування` against
  * `Nastavení`), and the system font scale has to be respected because the
  * referee population skews older. Between them, a stock bar clips its own
- * labels at 130%. This one wraps to a second line and grows instead.
+ * labels at 130%. This one wraps to a second line and grows instead; and
+ * where a label is one long word (`Налаштування`, which no wrapping helps) its
+ * tab is as wide as the word and the other three share the rest
+ * ([TabBarRow]), so the text is never smaller than the bar's own 12sp.
  *
  * Words also match a decision already taken for the back button: they read
  * at arm's length in poor light, they translate, and they need no icon
@@ -182,10 +187,7 @@ fun PsmfNavigationBar(
     ) {
         Column {
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-            Row(
-                modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars),
-                verticalAlignment = Alignment.Top,
-            ) {
+            TabBarRow(modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)) {
                 Tab.entries.forEach { tab ->
                     TabItem(
                         label = tab.label(),
@@ -194,11 +196,87 @@ fun PsmfNavigationBar(
                             stringResource(Res.string.tab_report_in_progress)
                                 .takeIf { tab == Tab.REPORT && reportInProgress },
                         onClick = { onSelect(tab) },
-                        modifier = Modifier.weight(1f),
                     )
                 }
             }
         }
+    }
+}
+
+/**
+ * The tabs side by side. **Equal shares of the width, except that a tab whose
+ * label needs more keeps what it needs** and the others share what is left
+ * ([shareOutTheWidth]). In Czech nothing needs more than a quarter and the bar
+ * is four equal quarters, as it always was; in Ukrainian *Налаштування* is one
+ * long word that no wrapping can help, and a tab as wide as the word is the
+ * only way to show it whole without shrinking the text.
+ */
+@Composable
+private fun TabBarRow(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Layout(content = content, modifier = modifier) { tabs, constraints ->
+        val widths = shareOutTheWidth(constraints.maxWidth, tabs.map { it.maxIntrinsicWidth(constraints.maxHeight) })
+        val placed =
+            tabs.mapIndexed { index, tab ->
+                tab.measure(Constraints(widths[index], widths[index], 0, constraints.maxHeight))
+            }
+        layout(constraints.maxWidth, placed.maxOfOrNull { it.height } ?: 0) {
+            var x = 0
+            placed.forEach {
+                it.placeRelative(x, 0)
+                x += it.width
+            }
+        }
+    }
+}
+
+/**
+ * How wide each of the tabs is, given how wide each [needs] and how wide the bar is.
+ *
+ * Every tab starts with an equal share. A tab that needs more than the share
+ * keeps what it needs, and the others share the rest equally; that can make
+ * another tab fall short, so it is repeated until none does. If the labels
+ * together need more than the bar has, they are scaled down together, which
+ * is where a word may break. Always adds up to [available].
+ */
+internal fun shareOutTheWidth(
+    available: Int,
+    needs: List<Int>,
+): List<Int> {
+    if (needs.isEmpty()) return emptyList()
+    val total = needs.sum()
+    val widths = MutableList(needs.size) { 0 }
+    if (total > available) {
+        needs.forEachIndexed { index, need -> widths[index] = (need.toLong() * available / total).toInt() }
+        spread(available - widths.sum(), needs.indices.toList(), widths)
+        return widths
+    }
+
+    val kept = BooleanArray(needs.size)
+    var free = needs.indices.toList()
+    while (free.isNotEmpty()) {
+        val share = (available - needs.indices.filter { kept[it] }.sumOf { needs[it] }) / free.size
+        val grown = free.filter { needs[it] > share }
+        if (grown.isEmpty()) break
+        grown.forEach { kept[it] = true }
+        free = free.filter { !kept[it] }
+    }
+    needs.indices.filter { kept[it] }.forEach { widths[it] = needs[it] }
+    // Whoever is left shares what the others did not need; if nobody is left, everyone has a little over.
+    spread(available - widths.sum(), free.ifEmpty { needs.indices.toList() }, widths)
+    return widths
+}
+
+/** Adds [extra] pixels to [into] over [indices], equally, the odd ones going to the first. */
+private fun spread(
+    extra: Int,
+    indices: List<Int>,
+    into: MutableList<Int>,
+) {
+    indices.forEachIndexed { position, index ->
+        into[index] += extra / indices.size + if (position < extra % indices.size) 1 else 0
     }
 }
 

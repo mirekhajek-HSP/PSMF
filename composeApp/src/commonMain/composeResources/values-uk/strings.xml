@@ -97,7 +97,7 @@
     <string name="console_start">Розпочати матч</string>
     <string name="console_finish">Завершити матч</string>
     <string name="console_end_period">Завершити тайм</string>
-    <string name="console_start_next_period">Розпочати %1$s. тайм</string>
+    <string name="console_start_next_period">Розпочати %1$s. тайм</string>
     <string name="console_continue">Далі до оцінювання</string>
     <string name="console_finished">Матч завершено</string>
     <string name="console_undo">Скасувати останнє</string>
@@ -247,7 +247,9 @@
     <string name="tab_fixtures">Матчі</string>
     <string name="tab_report">Протокол</string>
     <string name="tab_teams">Команди</string>
-    <string name="tab_settings">Налаштування</string>
+    <!-- Shorter than the screen's own title (settings_title, Налаштування) on purpose: one long
+         word that no wrapping helps, and the tab is a quarter of a phone. Not read by a native speaker. -->
+    <string name="tab_settings">Опції</string>
     <string name="tab_report_in_progress">Протокол триває</string>
 
     <!-- The report tab before a report has been opened -->
