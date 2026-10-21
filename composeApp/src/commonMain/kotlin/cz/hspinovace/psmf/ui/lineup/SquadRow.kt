@@ -24,11 +24,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -61,18 +59,29 @@ import org.jetbrains.compose.resources.stringResource
  * checkbox to hunt for: the whole name area is the control, and the mark at
  * its left says what it did.
  *
- * **Every row is the same height, marked or not.** The referee works down a
- * list of up to twenty-five names with a thumb, and a row that opened and
- * pushed the rest down would move the next name out from under it after every
- * tap. So an unmarked row lays out the very controls a marked one does -- same
- * fields, same button -- but disabled and invisible, and marking it is a
- * change of what is drawn, never of where anything is. (Drawn and not merely
- * given a reserved height, because a reserved height is right at one font
- * scale and wrong at the next.)
+ * **A row is one line until the player is marked, and opens downwards.**
+ * Unmarked, it is the mark and the name and what is known about the player,
+ * a touch target tall and no more. Marking it adds the shirt number beside the
+ * name and `Číslo RP` with *Nemá průkaz* under it; taking the mark back closes
+ * it. The name is the first thing in the row and nothing sits above it or
+ * moves it, so **the name that was tapped stays where it is** and the rows
+ * below move down. (0.3.0 laid every unmarked row out at the height of an open
+ * one so that nothing would move, and a squad of twenty took four screens:
+ * DECISIONS 2026-10-21.)
  *
- * The one exception is deliberate: a row asking for a date of birth shows what
- * it read back under the field, which is a line taller. That is the referee
- * working in that row, with a thumb on it.
+ * The fields are not drawn while the row is closed, so what was typed in them
+ * is not in them: it is in the state they are drawn from, which keeps it, and
+ * they show it again when the row opens.
+ *
+ * **It opens at once, with no animation.** A short one was tried: a tap on
+ * the next name, made while the row above was still opening, was lost in the
+ * tests -- the name had moved under the finger, where a tap on the row that
+ * was opening, which does not move, registered. Nothing in a row moves after
+ * the frame that opens it.
+ *
+ * Both identification fields carry one line under them (a hint, or what was
+ * read back), so *Nemá průkaz* turning the one into the other moves nothing
+ * below it.
  */
 @Composable
 fun SquadRow(
@@ -85,9 +94,12 @@ fun SquadRow(
 ) {
     Column {
         Row(
-            modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
-            verticalAlignment = Alignment.CenterVertically,
+            // Top, not centred: the name is where it is whether or not the
+            // field beside it is there, and a field taller than the name (at
+            // a large font) must not push it down.
+            verticalAlignment = Alignment.Top,
         ) {
             NameAndMark(
                 member = member,
@@ -96,9 +108,9 @@ fun SquadRow(
                 onToggle = { onEvent(LineupEvent.PresenceToggled(member.player.id)) },
                 modifier = Modifier.weight(1f),
             )
-            JerseyNumberField(member, duplicateNumber, onEvent)
+            if (member.present) JerseyNumberField(member, duplicateNumber, onEvent)
         }
-        IdentificationLine(member, missingIdentification, onEvent)
+        if (member.present) IdentificationLine(member, missingIdentification, onEvent)
         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
     }
 }
@@ -208,8 +220,7 @@ private fun Roles(
  * appearance's, never the player's, and nothing on this screen presents it as
  * PSMF's record.
  *
- * Laid out for every row, marked or not, so that marking does not move
- * anything; see [SquadRow].
+ * Drawn only for a row that is marked; see [SquadRow].
  */
 @Composable
 private fun IdentificationLine(
@@ -217,13 +228,8 @@ private fun IdentificationLine(
     missingIdentification: Boolean,
     onEvent: (LineupEvent) -> Unit,
 ) {
-    val enabled = member.present
     Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .heightIn(min = IDENTIFICATION_HEIGHT)
-                .hiddenUnless(enabled),
+        modifier = Modifier.fillMaxWidth().heightIn(min = IDENTIFICATION_HEIGHT),
         horizontalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -234,11 +240,11 @@ private fun IdentificationLine(
                 }
 
                 member.asksForCardNumber -> {
-                    CardNumberField(member, missingIdentification, enabled, onEvent)
+                    CardNumberField(member, missingIdentification, onEvent)
                 }
 
                 member.asksForDateOfBirth -> {
-                    DateOfBirthField(member, missingIdentification, enabled, onEvent)
+                    DateOfBirthField(member, missingIdentification, onEvent)
                 }
 
                 else -> {
@@ -248,7 +254,6 @@ private fun IdentificationLine(
         }
         TextButton(
             onClick = { onEvent(LineupEvent.RegistrationCardToggled(member.player.id)) },
-            enabled = enabled,
             modifier = Modifier.heightIn(min = PsmfDimens.minTouchTarget),
         ) {
             Text(
@@ -285,7 +290,6 @@ private fun SquadMemberEntry.dateOfBirthOnFileWritten(): String = player.dateOfB
 private fun CardNumberField(
     member: SquadMemberEntry,
     missingIdentification: Boolean,
-    enabled: Boolean,
     onEvent: (LineupEvent) -> Unit,
 ) {
     PsmfTextField(
@@ -301,7 +305,6 @@ private fun CardNumberField(
         // Each row is its own little edit; the next field down the list is
         // another player's.
         imeAction = ImeAction.Done,
-        enabled = enabled,
         modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
     )
 }
@@ -320,7 +323,6 @@ private fun CardNumberField(
 private fun DateOfBirthField(
     member: SquadMemberEntry,
     missingIdentification: Boolean,
-    enabled: Boolean,
     onEvent: (LineupEvent) -> Unit,
 ) {
     val parsed = member.typedDateOfBirth
@@ -334,7 +336,6 @@ private fun DateOfBirthField(
         isError = missingIdentification || (member.dateOfBirthTyped.isNotBlank() && parsed == null),
         keyboardType = KeyboardType.Number,
         imeAction = ImeAction.Done,
-        enabled = enabled,
         modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
     )
 }
@@ -388,20 +389,9 @@ private fun JerseyNumberField(
         isError = duplicateNumber,
         keyboardType = KeyboardType.Number,
         imeAction = ImeAction.Done,
-        enabled = member.present,
-        modifier =
-            Modifier
-                .width(JERSEY_FIELD_WIDTH)
-                .heightIn(min = PsmfDimens.minTouchTarget)
-                .hiddenUnless(member.present),
+        modifier = Modifier.width(JERSEY_FIELD_WIDTH).heightIn(min = PsmfDimens.minTouchTarget),
     )
 }
-
-/**
- * Drawn only when [shown]: invisible, and out of the accessibility tree,
- * otherwise -- but laid out either way. See [SquadRow].
- */
-private fun Modifier.hiddenUnless(shown: Boolean): Modifier = if (shown) this else alpha(0f).clearAndSetSemantics { }
 
 private val JERSEY_FIELD_WIDTH = 96.dp
 private val MARK_SIZE = 28.dp

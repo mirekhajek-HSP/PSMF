@@ -262,6 +262,34 @@ class LineupToRecapFlowTest {
             assertNull(player.birthNumber)
             assertEquals(novak, player)
         }
+
+    @Test
+    fun whatWasTypedInARowComesBackWhenThePlayerIsUnmarkedAndMarkedAgainOnTheSameVisit() =
+        runTest {
+            // The row closes when the mark is taken back (prompt 15, Gate 2),
+            // so what it held has to live somewhere else: here, in the state
+            // the screen is drawn from.
+            val lineup = lineupViewModel(GatedMatchRepository(listOf(reportOf())))
+            lineup.onEvent(LineupEvent.PresenceToggled(novak.id))
+            lineup.onEvent(LineupEvent.CardNumberTyped(novak.id, "59"))
+            lineup.onEvent(LineupEvent.JerseyNumberChanged(novak.id, "14"))
+            lineup.onEvent(LineupEvent.RegistrationCardToggled(novak.id))
+            lineup.onEvent(LineupEvent.DateOfBirthTyped(novak.id, "18.5.1992"))
+            lineup.onEvent(LineupEvent.RegistrationCardToggled(novak.id))
+
+            lineup.onEvent(LineupEvent.PresenceToggled(novak.id))
+            lineup.onEvent(LineupEvent.PresenceToggled(novak.id))
+
+            val row =
+                assertNotNull(lineup.state.value.selected)
+                    .members
+                    .single { it.player.id == novak.id }
+            assertTrue(row.present)
+            assertEquals("59", row.cardNumberTyped)
+            assertEquals("18.5.1992", row.dateOfBirthTyped)
+            assertEquals(JerseyNumber(14), row.jerseyNumber)
+            assertTrue(row.registrationCardPresent)
+        }
 }
 
 private class InMemoryAddedPlayers : AddedPlayerRepository {

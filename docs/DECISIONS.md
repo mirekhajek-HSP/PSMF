@@ -5,6 +5,55 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-21 · 0.3.1, Gate 2: a squad row is one line until the player is marked, and opens downwards (prompt 15)
+
+The testers' third point on 0.3.0 (`reports/2026-10-21-0.3.1-tester-fixes.md`,
+§Gate 2). The correction to prompt 13's brief is already recorded in the entry
+*From the testers of 0.3.0* below; these are the calls made in carrying it out.
+
+**1. An unmarked row draws only the mark and the name.** The shirt number, the
+`Číslo RP` field and *Nemá průkaz* are drawn when the player is marked and not
+before, where 0.3.0 drew them for everyone, invisible and disabled, to hold the
+room. A row that has not been marked is 57 dp from the next (a touch target and
+its hairline; 164 dp at HEAD, 230 dp at font scale 1.5). What was typed in a
+row lives in the state the fields are drawn from, which keeps it, so it is
+there when the row opens again: pinned through the real ViewModel and on the
+screen. **Reverses if:** a field has to exist while its row is closed, for
+instance to keep the focus across unmarking.
+
+**2. The rows of the squad touch.** The list gave every item a 12 dp gap, rows
+included, so between two names there was a strip that was neither: a thumb
+falling in it did nothing, and it put 12 dp on the 57 of every closed row.
+The list now has no gap of its own; the items around the squad carry theirs
+(`Spaced`). **Reverses if:** referees miss their name and hit its neighbour
+more often than they did, on a phone: the only boundary between two rows is a
+hairline, and each is 56 dp.
+
+**3. The first line is top-aligned, not centred.** The name must not move when
+the field beside it appears. Where the field is taller than the name -- at a
+large font, and by a little at the standard one -- centring pushes the name
+down by it: measured, 4 dp at font 1.0 and 12 dp at 1.5. Top-aligned, the name
+is where it was and the field hangs a little lower than the name's own centre.
+**Reverses if:** that offset looks wrong on a phone and a way is found that does
+not move the name (the field lifted by the difference, which clips if
+anything animates around it).
+
+**4. No animation.** One was built (the row's height, 150 ms) and taken out.
+A tap on the next name, made while the row above was still opening, was lost
+in the JVM harness (clock frozen 60 ms in): the name had moved 15 dp, and a tap
+on the row that was opening, which had not moved, registered. A tap whose
+release lands outside its target is cancelled, which is the likely mechanism;
+I did not read the framework to confirm it. It is not a tap *waiting* for the
+animation; it is a target in motion, which an animation always makes. The brief made the animation
+optional ("fine if a tap never waits for it"), and a phone cannot be asked
+here. Rows open at once, as the fields did in 0.3.0, and `SquadRowTest`
+pins that two frames after a tap the next name is where it will stay.
+**Reverses if:** a phone shows the opening to be too abrupt to follow *and* a
+way is found to open it that never moves a row under a finger (fading the new
+fields in, the room already made, would qualify).
+
+---
+
 ## 2026-10-21 · 0.3.1, Gate 1: typing lands at the cursor, and only a finger on the list takes the keyboard away (prompt 15)
 
 Two of the testers' points on 0.3.0, both reproduced on the JVM before they

@@ -135,52 +135,7 @@ class LineupScreenTest : LineupScreenTestBase() {
             onNodeWithText("Datum narození").assertDoesNotExist()
         }
 
-    @Test
-    fun markingARowDoesNotMoveTheRowsBelowIt() =
-        runComposeUiTest {
-            // The thumb is on the next name. It must still be there.
-            var current by mutableStateOf(state(listOf(member(novak), member(poupe), member(kriz))))
-            withLanguage("cs") {
-                setContent { PsmfTheme { LineupScreen(state = current, onEvent = {}) } }
-
-                val before = onNodeWithText("Kříž Ondřej").getBoundsInRoot()
-                current = state(listOf(member(novak, present = true), member(poupe), member(kriz)))
-                waitForIdle()
-                val after = onNodeWithText("Kříž Ondřej").getBoundsInRoot()
-
-                assertEquals(before.top, after.top, "marking the first row moved the third")
-                // And the row that was marked is no taller than it was.
-                val marked = onNodeWithText("Novák Jan").getBoundsInRoot()
-                assertTrue(marked.height > 0.dp)
-            }
-        }
-
-    @Test
-    fun markingARowDoesNotMoveTheRowsBelowItAtALargeFontEither() =
-        runComposeUiTest {
-            // The referee population skews older and many run the system font
-            // turned up. A row sized for one scale is wrong at the next, which
-            // is why unmarked rows lay out the same controls rather than
-            // reserving a height.
-            var current by mutableStateOf(state(listOf(member(novak), member(poupe), member(kriz))))
-            withLanguage("cs") {
-                setContent {
-                    CompositionLocalProvider(LocalDensity provides Density(density = 2.625f, fontScale = 1.5f)) {
-                        // Tall enough to lay all three rows out: at this scale
-                        // the host's window shows barely one.
-                        Box(modifier = Modifier.requiredSize(width = 411.dp, height = 2400.dp)) {
-                            PsmfTheme { LineupScreen(state = current, onEvent = {}) }
-                        }
-                    }
-                }
-
-                val before = onNodeWithText("Kříž Ondřej").getBoundsInRoot()
-                current = state(listOf(member(novak, present = true), member(poupe), member(kriz)))
-                waitForIdle()
-
-                assertEquals(before.top, onNodeWithText("Kříž Ondřej").getBoundsInRoot().top)
-            }
-        }
+    // How a row opens and closes, and how tall one that is closed is: SquadRowTest.
 
     @Test
     fun sayingAPlayerHasNoCardDoesNotMoveTheRowsBelowIt() =
@@ -242,9 +197,16 @@ class LineupScreenTest : LineupScreenTestBase() {
                     member(kriz),
                 )
             withLanguage("cs") {
-                setContent { PsmfTheme { LineupScreen(state = state(members), onEvent = events::add) } }
+                setContent {
+                    // The whole list in the window. The roles are at its foot,
+                    // and a list this short no longer needs scrolling to bring
+                    // them up, so with the host's 768 px window the field was
+                    // below the window and a tap on it landed nowhere.
+                    CompositionLocalProvider(LocalDensity provides Density(density = 0.5f)) {
+                        PsmfTheme { LineupScreen(state = state(members), onEvent = events::add) }
+                    }
+                }
 
-                onNode(hasScrollAction()).performScrollToNode(hasText("Kapitán a brankář"))
                 onNodeWithText("Kapitán").performClick()
 
                 // The menu says each present player's number beside the name,
@@ -548,7 +510,7 @@ class LineupScreenTest : LineupScreenTestBase() {
             }
 
             onAllNodes(hasSetTextAction()).assertCountEquals(0)
-            // And it is laid out all the same, which is what stops rows moving.
+            // The row is there, as a name to tap: closed, not absent.
             assertNotEquals(0.dp, onNodeWithText("Novák Jan").getBoundsInRoot().height)
         }
 

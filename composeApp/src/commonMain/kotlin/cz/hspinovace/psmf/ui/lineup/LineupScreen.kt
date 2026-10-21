@@ -6,8 +6,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -132,12 +134,15 @@ private fun SquadColumn(
     onEvent: (LineupEvent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    // No gap between the items: the rows of the squad touch, hairline to
+    // hairline, so that every stretch of the list is a name to tap and no
+    // thumb lands between two. The items around them keep the gap the list
+    // used to give them all, with [Spaced].
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(PsmfDimens.screenPadding),
-        verticalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
     ) {
-        item(key = "kit") { KitSection(team, onEvent) }
+        item(key = "kit") { Spaced { KitSection(team, onEvent) } }
         // Pinned: with twenty-five names to work down the count has to stay
         // where it can be read, or the referee scrolls back up to ask it.
         stickyHeader(key = "hint") { PresenceHint(team) }
@@ -157,13 +162,20 @@ private fun SquadColumn(
             )
         }
 
-        item(key = "advisory") { SuspensionAdvisoryNote() }
-        item(key = "add") { AddPlayerButton(onEvent) }
-        item(key = "roles") { RolesSection(team, onEvent) }
-        item(key = "confirm") { CaptainSection(team, onEvent) }
-        item(key = "problems") { Problems(state) }
+        item(key = "after-squad") { Spacer(Modifier.height(PsmfDimens.itemSpacing)) }
+        item(key = "advisory") { Spaced { SuspensionAdvisoryNote() } }
+        item(key = "add") { Spaced { AddPlayerButton(onEvent) } }
+        item(key = "roles") { Spaced { RolesSection(team, onEvent) } }
+        item(key = "confirm") { Spaced { CaptainSection(team, onEvent) } }
+        item(key = "problems") { Spaced { Problems(state) } }
         item(key = "continue") { ContinueSection(state, onEvent) }
     }
+}
+
+/** An item of the list with the gap below it that the list gave every item before the rows closed up. */
+@Composable
+private fun Spaced(content: @Composable () -> Unit) {
+    Column(modifier = Modifier.fillMaxWidth().padding(bottom = PsmfDimens.itemSpacing)) { content() }
 }
 
 @OptIn(ExperimentalLayoutApi::class)
