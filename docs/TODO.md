@@ -128,7 +128,7 @@ Grouped by what blocks what, not by size. Last updated 2026-10-21.
       - **Install over the last one.** Another live migration test, free.
       - The card control stayed **one icon**, decided on an emulator against its
         own reversal condition. That decision wants a real thumb.
-- [ ] **Drop `materialIconsExtended`**, in prompt 15 (Gate 6): — five icons are costing 31 MB, and
+- [ ] **Drop `materialIconsExtended`**, in prompt 15 (Gate 6). Five icons are costing 31 MB, and
       the 0.2.0 debug APK is 52 KB under 70 MB. The debug
       APK went 38 → 70 MB and is 64 MB of DEX. Copy the five vectors locally.
       Mostly a debug-build artifact, but this project has never built a release and
