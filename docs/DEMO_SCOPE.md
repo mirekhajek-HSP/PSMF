@@ -99,10 +99,22 @@ it round: **mark who came**, as the paper form's captain does.
 
 Per player: present or not, jersey number, Číslo RP.
 
-- **Mark who came.** Nobody is present until tapped. A tap marks the player present
-  and opens their row (jersey, Číslo RP); a tap again takes it back. The count of
-  those marked is pinned at the top, and no row moves under the thumb while the
-  referee is marking.
+- **Mark who came.** Nobody is present until tapped. A player who has not come is
+  **one line**, the mark and the name, a touch target tall. A tap marks the player
+  present and **opens their row downwards** (jersey, Číslo RP, *Nemá průkaz*); a tap
+  again takes it back and closes it. **The name that was tapped does not move**; the
+  rows below it do, as in any list. What was typed into a row comes back if the
+  player is marked again on the same visit. The count of those marked is pinned at
+  the top. (0.3.0 gave every unmarked player the height of an open row, so that
+  nothing below ever moved; twenty players became four screens of blank, and the
+  testers said so. `DECISIONS.md`, 2026-10-21.)
+- **A lineup in progress is kept, and is never a lineup.** Marks, the captain and
+  the goalkeeper, jersey numbers, card numbers and dates (half typed too),
+  *Nemá průkaz*, the kit and a player added at the pitch are written to a draft as
+  they are made, so a phone call or the system reclaiming the app does not take a
+  squad of twenty. A team is still a lineup only once it is whole: until then the
+  console has nobody on it, and the recap and the export list the lineup as missing,
+  exactly as before.
 - **One captain and one goalkeeper per team**, both among those present, possibly
   the same person; both are needed to continue. The report lists the captain
   first, then the goalkeeper, then the rest in jersey order, and says in all three
@@ -112,7 +124,8 @@ Per player: present or not, jersey number, Číslo RP.
 - **Kit selection per team.** A team owns two kit sets and picks one per match, so
   that two teams do not play in similar colours. Defaults to the primary. This is
   what fills `Barva dresů` on the ZoU, which is why the form asks for it at the
-  match rather than holding it against the team.
+  match rather than holding it against the team. The kit chosen shows as a small
+  shirt on the team's tab (§4); the report carries the label only.
 - **Číslo RP is what the card says.** The RP number is issued by PSMF at
   registration, is immutable, and **the user can never type or edit one**; a
   player the league has one for shows it, read-only. For a present player without
@@ -212,7 +225,31 @@ Reworked from golblok. What changes:
   whistle, because it changes the clock. Then the whistle can be pressed again.
   This is not a pause: nothing stops, resumes or adjusts anything, and nothing
   edits an instant. The clock is what the remaining instants say, and a red card's
-  ten minutes of play follow it.
+  ten minutes of play follow it. **The log lists the whistles** — `0´ · Výkop`,
+  `30´+ · Konec 1. poločasu`, `30´ · Začátek 2. poločasu`, `60´+ · Konec utkání` —
+  each in its place among the goals and cards, in the quieter colour, so the
+  referee can see what Undo walks back through. They stand at the form's minute,
+  which is not always the order Undo takes them in.
+- **The controls are laid out the same way in every state.** Under the clock, one
+  row for what moves the match on, as wide as the lists below it: before the kickoff
+  *Zahájit utkání* alone and yellow; in the first half *Ukončit poločas* and
+  *Ukončit utkání* side by side, the same size; in the interval *Zahájit 2. poločas*
+  and *Ukončit utkání*; in the second half *Ukončit utkání* alone, full width; after
+  the final whistle *Pokračovat na hodnocení* alone and yellow. A label that does
+  not fit wraps inside its button, at a space, and its neighbour is as tall.
+  **Undo is on a line of its own under them**, at the left edge, as wide as its
+  word, in the secondary grey with no outline: apart from the whistles and quieter
+  than them, in the same place in every state.
+- **The kit worn shows as a small shirt**, drawn in code, under each team's name on
+  the scoreboard and before it on each team's tab (here and in §3). Two colours show
+  as two slices and three as three; white and black kits carry an outline, so they
+  show on the light theme and the dark one. The colours come from a table in the app
+  that maps the names league 6 uses to colours. **A name not in the table draws
+  nothing for that colour, and a kit with no known colour draws no shirt**: a wrong
+  colour is worse than none, because the referee would trust it. The shirt's
+  description is the kit's label. The console shows the kit only while the team
+  still owns it under the label the lineup recorded. **The report never reads the
+  colour**: `Barva dresů` stays the label as written.
 - **The clock reads `mm:ss` of play**, the second half starting at `30:00`, and
   frozen at the final whistle. The minute the next event will be written with
   (`30´+` in first-half added time and in the interval, `60´+` after the whistle)

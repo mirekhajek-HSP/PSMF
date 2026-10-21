@@ -5,6 +5,36 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-22 · 0.3.1, Gate 7: one phone checklist, 0.3.1 (5), and the documents brought level (prompt 15)
+
+Closes prompt 15 (`reports/2026-10-21-0.3.1-tester-fixes.md`, §Gate 7). The version is
+0.3.1, build 5, on both platforms, as the brief says; the three calls below are the
+ones it left open.
+
+**1. One checklist at the end of the report, merged from the six the gates wrote.**
+Several steps were the same step in two gates (the lowest row with the keyboard, a large
+system font, the Ukrainian bar, the update over 0.3.0). The merged list has 34 steps,
+ordered by point with the typing first, as the brief asks. The gates' own lists stay
+where they were written, each with a note of which steps it became, because their
+reasoning sits beside them. **Reverses if** a tester, or a session working one gate,
+needs the checklist next to that gate's reasoning: then hand out the per-gate lists,
+which are all still there.
+
+**2. DEMO_SCOPE §3 says a lineup in progress is kept, and is never a lineup.** The brief
+names the row that opens (§3) and the controls, the shirt and the whistles (§4). Gate 3
+left the file to this gate, and a lineup that survives a kill changes what §3 says the
+lineup does. One bullet; nothing about tables or schema. **Reverses if** DEMO_SCOPE is
+meant to say only what a screen shows and not what is kept: then the bullet goes.
+
+**3. The entry written from the owner's brief is moved to its date.** "From the testers
+of 0.3.0: a lineup row opens downwards, a drawn shirt shows the kit, and one session per
+gate" sat between the 17 October entries; the file is newest first, and Gate 1 asked
+for it to be put in order. Only its position changed (the file's lines, sorted, are
+identical before and after). **Reverses if** an entry's place is meant to show when it
+was written and not when it was decided: nothing refers to it by line.
+
+---
+
 ## 2026-10-21 · 0.3.1, Gate 6: the app draws its seven icons itself, and `materialIconsExtended` is gone (prompt 15)
 
 Carries out 2026-09-01 "Five icons must not cost 31 MB", which nothing since has
@@ -419,6 +449,44 @@ where nothing sits under the field. It is one constant, `roomBelow`.
 
 ---
 
+## 2026-10-21 · From the testers of 0.3.0: a lineup row opens downwards, a drawn shirt shows the kit, and one session per gate
+
+**The lineup row: a correction to my own brief.** Prompt 13 said rows must
+not jump under the thumb while the referee is marking. The session read
+that as "nothing below may move". It gave every unmarked player the full
+height of a marked row, about 160 dp of blank, so a squad of twenty became
+four screens of scrolling, and the testers found it. What was meant: the
+row being tapped stays where it is. Rows below opening downwards is what
+every list does, and that is fine.
+
+**The kit's colours on the console** (owner, from the testers). A small
+shirt, drawn in the colours of the kit worn in this match, goes under each
+team's name on the scoreboard and on the team tabs. `Kit.colours` exists for
+exactly this ("for the app only"). The report keeps the label snapshot and
+never reads a colour. If the app has no colour for a name, it draws nothing:
+a wrong colour is worse than none, because the referee would trust it.
+
+**One fresh session per gate** (owner, 2026-10-18). Every step of a long
+session re-sends its whole history, and Sonnet managed about three gates per
+five-hour window that way. Gated prompts are now written to run cold:
+
+- a reading list for each gate;
+- one commit per gate, its subject starting "Prompt N, Gate M:";
+- an uncommitted tree at the start is an interrupted attempt;
+- named STOP conditions instead of questions.
+
+The owner also wants gates to run overnight without anyone typing "go". The
+runner for that is designed but not built (TODO).
+
+**Reverses if:**
+
+- referees would rather the rows never move, at the cost of the scrolling;
+- the colour table misleads more than it helps, for example where a kit's
+  name does not match what the team wears;
+- a cold session misses context a long one had, gate after gate.
+
+---
+
 ## 2026-10-18 · The assessment and the recap: a note per team, a result from the goals, three taps, and what takes a signature back (prompt 13, Part 4)
 
 **1. A note per team.** In *Hodnocení*, under each team's ratings: optional, for
@@ -815,44 +883,6 @@ report tab, whose one button goes to Zápasy (a root, not a dead end).
 disorienting, which is a line in `AppShell`. A scroll that drops the
 keyboard turns out to be too eager over a long lineup, in which case dropping
 it on a scroll only past some distance is one condition in `KeyboardDismissal`.
-
----
-
-## 2026-10-21 · From the testers of 0.3.0: a lineup row opens downwards, a drawn shirt shows the kit, and one session per gate
-
-**The lineup row: a correction to my own brief.** Prompt 13 said rows must
-not jump under the thumb while the referee is marking. The session read
-that as "nothing below may move". It gave every unmarked player the full
-height of a marked row, about 160 dp of blank, so a squad of twenty became
-four screens of scrolling, and the testers found it. What was meant: the
-row being tapped stays where it is. Rows below opening downwards is what
-every list does, and that is fine.
-
-**The kit's colours on the console** (owner, from the testers). A small
-shirt, drawn in the colours of the kit worn in this match, goes under each
-team's name on the scoreboard and on the team tabs. `Kit.colours` exists for
-exactly this ("for the app only"). The report keeps the label snapshot and
-never reads a colour. If the app has no colour for a name, it draws nothing:
-a wrong colour is worse than none, because the referee would trust it.
-
-**One fresh session per gate** (owner, 2026-10-18). Every step of a long
-session re-sends its whole history, and Sonnet managed about three gates per
-five-hour window that way. Gated prompts are now written to run cold:
-
-- a reading list for each gate;
-- one commit per gate, its subject starting "Prompt N, Gate M:";
-- an uncommitted tree at the start is an interrupted attempt;
-- named STOP conditions instead of questions.
-
-The owner also wants gates to run overnight without anyone typing "go". The
-runner for that is designed but not built (TODO).
-
-**Reverses if:**
-
-- referees would rather the rows never move, at the cost of the scrolling;
-- the colour table misleads more than it helps, for example where a kit's
-  name does not match what the team wears;
-- a cold session misses context a long one had, gate after gate.
 
 ---
 

@@ -1,17 +1,34 @@
 # TODO
 
-Grouped by what blocks what, not by size. Last updated 2026-10-21.
+Grouped by what blocks what, not by size. Last updated 2026-10-22.
 
 ---
 
 ## Next
 
-- [ ] **Prompt 15: what the testers found in 0.3.0, and the kits' colours**,
-      0.3.1 (5). `prompts/15-tester-fixes-0.3.1.md`. Seven gates, written
-      for one fresh session each: typing (the cursor jump, the keyboard on a
-      low field), compact lineup rows, a lineup that survives a kill, the
-      console's buttons and the Ukrainian tab, the whistles in the log, the
-      kit shirt, and dropping `materialIconsExtended`.
+- [x] **Prompt 15: what the testers found in 0.3.0, and the kits' colours**,
+      0.3.1 (5). Done 2026-10-21/22, seven gates, one commit each ("Prompt 15,
+      Gate N:"). `prompts/15-tester-fixes-0.3.1.md`,
+      `reports/2026-10-21-0.3.1-tester-fixes.md`. Typing (the cursor jump, the
+      keyboard on a low field), compact lineup rows, a lineup that survives a
+      kill, the console's buttons and the Ukrainian tab, the whistles in the
+      log, the kit shirt, `materialIconsExtended` gone, the documents and the
+      version. 593 shared JVM · 524 Android host · 378 UI · 23 importer tests,
+      all forced to run, detekt green; debug APK 38,527,991 bytes (0.3.0's was
+      70,313,351), the same debug key. **Not pushed, and not yet verified
+      independently from a clean, uncached build.** Proved on the JVM only.
+- [ ] **On the phone: 0.3.1 (5)**, installed **over 0.3.0, never uninstalling
+      first**, with a lineup half done on 0.3.0 when updating. The checklist is
+      "On the Android phone" at the end of prompt 15's report: 34 steps, steps 2
+      to 6 (typing, in a dialog and on the lineup's lowest row) first. Nothing in
+      0.3.1 has been seen on a phone. The 0.3.0 (4) phone item below still stands
+      for what this checklist does not re-check.
+- [ ] **iOS build 5, 0.3.1 (5), on the Mac** (a prompt to write, as 14 was for
+      build 4). Nothing from prompt 15 has been compiled for iOS: first
+      `linkDebugFrameworkIosArm64`. The upgrade over build 4 (schema 7 → 8,
+      `7.sqm`, the first time it runs on iOS). `ComposeApp.framework`, debug and
+      release, against 374 MB and 144 MB. Then "On the iPhone" at the end of
+      prompt 15's report, the number pad and the dialogs above all.
 - [x] **0.3.0 (4) is with testers on Android and iPhone** (owner,
       2026-10-21). iOS build 4 was uploaded by the owner; the Mac's
       checklists were skipped at the owner's request
@@ -27,18 +44,17 @@ Grouped by what blocks what, not by size. Last updated 2026-10-21.
       first**, with three reports recorded in 0.2.1 beforehand (in progress,
       finished, CONFIRMED). The checklist is §8 of prompt 13's report. The
       clock steps (§8 B13) have never been seen past the first minute.
-- [ ] **The lineup's unmarked rows are tall blanks**, in prompt 15: about 160 dp each, so
-      that marking a player never moves the rows below. A squad of 20 with 8
-      present is about 1,900 dp of empty space (see the lineup render). Prompt
-      13 asked for "rows do not jump under the thumb", and that was taken more
-      literally than meant: the tapped row must stay put, but rows below
-      opening downwards is normal. Judge it on the phone, then fix it in the
-      next prompt.
-- [ ] **A lineup is saved only once it is whole**, in prompt 15 (everyone marked present has
-      a number or date, plus a captain and a goalkeeper). Marks made before
-      that are lost if the app is killed. The coder called it "a minute's
-      work"; a phone call during the lineup is exactly when Android kills apps.
-      Next prompt: save the partial lineup too.
+- [x] **The lineup's unmarked rows are tall blanks**: done in prompt 15, Gate 2
+      (2026-10-21). They were about 160 dp each, so that marking a player never
+      moved the rows below; prompt 13's "rows do not jump under the thumb" taken
+      more literally than meant. An unmarked row is one line now (57 dp), marking
+      opens it downwards and the tapped name does not move. **Still to judge under
+      a thumb:** the rows now touch (checklist steps 7 to 11).
+- [x] **A lineup is saved only once it is whole**: done in prompt 15, Gate 3
+      (2026-10-21). Marks, roles, numbers and dates are kept in a draft of their
+      own (schema 8) as they are made, and a draft is never taken for a lineup.
+      A phone call during the lineup is exactly when Android kills apps. **Still
+      to prove:** a real kill (checklist steps 12 to 19), and 7 → 8 on an iPhone.
 - [x] **The console log does not list the whistles**, though Undo walks back
       through them (prompt 13, Gate 3). Done in prompt 15, Gate 4 (2026-10-21);
       see the report's §Gate 4.
@@ -69,9 +85,9 @@ Grouped by what blocks what, not by size. Last updated 2026-10-21.
       the container because it cannot push and has no credentials, which is
       the only reason running without permission prompts is acceptable. It
       loses the Windows emulator, so emulator checks move to the phone
-      checklist. Build it with the next Windows prompt (15), and write that
-      prompt for cold sessions: a reading list per gate, named STOP
-      conditions.
+      checklist. Prompt 15 was written for cold sessions (a reading list per
+      gate, named STOP conditions) and has now run gate by gate without it;
+      build the runner with the next Windows prompt, once the owner says go.
 - [ ] **At 12:40 of play, `12´` or `13´`?** The app writes 12´. For the
       referee visit. Prompt 13 puts the seconds on screen, which makes the
       question visible: the console now reads `12:40` and, beneath it,
