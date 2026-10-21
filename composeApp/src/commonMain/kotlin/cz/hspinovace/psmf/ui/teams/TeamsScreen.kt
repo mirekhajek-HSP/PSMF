@@ -13,11 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,6 +39,7 @@ import cz.hspinovace.psmf.resources.teams_no_matches
 import cz.hspinovace.psmf.resources.teams_search
 import cz.hspinovace.psmf.resources.teams_squad_size
 import cz.hspinovace.psmf.resources.teams_unfollow
+import cz.hspinovace.psmf.ui.common.PsmfIcons
 import cz.hspinovace.psmf.ui.common.PsmfTextField
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.TeamCard
@@ -241,7 +237,7 @@ private fun TeamRow(
                         .semantics { contentDescription = followDescription },
             ) {
                 Icon(
-                    imageVector = if (card.followed) Icons.Filled.Star else Icons.Filled.StarBorder,
+                    imageVector = if (card.followed) PsmfIcons.Star else PsmfIcons.StarBorder,
                     contentDescription = null,
                     tint =
                         if (card.followed) {
@@ -309,7 +305,7 @@ private fun CollapsibleSectionHeading(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Icon(
-            imageVector = if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
+            imageVector = if (expanded) PsmfIcons.ExpandLess else PsmfIcons.ExpandMore,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )

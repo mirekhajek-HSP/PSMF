@@ -106,8 +106,9 @@ Grouped by what blocks what, not by size. Last updated 2026-10-21.
       2026-10-08, `reports/2026-10-08-fixtures-tab-redesign.md`. Select boxes,
       scoped pitches by name, a date filter, a filter that scrolls away, no
       loading flash, 0.2.1 (3).
-- [ ] **The debug APK is 47,639 bytes over 70 MB** (0.2.1: 70,047,639).
-      `materialIconsExtended`, below, is the 31 MB answer.
+- [x] **The debug APK is 47,639 bytes over 70 MB** (0.2.1: 70,047,639). Done
+      2026-10-21 (prompt 15, Gate 6): `materialIconsExtended` is gone and the debug
+      APK is 38,527,991 bytes.
 - [x] **Prompt 11: the next TestFlight build on the Mac, 0.2.1 (3).** Ran
       2026-10-11; the build reached TestFlight and was tested. Its report
       is unfinished (above).
@@ -129,13 +130,15 @@ Grouped by what blocks what, not by size. Last updated 2026-10-21.
       - **Install over the last one.** Another live migration test, free.
       - The card control stayed **one icon**, decided on an emulator against its
         own reversal condition. That decision wants a real thumb.
-- [ ] **Drop `materialIconsExtended`**, in prompt 15 (Gate 6). Five icons are costing 31 MB, and
-      the 0.2.0 debug APK is 52 KB under 70 MB. The debug
-      APK went 38 → 70 MB and is 64 MB of DEX. Copy the five vectors locally.
-      Mostly a debug-build artifact, but this project has never built a release and
-      iOS has no R8 at all. A morning's work. **0.2.0's debug APK is 69.95 MB**
-      (69,948,495 bytes, clean package), 52 KB under 70: the next addition
-      crosses it.
+- [x] **Drop `materialIconsExtended`** — done 2026-10-21, prompt 15 Gate 6
+      (`reports/2026-10-21-0.3.1-tester-fixes.md`, DECISIONS 2026-10-21 "Gate 6").
+      Seven icons (not five) are now `ui/common/PsmfIcons.kt`, with the Apache-2.0
+      notice in `composeApp/licences/`. Debug APK 70,945,487 → 38,527,991 bytes,
+      unsigned release APK 52,514,993 → 30,019,337; 11,385 icon classes → none.
+      **Still open: the iOS framework.** Expected to shrink in a debug link (374 MB
+      before) and hardly at all in a release link (144 MB) or the archived app;
+      not measured, because it needs the Mac. Measure `ComposeApp.framework` with
+      the next iOS build.
 - [x] ~~**Wait for A1/A2, then import one whole league. No scraping.**~~
       Reversed 2026-10-07: league 6 is scraped from psmf.cz (prompt 10).
       A1/A2 are still wanted, for RP numbers and dates of birth, which the
@@ -238,8 +241,10 @@ Nothing below can start until the relevant answer lands.
       Until then, sideloaded APKs.
 
 - [ ] **A release build.** Not once, in any session. It is where R8, the shrinker
-      rules and signing all get exercised for the first time, and where the
-      `materialIconsExtended` question gets a real answer rather than an argument.
+      rules and signing all get exercised for the first time. `materialIconsExtended`
+      is gone (prompt 15, Gate 6), and the answer to its question was that the
+      release build is not minified at all (`isMinifyEnabled = false` in
+      `androidApp`), so the 30 MB release APK has never been shrunk.
       Expect keep-rule work for kotlinx.serialization, SQLDelight and Koin.
 - [ ] **PSMF needs its own upload keystore, and it does not exist.** golblok's
       `keystore2.jks` / `key_main` is golblok's and must not be reused. Generate

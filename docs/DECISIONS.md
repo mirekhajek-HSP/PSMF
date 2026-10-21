@@ -5,6 +5,76 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-21 · 0.3.1, Gate 6: the app draws its seven icons itself, and `materialIconsExtended` is gone (prompt 15)
+
+Carries out 2026-09-01 "Five icons must not cost 31 MB", which nothing since has
+reversed (`reports/2026-10-21-0.3.1-tester-fixes.md`, §Gate 6). The debug APK goes
+**70,945,487 → 38,527,991 bytes** and the unsigned release APK **52,514,993 →
+30,019,337**; the DEX held 11,385 Material icon classes and now holds none.
+
+**1. Seven icons, not five.** That entry counted five. The code uses seven: *Check*
+(the tick in a select and the lineup's presence mark) and *KeyboardArrowUp* (the
+fixtures' back-to-filter button) came after it. Three of the seven (*Check*,
+*KeyboardArrowUp*, *Star*) belong to `material-icons-core`, which the build had only
+as a dependency of the extended set: `compose.material3` does not carry it (checked
+in the dependency listing of the JVM compile classpath). Removing the extended set
+removes them too, and putting core back would be a dependency added, which the
+prompt forbids; so all seven are copied, and no file imports
+`androidx.compose.material.icons` any more. **Reverses if** the app wants more than
+about a dozen icons (the 2026-09-01 condition), or the owner would rather declare
+`material-icons-core` (about 300 files, 2 MB as a jar before dexing) and keep
+*Check*, *KeyboardArrowUp* and *Star* on `Icons.Filled`.
+
+**2. The path data is the SVG string Material publishes, read by `addPathNodes` the
+first time an icon is shown.** The alternative, a builder call for each segment as
+the library's own classes do, is about a hundred and twenty calls full of number
+literals (119 path nodes in all, 56 of them the football); a string is one entry
+for each icon and can be set beside Material's own SVG. The parser is common code, so iOS reads the strings as the JVM
+does, and the JVM read them into the library's own nodes (3). **Reverses if** the
+parse shows in a measured first frame (then builder calls), or iOS draws one icon
+differently from the JVM.
+
+**3. The copies were proved against the library once, and what stays committed is a
+set of numbers.** Before the dependency left, a throwaway test (not committed)
+compared each copy with `Icons.Filled.<name>`: the path nodes are identical, float
+for float, for all seven (7, 7, 7, 7, 56, 11 and 24 nodes). The two `ImageVector`
+objects are still not `==`, only because the library sets three stroke values that
+nothing draws (there is no stroke). `PsmfIconsTest` keeps what each rendered at
+96 px (ink and centre, 1 % and 0.1 px), Less against More upside down, a solid
+star against a hollow one, and a probe for the extended set on the classpath.
+**The limit:** a small feature moved by half a unit (the football's notch) is under
+those tolerances and passes; a point moved by a unit on a large icon, or by a
+quarter of a unit on the tick, does not. **Reverses if** an icon is edited or
+added: measure it from its source, and tighten the tolerances if a Skiko upgrade
+shows they can bear it.
+
+**4. The guard is a test of the classpath, not of the imports.** Without the
+library the compiler already refuses an import; the test refuses the dependency
+itself, which could come back before any file imports it, with its eleven thousand
+classes. It looks for `SportsSoccerKt`, which only the extended set has. **Reverses
+if** the app has a real use for the extended set: then declare it, delete the test,
+and settle the release build's shrinking first (6).
+
+**5. Where it lives, and the licence.** `ui/common/PsmfIcons.kt`, beside `KitShirt`.
+The Material icons are Apache-2.0: the notice heads the file, and the licence text
+is `composeApp/licences/Apache-2.0-MaterialIcons.txt`, beside the two OFL texts for
+the fonts, copied verbatim from Ubuntu's `/usr/share/common-licenses/Apache-2.0`.
+The copyright line says "The Android Open Source Project" with no year: the jars
+carry no notice file, so a year could only be guessed. **Reverses if** the licence
+review, or a store, wants the notices shown in the app: then a screen lists
+`licences/`.
+
+**6. The release build was never shrunk.** 2026-09-01 said R8 strips unused icons
+from a release build, so that most of the cost was a debug artifact. `androidApp`
+sets `isMinifyEnabled = false` for release, so the unsigned release APK carried all
+11,385 icon classes too (52.5 MB). That does not change this decision; it means the
+"R8 will handle it" argument was never true here, and that a release with
+minification, and the keep rules it needs, is still its own piece of work (TODO,
+"A release build"). **Reverses if** minification is switched on and the extended
+set would then cost nothing: that would make (1) a matter of taste, not of size.
+
+---
+
 ## 2026-10-21 · 0.3.1, Gate 5: each team's kit colours on the console, as a shirt drawn in code from a table of names (prompt 15)
 
 The testers' point 6 (`reports/2026-10-21-0.3.1-tester-fixes.md`, §Gate 5). Nothing

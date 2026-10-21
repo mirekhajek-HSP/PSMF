@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +43,7 @@ import cz.hspinovace.psmf.resources.lineup_no_card
 import cz.hspinovace.psmf.resources.lineup_rp_column
 import cz.hspinovace.psmf.resources.lineup_rp_from_league
 import cz.hspinovace.psmf.resources.lineup_suspension_warning
+import cz.hspinovace.psmf.ui.common.PsmfIcons
 import cz.hspinovace.psmf.ui.common.PsmfTextField
 import cz.hspinovace.psmf.ui.format.asFullDate
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
@@ -175,7 +174,7 @@ private fun PresenceMark(present: Boolean) {
     ) {
         if (present) {
             Icon(
-                imageVector = Icons.Filled.Check,
+                imageVector = PsmfIcons.Check,
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier.size(MARK_TICK),

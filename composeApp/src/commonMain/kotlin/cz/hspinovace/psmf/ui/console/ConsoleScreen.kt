@@ -13,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.SportsSoccer
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -70,6 +68,7 @@ import cz.hspinovace.psmf.resources.console_undo
 import cz.hspinovace.psmf.resources.console_yellows
 import cz.hspinovace.psmf.ui.common.EvenActionContentPadding
 import cz.hspinovace.psmf.ui.common.EvenActionRow
+import cz.hspinovace.psmf.ui.common.PsmfIcons
 import cz.hspinovace.psmf.ui.common.TeamTabLabel
 import cz.hspinovace.psmf.ui.common.WithdrawSignaturesDialog
 import cz.hspinovace.psmf.ui.common.brandFilledColors
@@ -410,7 +409,7 @@ private fun PlayerRow(
                             .size(PsmfDimens.minTouchTarget)
                             .semantics { contentDescription = goalDescription },
                 ) {
-                    Icon(Icons.Filled.SportsSoccer, contentDescription = null)
+                    Icon(PsmfIcons.SportsSoccer, contentDescription = null)
                 }
                 val cardDescription = stringResource(Res.string.console_card)
                 IconButton(
@@ -430,7 +429,7 @@ private fun PlayerRow(
 
 /**
  * The card-logging button's glyph. Not a Material icon: golblok's own
- * equivalent reuses [Icons.Default.Stop][androidx.compose.material.icons.filled.Stop],
+ * equivalent reuses `Icons.Default.Stop`,
  * which sits one thought away from the Pause/Stop/PlayArrow family this
  * screen deliberately has none of (see the no-pause-control test).
  * A small yellow-to-red card shape needs no borrowed meaning and, unlike

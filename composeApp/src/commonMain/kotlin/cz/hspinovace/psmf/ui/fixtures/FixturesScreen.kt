@@ -18,8 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -64,6 +62,7 @@ import cz.hspinovace.psmf.resources.weekday_tuesday
 import cz.hspinovace.psmf.resources.weekday_wednesday
 import cz.hspinovace.psmf.ui.common.ActionRow
 import cz.hspinovace.psmf.ui.common.PrimaryAction
+import cz.hspinovace.psmf.ui.common.PsmfIcons
 import cz.hspinovace.psmf.ui.common.WaitVeil
 import cz.hspinovace.psmf.ui.format.asClockTime
 import cz.hspinovace.psmf.ui.format.asDayAndMonth
@@ -191,7 +190,7 @@ private fun FixtureList(
         ) {
             FloatingActionButton(onClick = { scope.launch { listState.animateScrollToItem(0) } }) {
                 Icon(
-                    Icons.Filled.KeyboardArrowUp,
+                    PsmfIcons.KeyboardArrowUp,
                     contentDescription = stringResource(Res.string.fixtures_back_to_filter),
                 )
             }

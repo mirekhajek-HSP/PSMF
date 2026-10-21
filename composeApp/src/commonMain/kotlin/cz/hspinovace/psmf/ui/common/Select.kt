@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -132,7 +130,7 @@ private fun ChoiceText(choice: Choice<*>) {
 @Composable
 private fun Tick(visible: Boolean) {
     if (visible) {
-        Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(TICK_SIZE))
+        Icon(PsmfIcons.Check, contentDescription = null, modifier = Modifier.size(TICK_SIZE))
     } else {
         Spacer(Modifier.size(TICK_SIZE))
     }
