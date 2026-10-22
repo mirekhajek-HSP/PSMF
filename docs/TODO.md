@@ -15,8 +15,7 @@ Grouped by what blocks what, not by size. Last updated 2026-10-22.
       log, the kit shirt, `materialIconsExtended` gone, the documents and the
       version. 593 shared JVM · 524 Android host · 378 UI · 23 importer tests,
       all forced to run, detekt green; debug APK 38,527,991 bytes (0.3.0's was
-      70,313,351), the same debug key. **Not pushed, and not yet verified
-      independently from a clean, uncached build.** Proved on the JVM only.
+      70,313,351), the same debug key. Pushed. Proved on the JVM only.
       **Verified 2026-10-22** from a clean, uncached build at `de96b8a`: the
       same four counts, detekt green, APK 0.3.1 (5) 38,527,991 bytes, same
       debug key, `builds/psmf-0.3.1-debug-de96b8a.apk`.
