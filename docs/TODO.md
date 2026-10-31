@@ -25,12 +25,11 @@ Grouped by what blocks what, not by size. Last updated 2026-10-31.
       to 6 (typing, in a dialog and on the lineup's lowest row) first. Nothing in
       0.3.1 has been seen on a phone. The 0.3.0 (4) phone item below still stands
       for what this checklist does not re-check.
-- [ ] **iOS build 5, 0.3.1 (5), on the Mac** (a prompt to write, as 14 was for
-      build 4). Nothing from prompt 15 has been compiled for iOS: first
-      `linkDebugFrameworkIosArm64`. The upgrade over build 4 (schema 7 → 8,
-      `7.sqm`, the first time it runs on iOS). `ComposeApp.framework`, debug and
-      release, against 374 MB and 144 MB. Then "On the iPhone" at the end of
-      prompt 15's report, the number pad and the dialogs above all.
+- [x] **iOS build 5, 0.3.1 (5), on the Mac**: `prompts/16-ios-build-5.md`.
+      Gate 1 done 2026-10-22 (`61e373e`, `reports/2026-10-22-ios-build-5.md`):
+      built unchanged; the debug framework 374 → 275 MB, the release one and the
+      archive not smaller. It reached TestFlight (a tester is on it); the upload's
+      record is the open item below.
 - [x] **Prompt 17: what the testers found in 0.3.1**, 0.4.0 (6). Done
       2026-10-31, seven gates, one commit each ("Prompt 17, Gate N:"), run by
       hand, a fresh session per gate. `prompts/17-tester-points-0.4.0.md`,
@@ -41,8 +40,14 @@ Grouped by what blocks what, not by size. Last updated 2026-10-31.
       cards corrected or removed from the console's log (analysis §2.12); copy
       the text report. 645 shared JVM · 574 Android host · 484 UI · 23 importer
       tests, all forced to run, detekt green; debug APK 0.4.0 (6) 38,810,219
-      bytes (0.3.1's was 38,527,991), the same debug key. **Not pushed. Proved on
-      the JVM only.** Not yet verified from a clean build by the owner.
+      bytes (0.3.1's was 38,527,991), the same debug key. Pushed. **Proved on
+      the JVM only.** **Verified 2026-10-31** from a clean, uncached build at
+      `90f52a4`: the same four counts, every result file from the run, none
+      failed, detekt green; APK 0.4.0 (6) 38,810,219 bytes, same debug key,
+      byte-identical to `builds/psmf-0.4.0-debug-90f52a4.apk`. Nothing outside
+      the brief changed: the export, the seed files, the importer, the
+      dependencies and the schema are untouched, `iosApp` only in its four
+      version lines, and `DiscardReport` is the one caller of `delete()`.
 - [ ] **On the phone: 0.4.0 (6)**, installed **over 0.3.1, never uninstalling
       first**, with a report of each status on the phone and one stray
       *Rozepsáno* report. The checklist is "On the Android phone" at the end of
@@ -317,6 +322,13 @@ Nothing below can start until the relevant answer lands.
 
 None blocking, all from the build reports.
 
+- [ ] **A card's minute is never checked against the clock**, where a goal's
+      is. A card can be written, or since 0.4.0 corrected, at `50´` during the
+      first half; its power play is placed no later than now, so nothing
+      breaks, but the report says a minute that has not been played. And a
+      first yellow can be corrected to a minute after its `2. ŽK` (DECISIONS
+      2026-10-31, Gate 6, call 1). Both are one rule each in `CardDraft` and
+      `CorrectCard`; found verifying prompt 17, for the next console prompt.
 - [x] **iOS has run**, on an iPhone 15, 2026-09-30, after one `Info.plist`
       fix (`CADisableMinimumFrameDurationOnPhone`). The itemised checklist is
       still open, under Next.
