@@ -84,6 +84,8 @@
     <string name="lineup_captain_confirm">Potvrzuje %1$s</string>
     <string name="lineup_captain_confirmed">Potvrdil kapitán %1$s</string>
     <string name="lineup_captain_confirm_needs_captain">Nejdřív vyberte kapitána.</string>
+    <string name="lineup_captain_confirm_waits">Potvrdit jde, až bude sestava úplná:</string>
+    <string name="lineup_captain_confirm_refused">Potvrdit zatím nejde:</string>
     <string name="lineup_captain_attestation">Kapitáni potvrzují, že všichni hráči startují oprávněně.</string>
     <string name="lineup_continue">Pokračovat na zápis</string>
     <string name="lineup_saved">Sestavy jsou uložené. Zápis přijde v další fázi.</string>

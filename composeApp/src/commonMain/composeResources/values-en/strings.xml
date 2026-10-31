@@ -76,6 +76,8 @@
     <string name="lineup_captain_confirm">%1$s confirms</string>
     <string name="lineup_captain_confirmed">Confirmed by captain %1$s</string>
     <string name="lineup_captain_confirm_needs_captain">Choose the captain first.</string>
+    <string name="lineup_captain_confirm_waits">Confirming works once the lineup is complete:</string>
+    <string name="lineup_captain_confirm_refused">Cannot confirm yet:</string>
     <string name="lineup_captain_attestation">The captains confirm that every player is entitled to play.</string>
     <string name="lineup_continue">Continue to the match</string>
     <string name="lineup_saved">The lineups are saved. The match console arrives in the next phase.</string>

@@ -440,10 +440,12 @@ class LineupScreenTest : LineupScreenTestBase() {
                 setContent { PsmfTheme { LineupScreen(state = shown, onEvent = {}) } }
 
                 onNode(hasScrollAction()).performScrollToNode(hasText("Bílek Ondřej:", substring = true))
-                onNodeWithText(
+                // Twice since prompt 17, Gate 3: by the captain's button, which lists this
+                // team's problems before Continue is pressed, and in Continue's own list.
+                onAllNodesWithText(
                     "Bílek Ondřej: chybí údaj do sloupce Číslo RP. " +
                         "Opište číslo z průkazu, nebo u hráče bez průkazu zadejte datum narození.",
-                ).assertIsDisplayed()
+                ).assertCountEquals(2)
             }
         }
 

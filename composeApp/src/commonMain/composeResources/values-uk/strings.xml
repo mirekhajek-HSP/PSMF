@@ -80,6 +80,8 @@
     <string name="lineup_captain_confirm">Підтверджує %1$s</string>
     <string name="lineup_captain_confirmed">Підтвердив капітан %1$s</string>
     <string name="lineup_captain_confirm_needs_captain">Спершу оберіть капітана.</string>
+    <string name="lineup_captain_confirm_waits">Підтвердити можна, коли склад буде повний:</string>
+    <string name="lineup_captain_confirm_refused">Поки що не можна підтвердити:</string>
     <string name="lineup_captain_attestation">Капітани підтверджують, що всі гравці мають право виступати.</string>
     <string name="lineup_continue">Далі до матчу</string>
     <string name="lineup_saved">Склади збережено. Консоль матчу зʼявиться в наступній фазі.</string>

@@ -31,6 +31,8 @@ import cz.hspinovace.psmf.resources.lineup_add_player
 import cz.hspinovace.psmf.resources.lineup_captain_attestation
 import cz.hspinovace.psmf.resources.lineup_captain_confirm
 import cz.hspinovace.psmf.resources.lineup_captain_confirm_needs_captain
+import cz.hspinovace.psmf.resources.lineup_captain_confirm_refused
+import cz.hspinovace.psmf.resources.lineup_captain_confirm_waits
 import cz.hspinovace.psmf.resources.lineup_captain_confirmed
 import cz.hspinovace.psmf.resources.lineup_captain_label
 import cz.hspinovace.psmf.resources.lineup_captain_section
@@ -169,7 +171,7 @@ private fun SquadColumn(
         item(key = "advisory") { Spaced { SuspensionAdvisoryNote() } }
         item(key = "add") { Spaced { AddPlayerButton(onEvent) } }
         item(key = "roles") { Spaced { RolesSection(team, onEvent) } }
-        item(key = "confirm") { Spaced { CaptainSection(team, onEvent) } }
+        item(key = "confirm") { Spaced { CaptainSection(state, team, onEvent) } }
         item(key = "problems") { Spaced { Problems(state) } }
         item(key = "continue") { ContinueSection(state, onEvent) }
     }
@@ -303,9 +305,14 @@ private fun RolesSection(
  *
  * It is the captain's confirmation of the lineup and **nothing else**: the
  * signature under the finished report is asked for again on the recap.
+ *
+ * The tap records only for a block that is whole; until then this team's problems are
+ * listed under the button (prompt 17, Gate 3), so that the reason is on the screen before
+ * the tap and not only after it.
  */
 @Composable
 private fun CaptainSection(
+    state: LineupUiState,
     team: TeamLineupEntry,
     onEvent: (LineupEvent) -> Unit,
 ) {
@@ -335,11 +342,14 @@ private fun CaptainSection(
             }
 
             captain != null -> {
-                OutlinedButton(
-                    onClick = { onEvent(LineupEvent.CaptainConfirms) },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
-                ) {
-                    Text(stringResource(Res.string.lineup_captain_confirm, captain.player.name.asWrittenOnReport))
+                Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) {
+                    OutlinedButton(
+                        onClick = { onEvent(LineupEvent.CaptainConfirms) },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = PsmfDimens.minTouchTarget),
+                    ) {
+                        Text(stringResource(Res.string.lineup_captain_confirm, captain.player.name.asWrittenOnReport))
+                    }
+                    ConfirmBlockers(state, team)
                 }
             }
 
@@ -351,6 +361,33 @@ private fun CaptainSection(
                 )
             }
         }
+    }
+}
+
+/**
+ * What stops this team's captain confirming, under the button: this team's own problems,
+ * in the words Continue uses and nobody else's. Quiet until the captain taps and is
+ * refused, then in the error colour under a heading that says so.
+ */
+@Composable
+private fun ConfirmBlockers(
+    state: LineupUiState,
+    team: TeamLineupEntry,
+) {
+    val problems = team.problems()
+    if (problems.isEmpty()) return
+    val refused = team.side in state.confirmRefused
+    val colour = if (refused) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+    Text(
+        text =
+            stringResource(
+                if (refused) Res.string.lineup_captain_confirm_refused else Res.string.lineup_captain_confirm_waits,
+            ),
+        style = MaterialTheme.typography.bodyMedium,
+        color = colour,
+    )
+    problems.forEach { problem ->
+        Text(text = problem.describe(state), style = MaterialTheme.typography.bodyMedium, color = colour)
     }
 }
 

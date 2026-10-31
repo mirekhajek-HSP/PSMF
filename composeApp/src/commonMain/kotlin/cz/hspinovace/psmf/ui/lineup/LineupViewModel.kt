@@ -51,6 +51,12 @@ data class LineupUiState(
     val problems: List<LineupProblem> = emptyList(),
     val showProblems: Boolean = false,
     /**
+     * Teams whose captain tapped to confirm while the block was not whole, and was
+     * refused (prompt 17, Gate 3). Their problems are marked in the rows, as Continue's
+     * are, without waiting for Continue and without marking the other team's.
+     */
+    val confirmRefused: Set<TeamSide> = emptySet(),
+    /**
      * Continue was pressed and nothing was missing. The route turns this
      * into navigation to screen 4 and then clears it.
      */
@@ -58,7 +64,7 @@ data class LineupUiState(
 ) {
     val selected: TeamLineupEntry? get() = entry?.side(selectedSide)
 
-    fun problem(kind: LineupProblem): Boolean = showProblems && kind in problems
+    fun problem(kind: LineupProblem): Boolean = (showProblems || kind.side in confirmRefused) && kind in problems
 
     /** A squad member's name as the report writes it, for naming them in a problem. */
     fun nameOf(
@@ -381,10 +387,20 @@ class LineupViewModel(
      * time -- late or not. Nothing here touches the match's confirmations:
      * that is the signature under the finished report, and the recap still
      * asks for it (DECISIONS 2026-10-17).
+     *
+     * **Only for a block that is whole** -- exactly [TeamLineupEntry.problems] of
+     * this team, nothing new and nothing about eligibility (prompt 17, Gate 3). A
+     * refused tap records nothing and marks that team's problems on the screen.
+     * The other team's do not matter here.
      */
     private fun confirm() {
-        val captain = _state.value.selected?.markedCaptain ?: return
+        val team = _state.value.selected ?: return
+        val captain = team.markedCaptain ?: return
         val who = PersonName.orNull(captain.player.name.asWrittenOnReport) ?: return
+        if (team.problems().isNotEmpty()) {
+            _state.update { it.copy(confirmRefused = it.confirmRefused + team.side) }
+            return
+        }
         editTeam { it.copy(confirmation = LineupConfirmation(at = clock.now(), by = who)) }
     }
 

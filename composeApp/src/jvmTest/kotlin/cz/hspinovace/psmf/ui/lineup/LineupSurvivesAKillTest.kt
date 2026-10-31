@@ -203,6 +203,11 @@ class LineupSurvivesAKillTest {
             first.onEvent(LineupEvent.CaptainChosen(novak.id))
             first.onEvent(LineupEvent.GoalkeeperChosen(poupe.id))
             first.onEvent(LineupEvent.KitSelected(white))
+            // The tap is recorded only for a whole block (prompt 17, Gate 3): a number
+            // from the card for each of the three, as the referee would have typed.
+            first.onEvent(LineupEvent.CardNumberTyped(novak.id, "59001"))
+            first.onEvent(LineupEvent.CardNumberTyped(poupe.id, "59002"))
+            first.onEvent(LineupEvent.CardNumberTyped(svoboda.id, "59003"))
             first.onEvent(LineupEvent.CaptainConfirms)
 
             val home = openTheLineup().home()

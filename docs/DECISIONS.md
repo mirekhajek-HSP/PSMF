@@ -5,6 +5,63 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-31 · 0.4.0, Gate 3: the captain's tap checks the team first (prompt 17)
+
+The tester's point 3 on 0.3.1 (`reports/2026-10-31-0.4.0-tester-points.md`,
+§Gate 3). That the tap records only for a block that is whole, with exactly
+`TeamLineupEntry.problems()` of that side and nothing new, is the brief's and the
+2026-10-31 entry's; these are the calls it left to me.
+
+**1. The check is made on the screen's own entry, not on what is saved.** The
+view model asks `problems()` of the team on screen at the moment of the tap. A
+block that is not whole is never written to the report (only to the draft), so
+asking the saved lineup would be asking whether it exists, and would miss a team
+the referee has just broken. The other team's problems are not asked: its
+captain's block is its own. **Reverses if:** the report ever holds a lineup that
+is not whole (then the check is on the report).
+
+**2. The button stays a button, and the reason is on the screen before it is
+pressed.** While the team's block is not whole, its problems are listed under
+the button from the start, quietly, under *Potvrdit jde, až bude sestava
+úplná:*. A tap on it is passed on and refused by the view model; the refusal is
+what the screen shows, by turning the same list to the error colour under *Potvrdit
+zatím nejde:* and marking the rows that need something, as Continue marks them.
+A disabled button was the other way to do it, and the tester would meet exactly
+what the brief rules out, a grey button with no reason, the moment the list
+was below the fold. With no captain marked the section already says *Nejdřív
+vyberte kapitána* and lists nothing. **Reverses if:** the quiet list is noise
+while the block is being filled in (then it appears only after a refused tap),
+or referees press the button over and over expecting something.
+
+**3. A refused tap marks that team's rows and nobody else's, and the mark stays.**
+`LineupUiState.confirmRefused` is the sides refused; `problem()` is true for
+a side's problems once Continue was pressed *or* its captain was refused. It is
+never cleared: the marks follow the problems, so a row stops being marked as it is
+filled in, and a team that is whole shows nothing. **Reverses if:** a mark that
+came back after the captain changed is read as a new refusal.
+
+**4. After Continue the same line is on the screen twice**, once by the button
+and once in Continue's list of both teams. Left as it is: the two lists answer
+different questions (this team's captain, both teams' Continue), and hiding one
+would make the first depend on the second. One existing test now says "twice"
+(`theProblemNamesThePlayerAndSaysWhatToType`). **Reverses if:** referees read it
+as two problems.
+
+**5. Unchanged, and tested as unchanged:** a later change to a confirmed block
+does not withdraw the confirmation; a different captain does; a missing
+confirmation stops sending, never the kickoff; a confirmation an earlier build
+recorded on an incomplete block (in its draft) stays as it is, and survives
+another change to the block; a player with no shirt number is not a problem.
+One existing test's set-up gave an incomplete block and tapped (the captain's tap
+surviving a kill); it now types the three card numbers first.
+
+**6. The words.** *Potvrdit jde, až bude sestava úplná:* and *Potvrdit zatím
+nejde:* (en *Confirming works once the lineup is complete:* and *Cannot confirm
+yet:*); the problems are Continue's own sentences. The Ukrainian is not read by a
+native speaker. **Reverses if:** the testers read them otherwise.
+
+---
+
 ## 2026-10-31 · 0.4.0, Gate 2: a report can be discarded, from the list, after a question (prompt 17)
 
 The tester's point 1 on 0.3.1 (`reports/2026-10-31-0.4.0-tester-points.md`,
