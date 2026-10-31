@@ -31,6 +31,19 @@ Grouped by what blocks what, not by size. Last updated 2026-10-22.
       `7.sqm`, the first time it runs on iOS). `ComposeApp.framework`, debug and
       release, against 374 MB and 144 MB. Then "On the iPhone" at the end of
       prompt 15's report, the number pad and the dialogs above all.
+- [ ] **Prompt 17: what the testers found in 0.3.1**, 0.4.0 (6).
+      `prompts/17-tester-points-0.4.0.md`, briefed 2026-10-31 with the tester's
+      and the owner's answers. Found on 0.3.1 (5) on an iPhone 15 Pro. Six points:
+      the Zápis tab lists the reports on the device, signed ones too; any report
+      can be discarded, signed ones too (a tap on the wrong fixture left one for
+      ever); the captain's tap checks the team's lineup; Undo gets an outline;
+      goals and cards corrected from the console's log (analysis §2.12); copy the
+      text report, for email and WhatsApp. Seven gates, one fresh session each,
+      **run by hand** (owner): no runner for this one.
+- [ ] **Prompt 16's upload is not in git.** The repository stops at iOS build
+      5, Gate 1 (archived, `61e373e`), yet a tester reported on 0.3.1 from an
+      iPhone 15 Pro on 2026-10-31, so build 5 reached TestFlight. Gate 2's record
+      (the build number App Store Connect shows) is the Mac's to write.
 - [x] **0.3.0 (4) is with testers on Android and iPhone** (owner,
       2026-10-21). iOS build 4 was uploaded by the owner; the Mac's
       checklists were skipped at the owner's request
@@ -90,6 +103,7 @@ Grouped by what blocks what, not by size. Last updated 2026-10-22.
       checklist. Prompt 15 was written for cold sessions (a reading list per
       gate, named STOP conditions) and has now run gate by gate without it;
       build the runner with the next Windows prompt, once the owner says go.
+      **Not with prompt 17** (owner, 2026-10-31): it runs by hand.
 - [ ] **At 12:40 of play, `12´` or `13´`?** The app writes 12´. For the
       referee visit. Prompt 13 puts the seconds on screen, which makes the
       question visible: the console now reads `12:40` and, beneath it,

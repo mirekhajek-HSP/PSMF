@@ -5,6 +5,70 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-31 · From the testers of 0.3.1: the Zápis tab lists the reports, a report can be discarded, and goals and cards are corrected in the console
+
+**Mine, from the testers' six points on 0.3.1 (5) (`prompts/17`), with the
+tester's and the owner's answers of the same day.**
+
+**The Zápis tab's first screen lists the reports on the device.** It said
+*Žádný zápis* on every launch unless a whistle had gone, because the
+navigator does not survive the process and only a match in progress was put
+back. A report set up and not kicked off, or played and not signed, was then
+reachable only from Zápasy. The tab now lists what is being worked on
+(Rozepsáno, Probíhá, Dohráno), then what is signed (Potvrzeno). The report
+stays a wizard inside the tab; this changes its root, not its order. The
+2026-08-31 tabs entry stands.
+
+**A report can be discarded, signed or not.** A report exists from the first
+tap on its fixture (by design: nothing lives only in memory), and Zápasy never
+hides an unconfirmed one by its date, so a tap on the wrong fixture left a
+report for ever; the tester meant exactly that case, not a match that was not
+played. Discarding is offered from the list only and always asks. I proposed
+refusing it for a CONFIRMED report; **the owner chose to allow it** (testers'
+reports pile up, and a mis-signed test is still a test). The question for a
+signed report says it was signed and may already have been sent, and that
+saved files and sent mail are not touched: a discarded report is gone from
+the app, not from the world.
+
+**The captain's tap under the lineup checks that team's block first**, with
+the same problems Continue checks and nothing new. A captain confirming a
+block the app will not write was attesting to something unfinished. A later
+change still does not withdraw the tap (2026-10-17).
+
+**Undo gets an outline.** 0.3.1's Gate 4, §2, by its own reversal condition:
+the testers found it too easy to miss. It keeps its place, its width and its
+quietness.
+
+**Goals and cards are corrected from the console's log.** The analysis made
+post-match editing a requirement (§2.12: "wrong goal attribution"), the demo
+deferred it as screen 9, and the recap already tells the referee to correct a
+goal in the console, where only the last thing recorded could be taken back.
+A goal's scorer and minute, and a card's reason, minute and player, are
+corrected in place; either can be removed out of order. A goal's team and a
+card's colour are not changed in place: those are removed and recorded again.
+**This is not versioning**: the report says what the events now are and keeps
+no record of the change (§5.3 stays out of the demo).
+
+**Copying the report** is offered exactly when sending is, because it is one
+more way of sending it, and copies the text report only: the tester pastes it
+into an email or WhatsApp, and said plain text is enough.
+
+**No overnight runner for this one** (owner): prompt 17 runs by hand, a fresh
+session per gate.
+
+**Reverses if:**
+
+- referees look for "discard" inside the report rather than in the list;
+- a signed report is discarded by mistake once real matches are recorded,
+  or PSMF want a discarded one kept somewhere;
+- someone pastes the CSV or JSON somewhere and misses them;
+- a captain must be able to confirm a lineup that is not yet whole;
+- the outlined Undo is taken for a whistle, or tapped by mistake;
+- correcting in place proves riskier than Undo, or PSMF require the change
+  itself to be recorded (then this is §5.3, and the report carries a delta).
+
+---
+
 ## 2026-10-22 · 0.3.1, Gate 7: one phone checklist, 0.3.1 (5), and the documents brought level (prompt 15)
 
 Closes prompt 15 (`reports/2026-10-21-0.3.1-tester-fixes.md`, §Gate 7). The version is
