@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,7 +23,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,6 +67,7 @@ import cz.hspinovace.psmf.resources.console_yellows
 import cz.hspinovace.psmf.ui.common.EvenActionContentPadding
 import cz.hspinovace.psmf.ui.common.EvenActionRow
 import cz.hspinovace.psmf.ui.common.PsmfIcons
+import cz.hspinovace.psmf.ui.common.QuietOutlinedButton
 import cz.hspinovace.psmf.ui.common.TeamTabLabel
 import cz.hspinovace.psmf.ui.common.WithdrawSignaturesDialog
 import cz.hspinovace.psmf.ui.common.brandFilledColors
@@ -141,10 +140,12 @@ fun ConsoleScreen(
  * carries on to the assessment. One or two buttons in a row as wide as the
  * lists below, the same width and height where there are two ([EvenActionRow]).
  * The second is Undo, **apart** (a gap wider than the one between whistles)
- * and **quieter** (text, no outline, no fill), at the start edge, **only as
- * wide as its word**: a full-width Undo is a target a stray thumb takes a goal
- * back with. It is at the left, where a right thumb reaches least, which is
- * where a control for mistakes belongs.
+ * and **quieter** (outlined so that it reads as a button, never filled, in the
+ * muted colours: [QuietOutlinedButton]), at the start edge, **only as wide as
+ * its word and padding**: a full-width Undo is a target a stray thumb takes a
+ * goal back with. It is at the left, where a right thumb reaches least, which
+ * is where a control for mistakes belongs. (0.3.1 drew it without an outline;
+ * the testers did not take it for a button: 0.4.0.)
  */
 @Composable
 private fun Controls(
@@ -217,31 +218,14 @@ private fun Controls(
                 }
             }
         }
-        // Undo, never edit. Amending a finished report is screen 9 and
-        // is out of the demo.
-        TextButton(
+        // Undo takes back the last thing recorded; a correction further back is made from the log.
+        QuietOutlinedButton(
+            text = stringResource(Res.string.console_undo),
             onClick = { onEvent(ConsoleEvent.UndoPressed) },
-            modifier =
-                Modifier
-                    .padding(top = PsmfDimens.itemSpacing - PsmfDimens.labelGap)
-                    .heightIn(min = PsmfDimens.minTouchTarget),
-            // The word starts where the whistles' edge does, and is in the secondary text colour.
-            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
-            contentPadding = UndoPadding,
-        ) {
-            Text(stringResource(Res.string.console_undo))
-        }
+            modifier = Modifier.padding(top = PsmfDimens.itemSpacing - PsmfDimens.labelGap),
+        )
     }
 }
-
-/** Nothing before the word, so it starts at the edge the whistles do; a little after it, to tap. */
-private val UndoPadding =
-    PaddingValues(
-        start = 0.dp,
-        top = PsmfDimens.labelGap * 2,
-        end = PsmfDimens.itemSpacing * 2,
-        bottom = PsmfDimens.labelGap * 2,
-    )
 
 /** One of the whistles: outlined, or filled in the brand's yellow for the one that carries on. */
 @Composable

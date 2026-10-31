@@ -139,7 +139,7 @@ val appModule: Module =
         }
         viewModel { (matchId: MatchId) -> AssessmentViewModel(matchId, get(), get(), get()) }
         viewModel { (matchId: MatchId) -> RecapViewModel(matchId, get(), get(), get(), get(), get()) }
-        viewModel { (matchId: MatchId) -> ExportViewModel(matchId, get(), get(), get(), get()) }
+        viewModel { (matchId: MatchId) -> ExportViewModel(matchId, get(), get(), get(), get(), get()) }
         viewModel { SettingsViewModel(get(), get()) }
         viewModel { ShellViewModel(get()) }
         viewModel { ReportsViewModel(get(), get()) }

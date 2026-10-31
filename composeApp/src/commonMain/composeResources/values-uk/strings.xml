@@ -344,4 +344,7 @@
     <string name="export_save">Зберегти на пристрій</string>
     <string name="export_saved">Протокол збережено. До файлів можна повернутися і без застосунку.</string>
     <string name="export_save_failed">Збереження не вдалося. Файли можуть бути неповними.</string>
+    <string name="export_copy">Скопіювати текст протоколу</string>
+    <string name="export_copied">Текст протоколу в буфері обміну.</string>
+    <string name="export_copy_failed">Не вдалося скопіювати текст протоколу.</string>
 </resources>

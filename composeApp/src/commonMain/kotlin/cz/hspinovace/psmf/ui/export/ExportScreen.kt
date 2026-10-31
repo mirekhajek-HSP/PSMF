@@ -27,6 +27,9 @@ import cz.hspinovace.psmf.export.PSMF_REPORT_ADDRESS
 import cz.hspinovace.psmf.export.ZouFormat
 import cz.hspinovace.psmf.resources.Res
 import cz.hspinovace.psmf.resources.export_blocked
+import cz.hspinovace.psmf.resources.export_copied
+import cz.hspinovace.psmf.resources.export_copy
+import cz.hspinovace.psmf.resources.export_copy_failed
 import cz.hspinovace.psmf.resources.export_czech_note
 import cz.hspinovace.psmf.resources.export_draft_saved
 import cz.hspinovace.psmf.resources.export_failed
@@ -57,6 +60,7 @@ import cz.hspinovace.psmf.resources.export_shared_no_recipient
 import cz.hspinovace.psmf.ui.common.EvenActionContentPadding
 import cz.hspinovace.psmf.ui.common.EvenActionRow
 import cz.hspinovace.psmf.ui.common.PrimaryAction
+import cz.hspinovace.psmf.ui.common.QuietOutlinedButton
 import cz.hspinovace.psmf.ui.common.Section
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import org.jetbrains.compose.resources.stringResource
@@ -154,15 +158,21 @@ fun ExportScreen(
                         contentPadding = EvenActionContentPadding,
                     )
                 }
+                // Copying the text is one more way of sending the report, so it is offered under
+                // the same rule; quieter than both, on its own line, and always the TXT.
+                QuietOutlinedButton(
+                    text = stringResource(Res.string.export_copy),
+                    onClick = { onEvent(ExportEvent.CopyPressed) },
+                )
             }
         }
     }
 }
 
 /**
- * What happened the last time the referee pressed save or send.
+ * What happened the last time the referee pressed save, send or copy.
  *
- * Both stay on screen at once -- a referee who saved and then sent should
+ * All stay on screen at once -- a referee who saved and then sent should
  * see both, not have the first replaced. Every outcome has its own words,
  * cancellation included: a send or save that did not happen is never
  * silent, and nothing claims a report went out that did not.
@@ -176,37 +186,46 @@ private fun Outcomes(state: ExportUiState) {
             SaveOutcome.Failed -> Warning(stringResource(Res.string.export_save_failed))
         }
     }
-    state.sendOutcome?.let { outcome ->
+    state.sendOutcome?.let { SendOutcomeLine(it) }
+    state.copyOutcome?.let { outcome ->
         when (outcome) {
-            SendOutcome.DraftOpened -> {
-                Confirmation(stringResource(Res.string.export_sent, PSMF_REPORT_ADDRESS))
-            }
+            CopyOutcome.Copied -> Confirmation(stringResource(Res.string.export_copied))
+            CopyOutcome.Failed -> Warning(stringResource(Res.string.export_copy_failed))
+        }
+    }
+}
 
-            SendOutcome.HandedToMail -> {
-                Confirmation(stringResource(Res.string.export_handed_to_mail, PSMF_REPORT_ADDRESS))
-            }
+@Composable
+private fun SendOutcomeLine(outcome: SendOutcome) {
+    when (outcome) {
+        SendOutcome.DraftOpened -> {
+            Confirmation(stringResource(Res.string.export_sent, PSMF_REPORT_ADDRESS))
+        }
 
-            // Not a confirmation: whether it reached PSMF is up to what the
-            // referee typed as the recipient.
-            SendOutcome.SharedWithoutRecipient -> {
-                Warning(stringResource(Res.string.export_shared_no_recipient, PSMF_REPORT_ADDRESS))
-            }
+        SendOutcome.HandedToMail -> {
+            Confirmation(stringResource(Res.string.export_handed_to_mail, PSMF_REPORT_ADDRESS))
+        }
 
-            SendOutcome.DraftSaved -> {
-                Warning(stringResource(Res.string.export_draft_saved))
-            }
+        // Not a confirmation: whether it reached PSMF is up to what the
+        // referee typed as the recipient.
+        SendOutcome.SharedWithoutRecipient -> {
+            Warning(stringResource(Res.string.export_shared_no_recipient, PSMF_REPORT_ADDRESS))
+        }
 
-            SendOutcome.Cancelled -> {
-                Warning(stringResource(Res.string.export_send_cancelled))
-            }
+        SendOutcome.DraftSaved -> {
+            Warning(stringResource(Res.string.export_draft_saved))
+        }
 
-            SendOutcome.NoMailApp -> {
-                Warning(stringResource(Res.string.export_failed))
-            }
+        SendOutcome.Cancelled -> {
+            Warning(stringResource(Res.string.export_send_cancelled))
+        }
 
-            SendOutcome.Failed -> {
-                Warning(stringResource(Res.string.export_send_error))
-            }
+        SendOutcome.NoMailApp -> {
+            Warning(stringResource(Res.string.export_failed))
+        }
+
+        SendOutcome.Failed -> {
+            Warning(stringResource(Res.string.export_send_error))
         }
     }
 }

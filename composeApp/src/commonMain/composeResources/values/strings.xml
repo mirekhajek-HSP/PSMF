@@ -346,4 +346,7 @@
     <string name="export_save">Uložit do zařízení</string>
     <string name="export_saved">Zápis uložen. K souborům se lze vrátit i bez aplikace.</string>
     <string name="export_save_failed">Uložení se nezdařilo. Soubory nemusí být kompletní.</string>
+    <string name="export_copy">Zkopírovat text zápisu</string>
+    <string name="export_copied">Text zápisu je ve schránce.</string>
+    <string name="export_copy_failed">Text zápisu se nepodařilo zkopírovat.</string>
 </resources>

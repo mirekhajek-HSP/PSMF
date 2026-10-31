@@ -42,8 +42,18 @@ data class ExportUiState(
      * send, while there is still time to act on it.
      */
     val recipientPrefilled: Boolean = true,
+    /** The last copy, if any. Null until the referee presses copy. */
+    val copyOutcome: CopyOutcome? = null,
 ) {
     val ready: Boolean get() = problems.isEmpty() && report != null
+
+    /**
+     * What copy puts on the clipboard: the text report, whichever format the preview shows,
+     * and exactly the document that is shown and written for [ZouFormat.TEXT], not a second
+     * rendering. Null while the report is not ready: copying it is one more way of sending it.
+     */
+    val copyText: String?
+        get() = if (ready) documents.firstOrNull { it.format == ZouFormat.TEXT }?.content else null
 
     val preview: ZouDocument? get() = documents.firstOrNull { it.format == selected }
 }
@@ -61,6 +71,9 @@ sealed interface ExportEvent {
      * without the app; pressing "send" still only opens a mail draft.
      */
     data object SavePressed : ExportEvent
+
+    /** Copies the text report, whichever format the preview shows. */
+    data object CopyPressed : ExportEvent
 }
 
 /**
@@ -76,6 +89,7 @@ class ExportViewModel(
     private val buildZouReport: BuildZouReport,
     private val exportZou: ExportZou,
     private val reportSender: ReportSender,
+    private val reportClipboard: ReportClipboard,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ExportUiState())
     val state: StateFlow<ExportUiState> = _state.asStateFlow()
@@ -120,6 +134,12 @@ class ExportViewModel(
             ExportEvent.SavePressed -> {
                 val current = _state.value
                 if (current.ready) _savePending.value = current.documents
+            }
+
+            ExportEvent.CopyPressed -> {
+                val text = _state.value.copyText ?: return
+                val outcome = if (reportClipboard.copy(text)) CopyOutcome.Copied else CopyOutcome.Failed
+                _state.update { it.copy(copyOutcome = outcome) }
             }
         }
     }

@@ -1,7 +1,9 @@
 package cz.hspinovace.psmf.di
 
 import cz.hspinovace.psmf.data.db.DatabaseDriverFactory
+import cz.hspinovace.psmf.ui.export.IosReportClipboard
 import cz.hspinovace.psmf.ui.export.IosReportSender
+import cz.hspinovace.psmf.ui.export.ReportClipboard
 import cz.hspinovace.psmf.ui.export.ReportSender
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -12,4 +14,5 @@ actual fun platformModule(): Module =
         // Mail composer when Apple Mail has an account, otherwise the share
         // sheet. See IosReportSender.
         single<ReportSender> { IosReportSender() }
+        single<ReportClipboard> { IosReportClipboard() }
     }

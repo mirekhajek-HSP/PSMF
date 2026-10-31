@@ -5,6 +5,96 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-31 · 0.4.0, Gate 4: Undo has an outline, and the report's text can be copied (prompt 17)
+
+The tester's points 4 and 6 on 0.3.1 (`reports/2026-10-31-0.4.0-tester-points.md`,
+§Gate 4). Point 4 is 0.3.1 Gate 4's own reversal condition ("...or find it too easy
+to miss: then it is a button, and the test of the pixels changes with it"); this
+entry is that reversal, and nothing else of 0.3.1 Gate 4 §1–§7 is touched.
+
+**1. Undo is an outlined button, and the rest of its place is as 0.3.1 decided.**
+A line of its own under the whistles, at the start edge, only as wide as its word
+and padding (a full-width Undo is a target a stray thumb takes a goal back with),
+a full touch target, never a fill. What changed: it has a one-dp outline. The
+outline is now at the list's edge where the word was, and the word sits a padding
+inside it, as in any button. Rejected: filling it (it would be a whistle), a
+full-width Undo (the stray thumb), and a heavier outline than the whistles' (it
+would shout over the buttons that move the match on). **Reverses if** referees take
+it for a whistle or tap it by mistake; then it is quieter again, and the pixel test
+is turned back.
+
+**2. "Secondary colours" is the muted text colour, and the outline the whistles have.**
+Text `onSurfaceVariant` (the ink-soft of both themes); the outline is Material's own for an
+`OutlinedButton`, the one the whistles and *Save to device* are drawn with. A first version
+gave Undo the theme's darker `outline` colour; the render showed it heavier than the
+whistles, which made the quiet control the loudest edge on the screen, so it was dropped.
+What makes Undo quieter than a whistle is its text colour, its width and its place. The
+tester's point was that the whistles had an edge and Undo had none; it has the same edge
+now. **Reverses if** a referee still misses it (then a darker outline, for Undo alone) or
+takes it for a whistle (the text lighter).
+
+**3. One component, `QuietOutlinedButton`, for Undo and for copying.** Both are a
+secondary action apart from the buttons that move the screen on, and "quiet but
+visibly a button" is one rule, so it is one piece of code with one test of the pixels
+(in each screen's own test, in light and in dark). **Reverses if** the two need to
+differ (then copy its parameters out).
+
+**4. The test of the pixels is replaced, not deleted.** HEAD's
+`ConsoleControlsTest.undoHasNeitherOutlineNorFillWhereTheWhistlesHaveOne` asserted the
+opposite of the new behaviour. It is now
+`undoHasAnOutlineSoItReadsAsAButtonAndNoFillSoItIsNotAWhistle` (an outline, no fill, in
+both themes), and `undoHasALineOfItsOwn…` loses "the word starts at the edge" (now: the
+word is inside the outline) and gains "narrower than the whistles' row".
+
+**5. Copy is under the rule that offers Save and Send, on a line of its own under them.**
+"Zkopírovat text zápisu": offered exactly when the report is ready, because copying it
+is one more way of sending it (a mis-copied unfinished report pasted into WhatsApp is the
+fine the export rule exists to prevent). Under the row, at the start edge, outlined and
+muted like Undo: quieter than Send and not one of the pair. Rejected: a third button in
+the row (three do not fit at 360 dp, the reason 0.3.1 made the pair an `EvenActionRow`),
+and an icon on the preview (a copy icon on a view of CSV or JSON says the wrong thing).
+**Reverses if** testers want it next to the preview, or want to copy what the preview shows.
+
+**6. Always the text report, exactly the TXT.** Whichever format the preview shows. It is
+the document the export builds for `ZouFormat.TEXT`, the same string that is written to the
+TXT file and, by a test, equal to the body the mail carries (`ZouText.format(report)`); no
+second rendering. The tester pastes it into an email or WhatsApp and said plain text is
+enough. How it reads once pasted is not changed here. **Reverses if** someone needs the CSV
+or JSON on the clipboard: then the control follows the preview, and its words change.
+
+**7. The clipboard is a platform interface in Koin (`ReportClipboard`), not expect/actual
+and not Compose's.** Compose Multiplatform 1.12 has no way, from common code, to make a
+plain-text clipboard entry (`ClipEntry` is a platform class; the common `LocalClipboard`
+takes one, and the desktop artifact has no `withPlainText`: checked in the jar), and the
+sensitive mark below is Android-only. The shape is `ReportSender`'s, which needs the same
+platform context: `AndroidReportClipboard` takes the application context from Koin,
+`IosReportClipboard` is one line (`UIPasteboard.generalPasteboard.string`), and the JVM test
+host's refuses. The view model takes the interface, so a test records what was copied.
+**Reverses if** Compose gains a common plain-text entry and a way to mark it sensitive; then
+the interface goes and the screen calls the clipboard directly.
+
+**8. Sensitive where the platform says so.** The report holds dates of birth and card
+numbers. Android 13 and later: the clip carries `ClipDescription.EXTRA_IS_SENSITIVE`, so
+the system's copy preview and the keyboard's clipboard strip show it hidden. Android 12 and
+earlier have no such mark and show the text. **iOS has no mark**: `UIPasteboard`'s
+`localOnly` and `expirationDate` options would keep it off Universal Clipboard and let it
+expire, but they could not be compiled here (iosMain builds only on the Mac), so the actual
+is the one line and the options are not used. What iOS shows when the text is pasted into
+another app is UNPROVEN here; the report's checklist asks the tester. **Reverses if** the
+Mac can compile the options and the owner wants the clip kept off other devices or expiring.
+
+**9. The outcome line says it was copied, or that it was not.** "Text zápisu je ve
+schránce." (cs, en, uk), beside the save and send outcomes and never instead of them;
+"Text zápisu se nepodařilo zkopírovat." when the platform refuses. Android 12 and later
+also show their own "copied" toast and Android 13 a preview; the line is for the platforms
+and versions that do not, and the referee who looks at the screen. **Reverses if** the
+double confirmation on Android 12+ annoys testers.
+
+**Reverses if** (the entry as a whole): the testers find the copy control in the way or
+mistake it for sending (it says "text", and sending is still only Send).
+
+---
+
 ## 2026-10-31 · 0.4.0, Gate 3: the captain's tap checks the team first (prompt 17)
 
 The tester's point 3 on 0.3.1 (`reports/2026-10-31-0.4.0-tester-points.md`,

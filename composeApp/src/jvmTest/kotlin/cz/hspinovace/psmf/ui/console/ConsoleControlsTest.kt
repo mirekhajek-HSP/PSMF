@@ -60,7 +60,8 @@ private val KICKOFF = Instant.parse("2026-08-31T19:00:00Z")
  *   width and the same height, and where one sits alone it has the whole width;
  * - no label is broken in the middle of a word;
  * - Undo is on a line of its own under them, apart, and in the same place in
- *   every state; and it is quieter: no outline, no fill.
+ *   every state; and it is quieter than a whistle: an outline since 0.4.0 (the testers
+ *   did not take it for a button without one), but no fill, and narrower than the row.
  *
  * Measured once, in [layouts]: 56 renders, and the rules are asserted from that.
  */
@@ -129,13 +130,18 @@ class ConsoleControlsTest {
             if (!shown.undo.left.near(shown.list.left)) {
                 problems += "$combo: Undo's left edge is ${shown.undo.left}, the list's ${shown.list.left}"
             }
-            // The word itself starts where the whistles' edge is, not a padding in from it.
-            if (!shown.undoWord.left.near(shown.list.left)) {
-                problems +=
-                    "$combo: Undo's word starts at ${shown.undoWord.left}, the list's edge is ${shown.list.left}"
+            // It has an outline now (0.4.0), so its edge is the one at the list's edge and the
+            // word sits a padding inside it, as in any button.
+            if (shown.undoWord.left <= shown.undo.left + 1.dp) {
+                problems += "$combo: Undo's word starts at ${shown.undoWord.left}, on its outline at ${shown.undo.left}"
             }
-            // Only as wide as its word, not a target as wide as the list: a stray thumb on a
-            // full-width Undo takes back a goal. (The Ukrainian word at 130 % is 62 % of 360 dp.)
+            // Only as wide as its word and its padding, not a target as wide as the list: a
+            // stray thumb on a full-width Undo takes back a goal, and narrower than the whistles'
+            // row. (The Ukrainian word at 130 % is about 70 % of 360 dp with its padding.)
+            val whistlesRow = shown.whistles.last().right - shown.whistles.first().left
+            if (shown.undo.width >= whistlesRow) {
+                problems += "$combo: Undo is ${shown.undo.width} wide, the whistles' row $whistlesRow"
+            }
             if (shown.undo.width > shown.list.width * UNDO_AT_MOST) {
                 problems += "$combo: Undo is ${shown.undo.width} wide of ${shown.list.width}"
             }
@@ -143,21 +149,34 @@ class ConsoleControlsTest {
         assertNone(problems)
     }
 
+    /**
+     * 0.3.1 pinned the opposite (`undoHasNeitherOutlineNorFillWhereTheWhistlesHaveOne`: no
+     * outline, no fill); the testers' point 4 (0.4.0) was that it is not a button then. This
+     * replaces it: an outline, still no fill, and still narrower than the whistles' row (the
+     * layout test above holds the width).
+     */
     @Test
-    fun undoHasNeitherOutlineNorFillWhereTheWhistlesHaveOne() =
-        runDesktopComposeUiTest(width = PIXELS_AT_360, height = 1700) {
-            withLanguage("cs") {
-                setContent {
-                    CompositionLocalProvider(LocalDensity provides Density(DENSITY, 1f)) {
-                        PsmfTheme { ConsoleScreen(state(Phase.FIRST_HALF), Phase.FIRST_HALF.now, {}) }
+    fun undoHasAnOutlineSoItReadsAsAButtonAndNoFillSoItIsNotAWhistle() {
+        for (dark in listOf(false, true)) {
+            runDesktopComposeUiTest(width = PIXELS_AT_360, height = 1700) {
+                withLanguage("cs") {
+                    setContent {
+                        CompositionLocalProvider(LocalDensity provides Density(DENSITY, 1f)) {
+                            PsmfTheme(darkTheme = dark) {
+                                ConsoleScreen(state(Phase.FIRST_HALF), Phase.FIRST_HALF.now, {})
+                            }
+                        }
                     }
-                }
 
-                assertFalse(hasVisibleEdge("Vzít zpět"), "Undo is drawn like a whistle")
-                assertTrue(hasVisibleEdge("Ukončit poločas"), "a whistle has no outline")
-                assertTrue(hasVisibleEdge("Ukončit utkání"), "a whistle has no outline")
+                    val where = if (dark) "dark" else "light"
+                    assertTrue(hasVisibleEdge("Vzít zpět"), "$where: Undo has no outline")
+                    assertTrue(hasVisibleEdge("Ukončit poločas"), "$where: a whistle has no outline")
+                    assertTrue(hasVisibleEdge("Ukončit utkání"), "$where: a whistle has no outline")
+                    assertFalse(isFilledInside("Vzít zpět"), "$where: Undo is filled like a button")
+                }
             }
         }
+    }
 
     @Test
     fun everyStateHasTheWhistlesItShouldAndNoOtherInEitherLanguage() {
@@ -176,6 +195,12 @@ class ConsoleControlsTest {
         val background = image[0, 0]
         val middle = image.height / 2
         return (0 until EDGE_PIXELS).any { image[it, middle] != background }
+    }
+
+    /** The padding to the right of the word, clear of the outline, is the surface behind it. */
+    private fun ComposeUiTest.isFilledInside(text: String): Boolean {
+        val image = onNodeWithText(text).captureToImage().toPixelMap()
+        return image[image.width - INSIDE_PIXELS, image.height / 2] != image[0, 0]
     }
 
     private fun assertNone(problems: List<String>) {
@@ -283,6 +308,7 @@ class ConsoleControlsTest {
         const val PIXELS_AT_360 = 945
         const val TOLERANCE_DP = 1f
         const val EDGE_PIXELS = 3
+        const val INSIDE_PIXELS = 12
         const val UNDO_AT_MOST = 0.75f
 
         val layouts: Map<Combo, Shown> by lazy {

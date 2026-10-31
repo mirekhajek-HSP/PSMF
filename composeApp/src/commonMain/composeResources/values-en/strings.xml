@@ -332,4 +332,7 @@
     <string name="export_save">Save to device</string>
     <string name="export_saved">Report saved. The files can be reopened without the app.</string>
     <string name="export_save_failed">Saving failed. The files may be incomplete.</string>
+    <string name="export_copy">Copy the report text</string>
+    <string name="export_copied">The report text is on the clipboard.</string>
+    <string name="export_copy_failed">The report text could not be copied.</string>
 </resources>

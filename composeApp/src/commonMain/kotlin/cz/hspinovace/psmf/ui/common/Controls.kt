@@ -20,6 +20,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -143,6 +144,30 @@ fun brandFilledColors(): ButtonColors =
         containerColor = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
     )
+
+/**
+ * An outlined button that is quieter than the screen's main ones (0.4.0): Undo, and copying
+ * the report's text.
+ *
+ * It has an outline, because the testers did not take a bare word for a button, and no fill,
+ * because a fill is for the action that moves the screen on. The outline is the whistles' own;
+ * the text is in the theme's muted colour, not the whistles' ink. It is only as wide as its
+ * word and its padding, so a stray thumb meets a small target, and at least a touch target tall.
+ */
+@Composable
+fun QuietOutlinedButton(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier.heightIn(min = PsmfDimens.minTouchTarget),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+    ) {
+        Text(text)
+    }
+}
 
 /** A titled block of the form, matching a block of the paper page. */
 @Composable
