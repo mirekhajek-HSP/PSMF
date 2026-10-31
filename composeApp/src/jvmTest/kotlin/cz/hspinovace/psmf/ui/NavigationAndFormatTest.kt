@@ -7,6 +7,7 @@ import cz.hspinovace.psmf.ui.format.asFullDate
 import cz.hspinovace.psmf.ui.navigation.AppNavigator
 import cz.hspinovace.psmf.ui.navigation.Destination
 import cz.hspinovace.psmf.ui.navigation.Tab
+import cz.hspinovace.psmf.usecase.ResumePoint
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
@@ -36,14 +37,21 @@ class AppNavigatorTest {
     }
 
     @Test
-    fun goingToAScreenAndBackAgainReturnsToTheList() {
+    fun backFromTheFirstStepOfAReportIsTheListOfReportsAndThenZapasy() {
+        // Until 0.4.0 the first step of a report was the root of its tab,
+        // so back out of it left the tab. The tab's root is the list of the
+        // reports on the device now (prompt 17, Gate 1), and the report a
+        // wizard on top of it.
         val navigator = AppNavigator()
 
         navigator.openReport(Destination.MatchHeader(m1))
         assertEquals(Tab.REPORT, navigator.state.value.tab)
 
-        // The first step of a report is the root of its tab, so back out of
-        // it leaves the tab rather than popping within it.
+        assertTrue(navigator.back())
+        assertEquals(Tab.REPORT, navigator.state.value.tab)
+        assertEquals(Destination.Reports, navigator.state.value.current)
+
+        // The list is a tab's root like any other: back from it is Zápasy.
         assertTrue(navigator.back())
         assertEquals(Tab.FIXTURES, navigator.state.value.tab)
         assertEquals(Destination.Fixtures, navigator.state.value.current)
@@ -60,7 +68,7 @@ class AppNavigatorTest {
         navigator.goTo(lineup)
         navigator.goTo(lineup)
 
-        assertEquals(2, navigator.stack(Tab.REPORT).size)
+        assertEquals(listOf(Destination.Reports, Destination.MatchHeader(m1), lineup), navigator.stack(Tab.REPORT))
     }
 
     @Test
@@ -74,7 +82,7 @@ class AppNavigatorTest {
         // someone else's match.
         navigator.openReport(Destination.MatchHeader(m2))
 
-        assertEquals(listOf(Destination.MatchHeader(m2)), navigator.stack(Tab.REPORT))
+        assertEquals(listOf(Destination.Reports, Destination.MatchHeader(m2)), navigator.stack(Tab.REPORT))
     }
 
     @Test
@@ -100,7 +108,7 @@ class AppNavigatorTest {
         navigator.select(Tab.SETTINGS)
 
         assertEquals(Destination.Settings, navigator.state.value.current)
-        assertEquals(2, navigator.stack(Tab.REPORT).size)
+        assertEquals(3, navigator.stack(Tab.REPORT).size)
 
         navigator.select(Tab.REPORT)
         assertEquals(Destination.Lineup(m1), navigator.state.value.current)
@@ -172,28 +180,28 @@ class AppNavigatorTest {
     }
 
     @Test
-    fun theReportTabHasSomethingToShowBeforeAnyReportIsOpened() {
+    fun theReportTabOpensOnTheListOfReports() {
         val navigator = AppNavigator()
 
         navigator.select(Tab.REPORT)
 
-        assertEquals(Destination.NoReport, navigator.state.value.current)
+        assertEquals(Destination.Reports, navigator.state.value.current)
     }
 
     @Test
-    fun openingAReportReplacesTheEmptyStateRatherThanStackingOnIt() {
-        // Or back out of the match header would land on "no report open",
-        // which is not a screen anyone came from.
+    fun openingAReportPutsItOnTopOfTheListOfReports() {
+        // The list is a screen the referee came from, which "no report
+        // open" was not: back out of the match header lands on it.
         val navigator = AppNavigator()
 
         navigator.select(Tab.REPORT)
         navigator.openReport(Destination.MatchHeader(m1))
 
-        assertEquals(listOf(Destination.MatchHeader(m1)), navigator.stack(Tab.REPORT))
+        assertEquals(listOf(Destination.Reports, Destination.MatchHeader(m1)), navigator.stack(Tab.REPORT))
     }
 
     @Test
-    fun aMatchAlreadyUnderWayIsAdoptedIntoTheEmptyReportTab() {
+    fun aMatchAlreadyUnderWayIsAdoptedIntoTheEmptyReportTabWithTheListBeneathIt() {
         // Found on a device, not here: the badge is read from the database
         // and the stacks are not, so after a kill the tab bar said a report
         // was in progress and the tab it badged said "no report open".
@@ -203,7 +211,46 @@ class AppNavigatorTest {
 
         // Adopting does not change tab -- the app still opens on fixtures.
         assertEquals(Tab.FIXTURES, navigator.state.value.tab)
-        assertEquals(Destination.Console(m1), navigator.stack(Tab.REPORT).last())
+        assertEquals(
+            listOf(Destination.Reports, Destination.MatchHeader(m1), Destination.Lineup(m1), Destination.Console(m1)),
+            navigator.stack(Tab.REPORT),
+        )
+    }
+
+    @Test
+    fun aReportAdoptedAgainDoesNotPullTheRefereeOffTheListTheyWentBackTo() {
+        // The shell adopts the match under way whenever it is composed
+        // afresh -- after a kill, and also after an Android configuration
+        // change, with the same match still under way. The list is a screen
+        // now, where "no report open" was not; a referee who went back to it
+        // must stay there.
+        val navigator = AppNavigator()
+        navigator.adoptReport(Destination.Console(m1))
+        navigator.select(Tab.REPORT)
+        repeat(3) { navigator.back() }
+        assertEquals(Destination.Reports, navigator.state.value.current)
+
+        navigator.adoptReport(Destination.Console(m1))
+
+        assertEquals(Destination.Reports, navigator.state.value.current)
+    }
+
+    @Test
+    fun aRowOpensItsReportAtItsResumePointFromEitherList() {
+        // Zápasy and the Zápis tab's list both open a report through this,
+        // so a row in either lands at the same step.
+        mapOf(
+            ResumePoint.HEADER to Destination.MatchHeader(m1),
+            ResumePoint.CONSOLE to Destination.Console(m1),
+            ResumePoint.RECAP to Destination.Recap(m1),
+        ).forEach { (resumePoint, step) ->
+            val navigator = AppNavigator()
+
+            navigator.openReport(m1, resumePoint)
+
+            assertEquals(Tab.REPORT, navigator.state.value.tab)
+            assertEquals(step, navigator.state.value.current, "$resumePoint")
+        }
     }
 
     @Test
@@ -220,9 +267,9 @@ class AppNavigatorTest {
         assertEquals(Destination.Lineup(m1), navigator.state.value.current)
         assertTrue(navigator.back())
         assertEquals(Destination.MatchHeader(m1), navigator.state.value.current)
-        // And only then out of the report, to the fixture list.
+        // And only then out of the report, to the list of reports.
         assertTrue(navigator.back())
-        assertEquals(Tab.FIXTURES, navigator.state.value.tab)
+        assertEquals(Destination.Reports, navigator.state.value.current)
     }
 
     @Test
@@ -243,6 +290,7 @@ class AppNavigatorTest {
                 Destination.Console(m1),
                 Destination.Lineup(m1),
                 Destination.MatchHeader(m1),
+                Destination.Reports,
                 Destination.Fixtures,
             ),
             walked,
@@ -259,6 +307,7 @@ class AppNavigatorTest {
 
         assertEquals(
             listOf(
+                Destination.Reports,
                 Destination.MatchHeader(m2),
                 Destination.Lineup(m2),
                 Destination.Console(m2),
@@ -277,7 +326,8 @@ class AppNavigatorTest {
 
         assertEquals(Destination.Assessment(m1), navigator.state.value.current)
         assertEquals(m1, navigator.stack(Tab.REPORT).last().matchId)
-        assertTrue(navigator.stack(Tab.REPORT).all { it.matchId == m1 })
+        // Beneath m1's steps there is the list, which belongs to no match.
+        assertTrue(navigator.stack(Tab.REPORT).none { it.matchId == m2 })
     }
 
     @Test
@@ -288,7 +338,7 @@ class AppNavigatorTest {
         assertEquals(Tab.TEAMS, Destination.Teams.tab)
         assertEquals(Tab.SETTINGS, Destination.Settings.tab)
         listOf(
-            Destination.NoReport,
+            Destination.Reports,
             Destination.MatchHeader(m1),
             Destination.Lineup(m1),
             Destination.Console(m1),

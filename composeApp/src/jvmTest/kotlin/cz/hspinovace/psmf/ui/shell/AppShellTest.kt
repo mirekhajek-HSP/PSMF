@@ -33,11 +33,14 @@ import cz.hspinovace.psmf.ui.console.ConsoleUiState
 import cz.hspinovace.psmf.ui.navigation.AppNavigator
 import cz.hspinovace.psmf.ui.navigation.Destination
 import cz.hspinovace.psmf.ui.navigation.Tab
+import cz.hspinovace.psmf.ui.reports.ReportsScreen
+import cz.hspinovace.psmf.ui.reports.ReportsUiState
 import cz.hspinovace.psmf.ui.theme.PsmfTheme
 import cz.hspinovace.psmf.ui.withLanguage
 import cz.hspinovace.psmf.usecase.ConsoleEntry
 import cz.hspinovace.psmf.usecase.ConsoleRow
 import cz.hspinovace.psmf.usecase.ConsoleTeam
+import cz.hspinovace.psmf.usecase.ReportListing
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.minutes
@@ -210,13 +213,15 @@ class AppShellTest {
         }
 
     @Test
-    fun theFirstStepOfAReportOffersBackAndItLeavesForTheFixtureList() =
+    fun theFirstStepOfAReportOffersBackAndItLeadsToTheListOfReports() =
         runComposeUiTest {
             // The tester on an iPhone: "Hlavička zápisu -- chybí tlačítko
             // zpět". This used to be asserted the other way round, because
-            // the header is the root of its tab and the tab bar was the way
+            // the header was the root of its tab and the tab bar was the way
             // out. iOS has no system back button, and the tab bar does not
-            // say it means *leave this report*.
+            // say it means *leave this report*. Until 0.4.0 Zpět left for
+            // Zápasy; the tab's root is the list of reports now (prompt 17,
+            // Gate 1), with no Zpět of its own.
             val navigator = AppNavigator()
             navigator.openReport(Destination.MatchHeader(MATCH))
             withLanguage("cs") {
@@ -226,7 +231,8 @@ class AppShellTest {
                 onNodeWithText("Zpět").assertIsDisplayed()
                 onNodeWithText("Zpět").performClick()
 
-                onNodeWithText("FIXTURES").assertIsDisplayed()
+                onNodeWithText("Reports").assertIsDisplayed()
+                onNodeWithText("Zpět").assertDoesNotExist()
             }
         }
 
@@ -367,8 +373,11 @@ class AppShellTest {
                         )
                     }
 
-                    Destination.NoReport -> {
-                        NoReportScreen(
+                    Destination.Reports -> {
+                        // No report on the device: the list's empty state.
+                        ReportsScreen(
+                            state = ReportsUiState(listing = ReportListing()),
+                            onOpenReport = {},
                             onPickFixture = {
                                 navigator.select(Tab.FIXTURES)
                                 navigation = navigator.state.value

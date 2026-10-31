@@ -36,6 +36,7 @@ import cz.hspinovace.psmf.ui.header.MatchHeaderViewModel
 import cz.hspinovace.psmf.ui.lineup.LineupViewModel
 import cz.hspinovace.psmf.ui.navigation.AppNavigator
 import cz.hspinovace.psmf.ui.recap.RecapViewModel
+import cz.hspinovace.psmf.ui.reports.ReportsViewModel
 import cz.hspinovace.psmf.ui.settings.SettingsViewModel
 import cz.hspinovace.psmf.ui.shell.ShellViewModel
 import cz.hspinovace.psmf.ui.teams.TeamRosterViewModel
@@ -55,6 +56,7 @@ import cz.hspinovace.psmf.usecase.LogCard
 import cz.hspinovace.psmf.usecase.LogGoal
 import cz.hspinovace.psmf.usecase.NewId
 import cz.hspinovace.psmf.usecase.ObserveReportInProgress
+import cz.hspinovace.psmf.usecase.ObserveReports
 import cz.hspinovace.psmf.usecase.RememberCardNumber
 import cz.hspinovace.psmf.usecase.RememberDateOfBirth
 import cz.hspinovace.psmf.usecase.RestoreLineupDraft
@@ -139,6 +141,7 @@ val appModule: Module =
         viewModel { (matchId: MatchId) -> ExportViewModel(matchId, get(), get(), get(), get()) }
         viewModel { SettingsViewModel(get(), get()) }
         viewModel { ShellViewModel(get()) }
+        viewModel { ReportsViewModel(get()) }
         viewModel { TeamsViewModel(get(), get()) }
         viewModel { (teamId: TeamId) -> TeamRosterViewModel(teamId, get(), get(), get()) }
     }
@@ -150,6 +153,7 @@ val appModule: Module =
 private fun Module.factoryOfUseCases() {
     factory { ListFixtures(get(), get()) }
     factory { ObserveReportInProgress(get(), get()) }
+    factory { ObserveReports(get(), get()) }
     factory { BrowseTeams(get(), get()) }
     factory { LoadTeamRoster(get(), get(), get()) }
     factory { SetDefaultJerseyNumber(get()) }

@@ -19,14 +19,16 @@ import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import org.jetbrains.compose.resources.stringResource
 
 /**
- * The report tab before a report has been opened.
+ * The report tab with no report on the device.
  *
  * The tab is always present — a match in progress has to be reachable from
  * anywhere — so it needs something to show when there is nothing in it.
  * This says what the tab is for and offers the one route in, rather than
  * being a blank screen a referee has to guess at.
  *
- * It is seen once, at most: opening a report replaces it as the tab's root.
+ * Until 0.4.0 it was the tab's root until a report was opened, and said
+ * so after every restart over reports the database still held. It is the
+ * empty state of [cz.hspinovace.psmf.ui.reports.ReportsScreen] now.
  */
 @Composable
 fun NoReportScreen(

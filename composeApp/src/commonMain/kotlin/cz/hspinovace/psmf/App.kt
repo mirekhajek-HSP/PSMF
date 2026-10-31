@@ -27,8 +27,8 @@ import cz.hspinovace.psmf.resources.export_title
 import cz.hspinovace.psmf.resources.fixtures_title
 import cz.hspinovace.psmf.resources.header_title
 import cz.hspinovace.psmf.resources.lineup_title
-import cz.hspinovace.psmf.resources.no_report_title
 import cz.hspinovace.psmf.resources.recap_title
+import cz.hspinovace.psmf.resources.reports_title
 import cz.hspinovace.psmf.resources.settings_title
 import cz.hspinovace.psmf.resources.teams_title
 import cz.hspinovace.psmf.ui.assessment.AssessmentScreen
@@ -52,18 +52,19 @@ import cz.hspinovace.psmf.ui.navigation.Destination
 import cz.hspinovace.psmf.ui.navigation.Tab
 import cz.hspinovace.psmf.ui.recap.RecapScreen
 import cz.hspinovace.psmf.ui.recap.RecapViewModel
+import cz.hspinovace.psmf.ui.reports.ReportsScreen
+import cz.hspinovace.psmf.ui.reports.ReportsViewModel
 import cz.hspinovace.psmf.ui.settings.SettingsEvent
 import cz.hspinovace.psmf.ui.settings.SettingsScreen
 import cz.hspinovace.psmf.ui.settings.SettingsViewModel
 import cz.hspinovace.psmf.ui.shell.AppShell
-import cz.hspinovace.psmf.ui.shell.NoReportScreen
 import cz.hspinovace.psmf.ui.shell.ShellViewModel
 import cz.hspinovace.psmf.ui.teams.TeamRosterScreen
 import cz.hspinovace.psmf.ui.teams.TeamRosterViewModel
 import cz.hspinovace.psmf.ui.teams.TeamsScreen
 import cz.hspinovace.psmf.ui.teams.TeamsViewModel
 import cz.hspinovace.psmf.ui.theme.PsmfTheme
-import cz.hspinovace.psmf.usecase.ResumePoint
+import cz.hspinovace.psmf.usecase.ReportRow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
@@ -135,10 +136,10 @@ private fun Shell(
 
     // The badge comes from the database and the back stacks do not, so
     // on the first launch after a kill the two disagree: a match is in
-    // progress but the report tab is empty. Seeding it here is what
-    // makes tapping the badge land on the console rather than on "no
-    // report open". It does not change tab -- the app still opens on
-    // the fixture list, which is where the referee should land.
+    // progress but the report tab holds only its list. Seeding it here
+    // is what makes tapping the badge land on the console, with the list
+    // beneath it. It does not change tab -- the app still opens on the
+    // fixture list, which is where the referee should land.
     val inProgress = shellState.inProgress
     LaunchedEffect(inProgress) {
         inProgress?.let { navigator.adoptReport(Destination.Console(it)) }
@@ -173,11 +174,15 @@ private fun Route(
 ) {
     when (current) {
         Destination.Fixtures -> {
-            FixturesRoute(modifier = modifier, onOpenMatch = { navigator.openReport(it.destination()) })
+            FixturesRoute(modifier = modifier, onOpenMatch = { navigator.openReport(it.matchId, it.resumePoint) })
         }
 
-        Destination.NoReport -> {
-            NoReportScreen(onPickFixture = { navigator.select(Tab.FIXTURES) }, modifier = modifier)
+        Destination.Reports -> {
+            ReportsRoute(
+                onOpenReport = { navigator.openReport(it.matchId, it.resumePoint) },
+                onPickFixture = { navigator.select(Tab.FIXTURES) },
+                modifier = modifier,
+            )
         }
 
         is Destination.MatchHeader -> {
@@ -261,7 +266,7 @@ private fun Route(
 private fun Destination.title(): String =
     when (this) {
         Destination.Fixtures -> stringResource(Res.string.fixtures_title)
-        Destination.NoReport -> stringResource(Res.string.no_report_title)
+        Destination.Reports -> stringResource(Res.string.reports_title)
         is Destination.MatchHeader -> stringResource(Res.string.header_title)
         is Destination.Lineup -> stringResource(Res.string.lineup_title)
         is Destination.Console -> stringResource(Res.string.console_title)
@@ -279,18 +284,6 @@ private fun ThemeChoice.isDark(): Boolean =
         ThemeChoice.SYSTEM -> isSystemInDarkTheme()
         ThemeChoice.LIGHT -> false
         ThemeChoice.DARK -> true
-    }
-
-/**
- * Tapping a fixture lands where the work is: a match already under way
- * opens on the console, and a finished one on the recap, rather than on a
- * header filled in an hour ago.
- */
-private fun OpenMatch.destination(): Destination =
-    when (resumePoint) {
-        ResumePoint.HEADER -> Destination.MatchHeader(matchId)
-        ResumePoint.CONSOLE -> Destination.Console(matchId)
-        ResumePoint.RECAP -> Destination.Recap(matchId)
     }
 
 @Composable
@@ -316,6 +309,22 @@ private fun FixturesRoute(
         onFilterChanged = viewModel::onFilterChanged,
         modifier = modifier,
     )
+}
+
+/**
+ * The Zápis tab's first screen: the reports on the device. A row opens its
+ * report as its fixture in Zápasy would.
+ */
+@Composable
+private fun ReportsRoute(
+    onOpenReport: (ReportRow) -> Unit,
+    onPickFixture: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val viewModel: ReportsViewModel = koinViewModel()
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    ReportsScreen(state = state, onOpenReport = onOpenReport, onPickFixture = onPickFixture, modifier = modifier)
 }
 
 /**

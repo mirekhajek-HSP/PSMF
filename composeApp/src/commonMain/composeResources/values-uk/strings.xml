@@ -252,7 +252,12 @@
     <string name="tab_settings">Опції</string>
     <string name="tab_report_in_progress">Протокол триває</string>
 
-    <!-- The report tab before a report has been opened -->
+    <!-- The report tab's first screen: the reports on the device -->
+    <string name="reports_title">Протоколи</string>
+    <string name="reports_working">У роботі</string>
+    <string name="reports_confirmed">Підтверджені</string>
+
+    <!-- The same, with no report on the device -->
     <string name="no_report_title">Протокол не відкрито</string>
     <string name="no_report_body">Протокол починається з вибору матчу в розділі «Матчі».</string>
     <string name="no_report_action">Вибрати матч</string>

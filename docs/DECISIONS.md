@@ -5,6 +5,58 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-31 · 0.4.0, Gate 1: the Zápis tab lists the reports on the device (prompt 17)
+
+The tester's point 2 on 0.3.1, reproduced through the whole app on the JVM
+before it was changed (`reports/2026-10-31-0.4.0-tester-points.md`, §Gate 1).
+What the list holds and in what order is the brief's; these are the calls it
+left to me.
+
+**1. The list is beneath every report, however it was opened.** The tab's
+root is the list (`Destination.Reports`, which replaces `NoReport`), and a
+report opened from Zápasy sits on it as one opened from the list does. So
+Zpět on the match header goes to the list, and one more back to Zápasy;
+until 0.4.0 it went straight to Zápasy. Remembering where a report was opened
+from would make the tab's root depend on history, and the brief's "after a
+kill ... the console, now with the list beneath it" already puts the list
+under a report nobody tapped in it. It also shows a report started by tapping
+the wrong fixture to the referee as soon as they back out of it, which is
+where Gate 2 discards it. **Reverses if:** referees who open a report from
+Zápasy expect Zpět on the header to take them back there, and the extra step
+reads as being lost.
+
+**2. A match under way is adopted once per launch.** The shell puts the match
+in progress into the tab whenever it is composed afresh, which an Android
+configuration change also does. Under "no report open" that was harmless;
+with a list the referee can go back to, a rotation would have pulled them off
+it onto the console. `AppNavigator` now adopts only into a tab nothing has
+been opened or adopted in since launch, and the stack check it had, made
+redundant by that, went. **Reverses if:** after a kill the badge is seen to
+land on the list rather than the console (something used the tab before the
+adoption came); or the navigator comes to survive the process, and adoption
+goes altogether.
+
+**3. A row is a fixture's row in Zápasy, without the pitch and with the group
+always named.** Kickoff time over the date, home over away, the status badge
+under them, the group's code at the end. The badge is one composable now
+(`ReportStatusBadge`), used by both lists, and so is the heading band
+(`ListHeading`): the two cannot come to differ in words or look. The date has
+no year, as in Zápasy. **Reverses if:** referees want the pitch, the result
+or the year in the row (reports kept from one season into the next would want
+the year).
+
+**4. The words.** The screen is titled *Zápisy*; its groups are
+*Rozpracované* and *Potvrzené* (en *Reports*, *Being worked on*, *Confirmed*;
+uk *Протоколи*, *У роботі*, *Підтверджені*, not read by a native speaker).
+With no report on the device it says what *Žádný zápis* said, word for word;
+before the first answer it says nothing, so it never says *Žádný zápis* for a
+frame over reports about to arrive. **Reverses if:** the testers read the
+headings otherwise; or the en and uk *No report open*, written for a tab with
+nothing open in it, reads wrong for a device with no report on it (the Czech
+says both).
+
+---
+
 ## 2026-10-31 · From the testers of 0.3.1: the Zápis tab lists the reports, a report can be discarded, and goals and cards are corrected in the console
 
 **Mine, from the testers' six points on 0.3.1 (5) (`prompts/17`), with the

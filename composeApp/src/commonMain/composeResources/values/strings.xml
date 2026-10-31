@@ -254,7 +254,12 @@
     <string name="tab_settings">Nastavení</string>
     <string name="tab_report_in_progress">Zápis právě probíhá</string>
 
-    <!-- The report tab before a report has been opened -->
+    <!-- The report tab's first screen: the reports on the device -->
+    <string name="reports_title">Zápisy</string>
+    <string name="reports_working">Rozpracované</string>
+    <string name="reports_confirmed">Potvrzené</string>
+
+    <!-- The same, with no report on the device -->
     <string name="no_report_title">Žádný zápis</string>
     <string name="no_report_body">Zápis začíná výběrem zápasu v Zápasech.</string>
     <string name="no_report_action">Vybrat zápas</string>

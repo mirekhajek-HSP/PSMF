@@ -2,6 +2,7 @@ package cz.hspinovace.psmf.ui.navigation
 
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.TeamId
+import cz.hspinovace.psmf.usecase.ResumePoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -45,15 +46,15 @@ sealed interface Destination {
     }
 
     /**
-     * The report tab with nothing open in it.
+     * The report tab's root: the reports on the device.
      *
-     * Only ever seen before the first report of a session is opened: once
-     * one is, it replaces this as the tab's root and re-selecting the tab
-     * does not pop back to it. A tab that is always present needs
-     * *something* to show, and "there is no report, here is how to start
-     * one" is more use than a blank screen.
+     * Every report opened in the tab sits on top of it, so back from a
+     * report's first step comes here. Until 0.4.0 this was "no report
+     * open", replaced by the first report opened; after a restart it said
+     * so over reports the database still held (prompt 17, Gate 1). With
+     * none on the device it still says that, and how to start one.
      */
-    data object NoReport : Destination {
+    data object Reports : Destination {
         override val tab: Tab get() = Tab.REPORT
     }
 
@@ -135,13 +136,15 @@ data class NavigationState(
     /**
      * Whether the title bar offers Zpět.
      *
-     * Every step of a report does, including the first. The header is the
+     * Every step of a report does, including the first. The header was the
      * root of the report tab's stack, and when this said only "is there
      * something below me in the tab" it was the one screen of the wizard
      * with no way back: iOS has no system back button, and the tab bar does
-     * not say it means *leave this report* (the tester's point 2). The roots
-     * of Zápasy, Týmy and Nastavení stay without it -- the tab bar is how
-     * you leave those, and there is nothing in them that was left.
+     * not say it means *leave this report* (the tester's point 2). Since
+     * 0.4.0 the list of reports is beneath every step, and Zpět on the
+     * header goes to it. The roots of the four tabs, that list included,
+     * stay without it -- the tab bar is how you leave those, and there is
+     * nothing in them that was left.
      */
     val offersBack: Boolean get() = canGoBackWithinTab || current.matchId != null
 }
@@ -152,14 +155,18 @@ data class NavigationState(
  * A Koin `single`, so it survives an Android configuration change. It
  * deliberately does **not** survive process death: after a kill the app
  * opens on the fixture list, where the report is waiting with its badge,
- * and tapping it resumes. That is the recovery path the referee would take
- * anyway, and it means no screen state has to be serialised — the report
- * itself is in the database, which is where recoverability belongs.
+ * and in the Zápis tab's list; tapping either resumes. That is the
+ * recovery path the referee would take anyway, and it means no screen
+ * state has to be serialised — the report itself is in the database,
+ * which is where recoverability belongs.
  */
 class AppNavigator {
     private val _state = MutableStateFlow(NavigationState(tab = Tab.FIXTURES, stacks = ROOTS))
 
     val state: StateFlow<NavigationState> = _state.asStateFlow()
+
+    /** Whether a report has been opened or adopted in the report tab since launch. */
+    private var reportTabUsed = false
 
     /**
      * Tapping a tab.
@@ -196,7 +203,7 @@ class AppNavigator {
     }
 
     /**
-     * Opens a report at the step the fixture list decided on.
+     * Opens a report at the step the row tapped decided on.
      *
      * Not a push: the report tab holds one report at a time, so entering a
      * *different* one starts its stack afresh rather than piling it on top
@@ -204,46 +211,66 @@ class AppNavigator {
      * referee tapped the row to get back to their report, not to be
      * rewound to its resume point.
      *
-     * **The stack starts with the steps that come before the one opened.** A
-     * match under way opens on the console, and its stack used to be the
-     * console alone, so back from it left the report instead of going to the
-     * lineup. Only the last step is ever composed, so the ones beneath it
-     * cost nothing but the history that back walks through.
+     * **The stack is the list of reports, then the steps that come before
+     * the one opened.** A match under way opens on the console, and its
+     * stack used to be the console alone, so back from it left the report
+     * instead of going to the lineup; back from the first step comes to the
+     * list. Only the last step is ever composed, so the ones beneath it cost
+     * nothing but the history that back walks through.
      */
     fun openReport(destination: Destination) {
         require(destination.tab == Tab.REPORT) { "$destination is not part of the report" }
+        reportTabUsed = true
         _state.update { state ->
             val stack = state.stacks.getValue(Tab.REPORT)
             val alreadyOpen = stack.any { it.matchId == destination.matchId }
             state.copy(
                 tab = Tab.REPORT,
-                stacks = state.stacks + (Tab.REPORT to if (alreadyOpen) stack else destination.stepsUpToHere()),
+                stacks = state.stacks + (Tab.REPORT to if (alreadyOpen) stack else destination.onTheList()),
             )
         }
+    }
+
+    /**
+     * Opens a report where tapping its row lands -- the same from Zápasy
+     * and from the Zápis tab's list: a match under way on the console, a
+     * finished one on the recap, rather than on a header filled in an hour
+     * ago.
+     */
+    fun openReport(
+        matchId: MatchId,
+        resumePoint: ResumePoint,
+    ) {
+        openReport(
+            when (resumePoint) {
+                ResumePoint.HEADER -> Destination.MatchHeader(matchId)
+                ResumePoint.CONSOLE -> Destination.Console(matchId)
+                ResumePoint.RECAP -> Destination.Recap(matchId)
+            },
+        )
     }
 
     /**
      * Puts a report into the report tab without switching to it.
      *
      * The navigator deliberately does not survive process death, so on the
-     * launch after a kill the report tab's root is "no report open" while
-     * the database still holds a match in progress -- and the badge, which
-     * comes from the database, then points at a tab that says there is
-     * nothing there. A referee who opens Settings mid-half and whose phone
-     * dies would tap the badge and be told to go and pick a fixture.
+     * launch after a kill the report tab holds only its list while the
+     * database still holds a match in progress -- and the badge, which
+     * comes from the database, would then land on the list rather than on
+     * the console. A referee who opens Settings mid-half and whose phone
+     * dies taps the badge to get back to the clock.
      *
-     * Only fills an empty tab. A report the referee is already working on
-     * is never displaced, however far into it they are.
+     * **Only once, into a tab nothing has been opened in since launch.** A
+     * report the referee is already working on is never displaced, however
+     * far into it they are. And a referee who went back from the adopted
+     * report to the list stays there: the shell adopts whenever it is
+     * composed afresh, which an Android configuration change also does.
      */
     fun adoptReport(destination: Destination) {
         require(destination.tab == Tab.REPORT) { "$destination is not part of the report" }
-        _state.update { state ->
-            if (state.stacks.getValue(Tab.REPORT) != listOf(Destination.NoReport)) {
-                state
-            } else {
-                state.copy(stacks = state.stacks + (Tab.REPORT to destination.stepsUpToHere()))
-            }
-        }
+        if (reportTabUsed) return
+        reportTabUsed = true
+        _state.update { state -> state.copy(stacks = state.stacks + (Tab.REPORT to destination.onTheList())) }
     }
 
     /**
@@ -279,11 +306,12 @@ class AppNavigator {
         if (lastOrNull() == destination) this else this + destination
 
     /**
-     * The report's steps in the order the form is worked, up to and including
-     * this one -- or this one alone if it is not a step of a report.
+     * The list of reports, then the report's steps in the order the form is
+     * worked, up to and including this one -- or the list and this one
+     * alone if it is not a step of a report.
      */
-    private fun Destination.stepsUpToHere(): List<Destination> {
-        val match = matchId ?: return listOf(this)
+    private fun Destination.onTheList(): List<Destination> {
+        val match = matchId ?: return ROOTS.getValue(Tab.REPORT) + this
         val steps =
             listOf(
                 Destination.MatchHeader(match),
@@ -294,14 +322,14 @@ class AppNavigator {
                 Destination.Export(match),
             )
         val here = steps.indexOf(this)
-        return if (here < 0) listOf(this) else steps.take(here + 1)
+        return ROOTS.getValue(Tab.REPORT) + if (here < 0) listOf(this) else steps.take(here + 1)
     }
 
     private companion object {
         val ROOTS: Map<Tab, List<Destination>> =
             mapOf(
                 Tab.FIXTURES to listOf(Destination.Fixtures),
-                Tab.REPORT to listOf(Destination.NoReport),
+                Tab.REPORT to listOf(Destination.Reports),
                 Tab.TEAMS to listOf(Destination.Teams),
                 Tab.SETTINGS to listOf(Destination.Settings),
             )

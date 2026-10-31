@@ -246,7 +246,12 @@
     <string name="tab_settings">Settings</string>
     <string name="tab_report_in_progress">A report is in progress</string>
 
-    <!-- The report tab before a report has been opened -->
+    <!-- The report tab's first screen: the reports on the device -->
+    <string name="reports_title">Reports</string>
+    <string name="reports_working">Being worked on</string>
+    <string name="reports_confirmed">Confirmed</string>
+
+    <!-- The same, with no report on the device -->
     <string name="no_report_title">No report open</string>
     <string name="no_report_body">A report starts by picking a fixture under Fixtures.</string>
     <string name="no_report_action">Pick a fixture</string>

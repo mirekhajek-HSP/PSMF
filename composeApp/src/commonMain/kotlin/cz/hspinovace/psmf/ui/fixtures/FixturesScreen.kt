@@ -61,8 +61,10 @@ import cz.hspinovace.psmf.resources.weekday_thursday
 import cz.hspinovace.psmf.resources.weekday_tuesday
 import cz.hspinovace.psmf.resources.weekday_wednesday
 import cz.hspinovace.psmf.ui.common.ActionRow
+import cz.hspinovace.psmf.ui.common.ListHeading
 import cz.hspinovace.psmf.ui.common.PrimaryAction
 import cz.hspinovace.psmf.ui.common.PsmfIcons
+import cz.hspinovace.psmf.ui.common.ReportStatusBadge
 import cz.hspinovace.psmf.ui.common.WaitVeil
 import cz.hspinovace.psmf.ui.format.asClockTime
 import cz.hspinovace.psmf.ui.format.asDayAndMonth
@@ -293,21 +295,6 @@ private fun FilterSummary(
     }
 }
 
-@Composable
-private fun ListHeading(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceVariant)
-                .padding(horizontal = PsmfDimens.screenPadding, vertical = PsmfDimens.itemSpacing)
-                .semantics { heading() },
-    )
-}
-
 /**
  * One fixture.
  *
@@ -357,7 +344,7 @@ private fun FixtureListItem(
             // either truncate a name or force a smaller type size.
             Text(row.homeTeam.name, style = MaterialTheme.typography.bodyLarge)
             Text(row.awayTeam.name, style = MaterialTheme.typography.bodyLarge)
-            row.reportStatus?.let { ReportBadge(it) }
+            row.reportStatus?.let { ReportStatusBadge(it) }
         }
 
         Column(horizontalAlignment = Alignment.End) {
@@ -375,35 +362,6 @@ private fun FixtureListItem(
             )
         }
     }
-}
-
-/**
- * That a report already exists for this fixture.
- *
- * The fixture list is not a dashboard, so this is a property of the row
- * rather than a panel above the list — but it has to exist, because it is
- * the only route back into a match the app was killed in the middle of.
- */
-@Composable
-private fun ReportBadge(status: MatchStatus) {
-    val label =
-        when (status) {
-            MatchStatus.SETUP -> stringResource(Res.string.fixtures_status_setup)
-            MatchStatus.IN_PROGRESS -> stringResource(Res.string.fixtures_status_in_progress)
-            MatchStatus.FINISHED -> stringResource(Res.string.fixtures_status_finished)
-            MatchStatus.CONFIRMED -> stringResource(Res.string.fixtures_status_confirmed)
-        }
-    Text(
-        text = label,
-        style = MaterialTheme.typography.labelLarge,
-        color = MaterialTheme.colorScheme.onSecondaryContainer,
-        modifier =
-            Modifier
-                .background(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = RoundedCornerShape(PsmfDimens.labelGap),
-                ).padding(horizontal = PsmfDimens.itemSpacing, vertical = PsmfDimens.labelGap),
-    )
 }
 
 /** A sentence in place of the rows, under the filter, which stays reachable above it. */
