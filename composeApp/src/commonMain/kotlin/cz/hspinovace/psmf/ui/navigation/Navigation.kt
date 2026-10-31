@@ -168,6 +168,9 @@ class AppNavigator {
     /** Whether a report has been opened or adopted in the report tab since launch. */
     private var reportTabUsed = false
 
+    /** Reports discarded since launch, which nothing may put back in the tab. */
+    private val discardedReports = mutableSetOf<MatchId>()
+
     /**
      * Tapping a tab.
      *
@@ -264,13 +267,32 @@ class AppNavigator {
      * report the referee is already working on is never displaced, however
      * far into it they are. And a referee who went back from the adopted
      * report to the list stays there: the shell adopts whenever it is
-     * composed afresh, which an Android configuration change also does.
+     * composed afresh, which an Android configuration change also does. Never
+     * a report already discarded ([discarded]).
      */
     fun adoptReport(destination: Destination) {
         require(destination.tab == Tab.REPORT) { "$destination is not part of the report" }
-        if (reportTabUsed) return
+        if (reportTabUsed || destination.matchId in discardedReports) return
         reportTabUsed = true
         _state.update { state -> state.copy(stacks = state.stacks + (Tab.REPORT to destination.onTheList())) }
+    }
+
+    /**
+     * A report has been discarded (prompt 17, Gate 2): nothing of it stays here.
+     *
+     * Discarding is offered on the list, and the list is on screen only with
+     * no report open on top of it, so ordinarily there is nothing to take
+     * out. This makes it so whatever order things arrive in: every step of
+     * that report leaves its stack, and a match under way the shell had not
+     * yet adopted never is -- the shell adopts from the database's answer,
+     * which can arrive after the referee reached the list and discarded it,
+     * and would put them on the console of a report that no longer exists.
+     */
+    fun discarded(matchId: MatchId) {
+        discardedReports += matchId
+        _state.update { state ->
+            state.copy(stacks = state.stacks.mapValues { (_, stack) -> stack.filter { it.matchId != matchId } })
+        }
     }
 
     /**

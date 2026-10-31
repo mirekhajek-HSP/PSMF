@@ -48,6 +48,7 @@ import cz.hspinovace.psmf.usecase.BrowseTeams
 import cz.hspinovace.psmf.usecase.BuildConsoleEntry
 import cz.hspinovace.psmf.usecase.BuildLineupEntry
 import cz.hspinovace.psmf.usecase.ConfirmReport
+import cz.hspinovace.psmf.usecase.DiscardReport
 import cz.hspinovace.psmf.usecase.EndPeriod
 import cz.hspinovace.psmf.usecase.FinishMatch
 import cz.hspinovace.psmf.usecase.ListFixtures
@@ -141,7 +142,7 @@ val appModule: Module =
         viewModel { (matchId: MatchId) -> ExportViewModel(matchId, get(), get(), get(), get()) }
         viewModel { SettingsViewModel(get(), get()) }
         viewModel { ShellViewModel(get()) }
-        viewModel { ReportsViewModel(get()) }
+        viewModel { ReportsViewModel(get(), get()) }
         viewModel { TeamsViewModel(get(), get()) }
         viewModel { (teamId: TeamId) -> TeamRosterViewModel(teamId, get(), get(), get()) }
     }
@@ -154,6 +155,7 @@ private fun Module.factoryOfUseCases() {
     factory { ListFixtures(get(), get()) }
     factory { ObserveReportInProgress(get(), get()) }
     factory { ObserveReports(get(), get()) }
+    factory { DiscardReport(get(), get()) }
     factory { BrowseTeams(get(), get()) }
     factory { LoadTeamRoster(get(), get(), get()) }
     factory { SetDefaultJerseyNumber(get()) }

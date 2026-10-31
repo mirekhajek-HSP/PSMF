@@ -264,6 +264,39 @@
     <string name="no_report_body">Zápis začíná výběrem zápasu v Zápasech.</string>
     <string name="no_report_action">Vybrat zápas</string>
 
+    <!-- Discarding a report from the list, and the question asked first (prompt 17, Gate 2) -->
+    <string name="reports_discard">Zahodit</string>
+    <string name="reports_discard_title">Zahodit zápis?</string>
+    <string name="reports_discard_match">%1$s – %2$s, %3$s v %4$s</string>
+    <string name="reports_discard_holds">Zahodí se: %1$s.</string>
+    <string name="reports_discard_holds_nothing">Zatím v něm nic není vyplněné.</string>
+    <string name="reports_discard_final">Zahození nejde vrátit zpět.</string>
+    <string name="reports_discard_signed">Zápis podepsali oba kapitáni i rozhodčí a mohl už být odeslán na PSMF. Soubory uložené do složky v zařízení a už odeslané e-maily zůstanou, jak jsou.</string>
+    <string name="reports_discard_confirm">Ano, zahodit</string>
+    <string name="reports_discard_keep">Ponechat zápis</string>
+    <string name="reports_discard_header">hlavička</string>
+    <string name="reports_discard_one_lineup">jedna sestava</string>
+    <string name="reports_discard_both_lineups">obě sestavy</string>
+    <string name="reports_discard_assessment">hodnocení</string>
+    <plurals name="reports_discard_goals">
+        <item quantity="one">%1$d gól</item>
+        <item quantity="few">%1$d góly</item>
+        <item quantity="many">%1$d gólu</item>
+        <item quantity="other">%1$d gólů</item>
+    </plurals>
+    <plurals name="reports_discard_cards">
+        <item quantity="one">%1$d karta</item>
+        <item quantity="few">%1$d karty</item>
+        <item quantity="many">%1$d karty</item>
+        <item quantity="other">%1$d karet</item>
+    </plurals>
+    <plurals name="reports_discard_signatures">
+        <item quantity="one">%1$d podpis</item>
+        <item quantity="few">%1$d podpisy</item>
+        <item quantity="many">%1$d podpisu</item>
+        <item quantity="other">%1$d podpisů</item>
+    </plurals>
+
     <!-- Screen 3a: teams -->
     <string name="teams_title">Týmy</string>
     <string name="teams_search">Hledat tým</string>

@@ -331,6 +331,56 @@ class AppNavigatorTest {
     }
 
     @Test
+    fun aDiscardedReportLeavesNothingOfItInTheTab() {
+        // Discarding is offered on the list, which is on screen only with no
+        // report open on it; this holds whatever order things arrive in
+        // (prompt 17, Gate 2): never a step of a report that is gone.
+        val navigator = AppNavigator()
+        navigator.openReport(Destination.Console(m1))
+        navigator.select(Tab.FIXTURES)
+
+        navigator.discarded(m1)
+
+        assertEquals(listOf(Destination.Reports), navigator.stack(Tab.REPORT))
+        assertEquals(Tab.FIXTURES, navigator.state.value.tab, "discarding does not change tab")
+    }
+
+    @Test
+    fun discardingOneReportLeavesAnotherOpenWhereItIs() {
+        val navigator = AppNavigator()
+        navigator.openReport(Destination.Console(m1))
+
+        navigator.discarded(m2)
+
+        assertEquals(Destination.Console(m1), navigator.state.value.current)
+        assertEquals(4, navigator.stack(Tab.REPORT).size)
+    }
+
+    @Test
+    fun aMatchUnderWayDiscardedBeforeTheShellAdoptedItIsNeverAdopted() {
+        // The shell adopts from the database's answer, which may arrive after
+        // the referee has already reached the list and discarded that match:
+        // adopting it then would put them on the console of nothing.
+        val navigator = AppNavigator()
+
+        navigator.discarded(m1)
+        navigator.adoptReport(Destination.Console(m1))
+
+        assertEquals(listOf(Destination.Reports), navigator.stack(Tab.REPORT))
+    }
+
+    @Test
+    fun aDiscardStopsOnlyThatMatchBeingAdopted() {
+        // Another match under way is still put back for the badge to land on.
+        val navigator = AppNavigator()
+
+        navigator.discarded(m2)
+        navigator.adoptReport(Destination.Console(m1))
+
+        assertEquals(Destination.Console(m1), navigator.stack(Tab.REPORT).last())
+    }
+
+    @Test
     fun everyDestinationKnowsWhichTabItBelongsTo() {
         // What lets the fixture list send the referee into the report
         // without knowing that the report is a tab.

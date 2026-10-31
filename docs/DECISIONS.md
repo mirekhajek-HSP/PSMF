@@ -5,6 +5,74 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-31 · 0.4.0, Gate 2: a report can be discarded, from the list, after a question (prompt 17)
+
+The tester's point 1 on 0.3.1 (`reports/2026-10-31-0.4.0-tester-points.md`,
+§Gate 2). That any report can be discarded, signed or not, from a control of
+its own on the list's row and only after a question, is the brief's and the
+owner's; these are the calls it left to me.
+
+**1. The question counts what goes when it is asked, from the report
+itself.** It names the header (the officials filled in), the lineups (per
+team, saved or still being built, since the draft goes too), the goals, the
+cards (each card on the form, so a second yellow is two: its yellow and its
+red), the assessment (if it differs from a blank one) and the signatures; or
+says nothing is filled in yet, which is the stray tap the point is about.
+Not the whistles: the row the referee tapped *Zahodit* on says *Probíhá* or
+*Dohráno*. **Reverses if:** a referee discards a report the question
+undersold (a match under way with no goals reads only "hlavička, obě
+sestavy"); then the status or the kickoff joins the list.
+
+**2. The yes is never the one a quick tap lands on, in two ways.** Keep is
+in the slot where the app's other questions put their yes, filled: the end
+of the row when the two fit side by side, the top when Material stacks them,
+as it does at 360 dp. The yes is a plain button in the error colour in the
+other slot. And the yes is **disabled for one second** after the question
+appears. The slot alone was not enough: the 360 dp render showed the yes
+stacked at the bottom right, and in a scrolled list a row's *Zahodit* can be
+drawn exactly there, so the second tap of a double tap would land on it. One
+second is longer than a double tap (300 ms on Android) and a reflex, and
+shorter than reading the question. **Reverses if:** referees notice the wait,
+or keep is tapped for the yes because this question is the odd one out.
+
+**3. *Zahodit* is an outlined button under the group code, its word in the
+error colour.** Outlined because the testers' point 4 says a control without
+an outline is missed; a full 56 dp touch target; 12 dp of padding a side
+instead of Material's 24, so the team names keep their width at 360 dp.
+**Reverses if:** a red word on every row reads as alarm or clutter; or
+referees look for discarding inside the report (the 2026-10-31 entry's first
+reversal).
+
+**4. The navigator forgets a discarded report** (`AppNavigator.discarded`):
+its steps leave the tab, and it is never adopted after. Discarding is offered
+on the list, which is on screen only with no report open, so there is
+ordinarily nothing to remove; but the shell adopts the match under way from
+the database's answer, which can arrive after the referee reached the list and
+discarded it. **Reverses if:** the navigator comes to survive the process,
+or adoption goes (Gate 1, call 2).
+
+**5. What stays on the device.** Discarding removes the report's rows, the
+lineups being built for it and the players added for it at the pitch
+(`MatchRepository.delete`, one transaction). It leaves the card numbers and
+dates of birth remembered per player, the jersey overrides and the followed
+teams: what the referee typed once so as not to type it again, about players
+and teams rather than about the match, and not rows of the report. It leaves
+the files the export saved to the device's folder, which the app wrote but
+does not own, and mail already sent. **Reverses if:** something typed at a
+stray report turns out wrong and keeps being offered; the remembered tables
+do not record the match a value was typed at, so forgetting it with the
+report would be schema 9.
+
+**6. The words.** *Zahodit* on the row (en *Discard*, uk *Видалити*); *Zahodit
+zápis?*; *Zahodí se: …*; *Zatím v něm nic není vyplněné.*; *Zahození nejde
+vrátit zpět.*; the answers *Ano, zahodit* and *Ponechat zápis*, as *Ano, vzít
+zpět* and *Ponechat podpisy* elsewhere. The counts are the app's first
+plurals (`pluralStringResource`, part of Compose's resources: no
+dependency). The Ukrainian is not read by a native speaker. **Reverses if:**
+the testers read them otherwise.
+
+---
+
 ## 2026-10-31 · 0.4.0, Gate 1: the Zápis tab lists the reports on the device (prompt 17)
 
 The tester's point 2 on 0.3.1, reproduced through the whole app on the JVM

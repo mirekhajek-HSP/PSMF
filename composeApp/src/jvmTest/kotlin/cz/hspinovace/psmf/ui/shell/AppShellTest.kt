@@ -382,6 +382,7 @@ class AppShellTest {
                                 navigator.select(Tab.FIXTURES)
                                 navigation = navigator.state.value
                             },
+                            onEvent = {},
                             modifier = modifier,
                         )
                     }

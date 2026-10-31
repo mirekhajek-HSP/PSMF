@@ -256,6 +256,33 @@
     <string name="no_report_body">A report starts by picking a fixture under Fixtures.</string>
     <string name="no_report_action">Pick a fixture</string>
 
+    <!-- Discarding a report from the list, and the question asked first (prompt 17, Gate 2) -->
+    <string name="reports_discard">Discard</string>
+    <string name="reports_discard_title">Discard the report?</string>
+    <string name="reports_discard_match">%1$s – %2$s, %3$s at %4$s</string>
+    <string name="reports_discard_holds">This discards: %1$s.</string>
+    <string name="reports_discard_holds_nothing">Nothing has been filled in yet.</string>
+    <string name="reports_discard_final">Discarding cannot be undone.</string>
+    <string name="reports_discard_signed">Both captains and the referee have signed this report, and it may already have been sent to PSMF. Files saved to the folder on the device, and mail already sent, are not touched.</string>
+    <string name="reports_discard_confirm">Yes, discard</string>
+    <string name="reports_discard_keep">Keep the report</string>
+    <string name="reports_discard_header">the header</string>
+    <string name="reports_discard_one_lineup">one lineup</string>
+    <string name="reports_discard_both_lineups">both lineups</string>
+    <string name="reports_discard_assessment">the assessment</string>
+    <plurals name="reports_discard_goals">
+        <item quantity="one">%1$d goal</item>
+        <item quantity="other">%1$d goals</item>
+    </plurals>
+    <plurals name="reports_discard_cards">
+        <item quantity="one">%1$d card</item>
+        <item quantity="other">%1$d cards</item>
+    </plurals>
+    <plurals name="reports_discard_signatures">
+        <item quantity="one">%1$d signature</item>
+        <item quantity="other">%1$d signatures</item>
+    </plurals>
+
     <!-- Screen 3a: teams -->
     <string name="teams_title">Teams</string>
     <string name="teams_search">Search for a team</string>

@@ -181,6 +181,7 @@ private fun Route(
             ReportsRoute(
                 onOpenReport = { navigator.openReport(it.matchId, it.resumePoint) },
                 onPickFixture = { navigator.select(Tab.FIXTURES) },
+                onDiscarded = navigator::discarded,
                 modifier = modifier,
             )
         }
@@ -313,18 +314,34 @@ private fun FixturesRoute(
 
 /**
  * The Zápis tab's first screen: the reports on the device. A row opens its
- * report as its fixture in Zápasy would.
+ * report as its fixture in Zápasy would; its *Zahodit* asks, and a report
+ * discarded is taken out of the navigator too ([AppNavigator.discarded]).
  */
 @Composable
 private fun ReportsRoute(
     onOpenReport: (ReportRow) -> Unit,
     onPickFixture: () -> Unit,
+    onDiscarded: (MatchId) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val viewModel: ReportsViewModel = koinViewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val discarded by viewModel.discarded.collectAsStateWithLifecycle()
 
-    ReportsScreen(state = state, onOpenReport = onOpenReport, onPickFixture = onPickFixture, modifier = modifier)
+    LaunchedEffect(discarded) {
+        discarded?.let {
+            onDiscarded(it)
+            viewModel.discardHandled()
+        }
+    }
+
+    ReportsScreen(
+        state = state,
+        onOpenReport = onOpenReport,
+        onPickFixture = onPickFixture,
+        onEvent = viewModel::onEvent,
+        modifier = modifier,
+    )
 }
 
 /**
