@@ -54,7 +54,9 @@ Grouped by what blocks what, not by size. Last updated 2026-10-31.
       prompt 17's report: 34 steps, steps 1 to 3 first (the list after a
       restart, discarding the stray report, correcting a scorer three goals
       back). Nothing in 0.4.0 has been seen on a phone.
-- [ ] **iOS build 6, 0.4.0 (6), on the Mac** (a prompt to write). Nothing from
+- [ ] **iOS build 6, 0.4.0 (6), on the Mac**: `prompts/18-ios-build-6.md`,
+      briefed 2026-10-31. Its Part 0 finishes build 5's report (the upload
+      record below). Nothing from
       prompt 17 has been linked for iOS: first `linkDebugFrameworkIosArm64`
       (the pasteboard line in Gate 4 is the one iOS-specific change, compiled
       inside `build` but never run). Then "On the iPhone" at the end of prompt
