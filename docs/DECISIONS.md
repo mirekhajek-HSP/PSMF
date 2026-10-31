@@ -5,6 +5,27 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-31 · 0.4.0, Gate 7: the documents, the version, the build (prompt 17)
+
+No behaviour here (`reports/2026-10-31-0.4.0-tester-points.md`, §Gate 7). The calls it left to me:
+
+1. **DEMO_SCOPE says what the app now does, in the place the old sentence stood.** The Shell
+   table's *Zápis* row, §3's captain paragraph, §4 (Undo's outline; the corrections, replacing
+   nothing but sitting above "Keep: undo", which stays true), §7 (copy), the Screens table's
+   row 9 and "Out of the demo". Row 9 keeps its ❌: a screen of its own for amending a finished
+   match is still not built; only the console's corrections are. **Reverses if** a screen for
+   amending a whole match is built (then row 9 turns ✅ and §4's bullet moves there).
+2. **0.4.0 (6) is a minor version**, as the brief says: a screen and a way of changing a report
+   are not a patch. `versionCode` 5 to 6, `MARKETING_VERSION` 0.3.1 to 0.4.0 and
+   `CURRENT_PROJECT_VERSION` 5 to 6 in Debug and Release; nothing else in the Xcode project.
+   **Reverses if** a tester's build 6 is refused by App Store Connect for a number already used
+   (prompt 16's Gate 2 record is the Mac's, and is not in git).
+3. **The report's checklist is assembled by what to look at first, not gate by gate**: the
+   three steps the brief names, then the rest in the order a referee meets them. The per-gate
+   lists stay in their sections, "as first written".
+
+---
+
 ## 2026-10-31 · 0.4.0, Gate 6: a card is corrected or removed from the console's log (prompt 17)
 
 The tester's point 5 on 0.3.1, for cards (`reports/2026-10-31-0.4.0-tester-points.md`,

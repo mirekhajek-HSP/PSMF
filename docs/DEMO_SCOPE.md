@@ -18,7 +18,7 @@ around them was not.
 | Tab | Czech | Holds |
 |---|---|---|
 | 1 | **Zápasy** | Fixtures across every bundled group, filtered by league, group, pitch, date and team |
-| 2 | **Zápis** | The report — the wizard, unchanged, badged while one is in progress |
+| 2 | **Zápis** | The reports on the device, signed ones too, and the wizard of the one opened from the list; badged while one is in progress. A report is discarded from its row, after a question (0.4.0) |
 | 3 | **Týmy** | Followed teams, search, roster |
 | 4 | **Nastavení** | Language, theme, and the league's rules as information |
 
@@ -50,14 +50,14 @@ Ten in the full product. **Nine in the demo**, arranged in four tabs.
 |---|---|---|---|---|
 | 1 | **Fixtures** | HomeScreen | ✅ | Its own tab. Matches across all groups, filterable by league, group, pitch, date and team. An in-progress match is reachable from any tab — see *Shell*. |
 | 2 | **Match header** | MatchSetupScreen | ✅ | *Different content, not a modification.* Pick a fixture, then referee + assistant, licensed-hire flag (`R`), and the **delegating team** — which is who gets fined for a bad report. |
-| 3 | **Lineup** | — *new* | ✅ | Per team: who came (marked, nobody is present until tapped), the captain and goalkeeper, jersey numbers, kit worn, Číslo RP. Captain confirms before kickoff. **Who came is recorded here and nowhere else.** |
+| 3 | **Lineup** | — *new* | ✅ | Per team: who came (marked, nobody is present until tapped), the captain and goalkeeper, jersey numbers, kit worn, Číslo RP. Captain confirms before kickoff, once the team's block is complete. **Who came is recorded here and nowhere else.** |
 | 3a | **Týmy** | TeamsScreen | ✅ | Its own tab. Search, follow, roster. Jersey numbers editable; nothing else. |
-| 4 | **Live console** | MatchScreen | ✅ | The one genuinely reusable interaction model. |
+| 4 | **Live console** | MatchScreen | ✅ | The one genuinely reusable interaction model. Since 0.4.0 a goal or card is corrected or removed by tapping it in the log (§4). |
 | 5 | **Assessment** | — *new* | ✅ | NH / Čd / Č / B per team, an optional note per team, plus the mandatory commentary. |
 | 6 | **Recap & confirm** | MatchRecapScreen | ✅ | What the captains sign against: the result from the goals, three taps. |
 | 7 | **Export** | Share action | ✅ | JSON + CSV + formatted text, out via email intent **and saved to the device**. |
 | 8 | Settings | SettingsScreen | ✅ | Its own tab. Language and theme are real settings; league rules are information. |
-| 9 | Amend a finished match | MatchEditScreen | ❌ later | Required by the product (§2.12), not by the demo. |
+| 9 | Amend a finished match | MatchEditScreen | ❌ later | Required by the product (§2.12), not by the demo. **Correcting a goal or a card from the console is in since 0.4.0** (§4), on a signed report too, after a question; what stays out is versioning and an audit of the changes (§5.3). |
 
 Screens 5 and 7 are the ones that make the demo *true*. Without the assessment
 block the ZoU is incomplete, and an incomplete ZoU does not demonstrate that paper
@@ -153,7 +153,11 @@ Per player: present or not, jersey number, Číslo RP.
 
 The captain confirms the lineup before kickoff, per team. One tap on
 *Potvrzuje* and the captain's name, by the captain marked above it: no list to
-pick from and no deputy. A
+pick from and no deputy. **The tap checks that team's block first** (0.4.0): a
+goalkeeper chosen, no shirt number shared, a card number or a date of birth for
+every player present. It says what is missing under the button before it is
+pressed, and a refused tap confirms nothing. The other team's block is not part
+of this team's check. A
 tap, not a signature — parity with a pen mark nobody verifies (§3.2, pending A7).
 A missing one is listed in the export and never blocks kickoff; a late one carries
 its real time. It is a record of its own and is **not** the captain's final
@@ -238,8 +242,9 @@ Reworked from golblok. What changes:
   the final whistle *Pokračovat na hodnocení* alone and yellow. A label that does
   not fit wraps inside its button, at a space, and its neighbour is as tall.
   **Undo is on a line of its own under them**, at the left edge, as wide as its
-  word, in the secondary grey with no outline: apart from the whistles and quieter
-  than them, in the same place in every state.
+  word, in the secondary grey inside an outline and with no fill: apart from the
+  whistles and quieter than them, in the same place in every state. (It was a bare
+  word until 0.4.0; a tester did not find it as a button.)
 - **The kit worn shows as a small shirt**, drawn in code, under each team's name on
   the scoreboard and before it on each team's tab (here and in §3). Two colours show
   as two slices and three as three; white and black kits carry an outline, so they
@@ -259,6 +264,19 @@ Reworked from golblok. What changes:
   may come on — not shortened by a goal, unaffected by further dismissals, held
   through the interval, none after the final whistle. Its own lifecycle, on a
   clock with no stoppage during play.
+- **A goal or a card is corrected or removed from the log** (0.4.0). The row is
+  tapped and opens the same sheet as a new one, filled in: for a goal the scorer
+  (or nobody) and the minute, for a card the player, the reason and the minute.
+  The colour of a card, and a red's kind (straight or `2. ŽK`), are not changed
+  there: the card is removed and recorded again. A goal's team is the same. A
+  `2. ŽK` is one card, taken whole, and a first yellow under a standing `2. ŽK` is
+  not removed before it. A red's power play follows its minute; removing a red
+  takes it away. **Removing asks first**, naming what goes; on a signed report a
+  correction or a removal asks first too and withdraws the three signatures
+  (§6). A correction that changes nothing asks nothing. Goals and cards from
+  before 0.2.0 have no place in the recording order and are not tappable; Undo
+  still takes them back. **There is no record of a correction**: that is
+  versioning (§5.3), still out.
 - Keep: undo (last recorded first), tap-to-log against a tabbed player list, crash recovery, sent-off
   players visually disabled, left-handed mirroring.
 - **Timer:** store the kickoff timestamp and derive elapsed time. Nothing ticks in
@@ -320,6 +338,10 @@ silently on every later export. Naming `ACTION_CREATE_DOCUMENT` here was a
 specification error: it creates one document per launch, so three formats became
 three chained system dialogs. See `DECISIONS.md`.
 
+**And copied** (0.4.0): a button under the other two puts the text report on the
+clipboard, whichever format the preview shows, to be pasted into an email or a
+chat. Offered only when the report is ready, like Save and Send.
+
 Saved and sent bytes are identical by construction — one `ZouDocument.bytes()`
 encoder, so the CSV's byte-order mark cannot drift between the two paths.
 
@@ -333,8 +355,9 @@ PSMF what they actually want.
 
 Deferred, not rejected.
 
-- Amending a finished match — required by the product, not by the demo
-- Report versioning and audit trail (§5.3)
+- Amending a finished match as a screen of its own — required by the product, not by
+  the demo. Correcting its goals and cards from the console is in (§4)
+- Report versioning and audit trail (§5.3): a correction leaves no record
 - Fixture ingestion from psmf.cz — seed data instead
 - Any backend, any network call
 - **Real** suspension data — the badge is in, but its counts come from seed data.

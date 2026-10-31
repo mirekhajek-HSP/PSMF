@@ -1,6 +1,6 @@
 # TODO
 
-Grouped by what blocks what, not by size. Last updated 2026-10-22.
+Grouped by what blocks what, not by size. Last updated 2026-10-31.
 
 ---
 
@@ -31,15 +31,30 @@ Grouped by what blocks what, not by size. Last updated 2026-10-22.
       `7.sqm`, the first time it runs on iOS). `ComposeApp.framework`, debug and
       release, against 374 MB and 144 MB. Then "On the iPhone" at the end of
       prompt 15's report, the number pad and the dialogs above all.
-- [ ] **Prompt 17: what the testers found in 0.3.1**, 0.4.0 (6).
-      `prompts/17-tester-points-0.4.0.md`, briefed 2026-10-31 with the tester's
-      and the owner's answers. Found on 0.3.1 (5) on an iPhone 15 Pro. Six points:
-      the Zápis tab lists the reports on the device, signed ones too; any report
-      can be discarded, signed ones too (a tap on the wrong fixture left one for
-      ever); the captain's tap checks the team's lineup; Undo gets an outline;
-      goals and cards corrected from the console's log (analysis §2.12); copy the
-      text report, for email and WhatsApp. Seven gates, one fresh session each,
-      **run by hand** (owner): no runner for this one.
+- [x] **Prompt 17: what the testers found in 0.3.1**, 0.4.0 (6). Done
+      2026-10-31, seven gates, one commit each ("Prompt 17, Gate N:"), run by
+      hand, a fresh session per gate. `prompts/17-tester-points-0.4.0.md`,
+      `reports/2026-10-31-0.4.0-tester-points.md`. Found on 0.3.1 (5) on an
+      iPhone 15 Pro. Six points: the Zápis tab lists the reports on the device,
+      signed ones too; any report can be discarded, signed ones too; the
+      captain's tap checks the team's lineup; Undo gets an outline; goals and
+      cards corrected or removed from the console's log (analysis §2.12); copy
+      the text report. 645 shared JVM · 574 Android host · 484 UI · 23 importer
+      tests, all forced to run, detekt green; debug APK 0.4.0 (6) 38,810,219
+      bytes (0.3.1's was 38,527,991), the same debug key. **Not pushed. Proved on
+      the JVM only.** Not yet verified from a clean build by the owner.
+- [ ] **On the phone: 0.4.0 (6)**, installed **over 0.3.1, never uninstalling
+      first**, with a report of each status on the phone and one stray
+      *Rozepsáno* report. The checklist is "On the Android phone" at the end of
+      prompt 17's report: 34 steps, steps 1 to 3 first (the list after a
+      restart, discarding the stray report, correcting a scorer three goals
+      back). Nothing in 0.4.0 has been seen on a phone.
+- [ ] **iOS build 6, 0.4.0 (6), on the Mac** (a prompt to write). Nothing from
+      prompt 17 has been linked for iOS: first `linkDebugFrameworkIosArm64`
+      (the pasteboard line in Gate 4 is the one iOS-specific change, compiled
+      inside `build` but never run). Then "On the iPhone" at the end of prompt
+      17's report: the list, both discard questions, the sheets opened from the
+      log, and the copied text pasted into Mail and WhatsApp.
 - [ ] **Prompt 16's upload is not in git.** The repository stops at iOS build
       5, Gate 1 (archived, `61e373e`), yet a tester reported on 0.3.1 from an
       iPhone 15 Pro on 2026-10-31, so build 5 reached TestFlight. Gate 2's record
