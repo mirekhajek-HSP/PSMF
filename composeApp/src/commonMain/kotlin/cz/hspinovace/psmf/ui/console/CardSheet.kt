@@ -15,15 +15,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import cz.hspinovace.psmf.domain.AppearanceId
+import cz.hspinovace.psmf.domain.CardEvent
+import cz.hspinovace.psmf.domain.CardSubject
 import cz.hspinovace.psmf.domain.Dismissal
+import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.resources.Res
 import cz.hspinovace.psmf.resources.action_cancel
+import cz.hspinovace.psmf.resources.card_colour_note
 import cz.hspinovace.psmf.resources.card_colour_red
 import cz.hspinovace.psmf.resources.card_colour_yellow
+import cz.hspinovace.psmf.resources.card_correct_title
 import cz.hspinovace.psmf.resources.card_dismissal_second
 import cz.hspinovace.psmf.resources.card_dismissal_straight
 import cz.hspinovace.psmf.resources.card_error_dismissal
@@ -35,14 +43,27 @@ import cz.hspinovace.psmf.resources.card_minute_end
 import cz.hspinovace.psmf.resources.card_minute_half
 import cz.hspinovace.psmf.resources.card_minute_played
 import cz.hspinovace.psmf.resources.card_person
+import cz.hspinovace.psmf.resources.card_player
 import cz.hspinovace.psmf.resources.card_reason
 import cz.hspinovace.psmf.resources.card_reason_note
+import cz.hspinovace.psmf.resources.card_remove
+import cz.hspinovace.psmf.resources.card_remove_body
+import cz.hspinovace.psmf.resources.card_remove_body_red
+import cz.hspinovace.psmf.resources.card_remove_body_second_yellow
+import cz.hspinovace.psmf.resources.card_remove_keep
+import cz.hspinovace.psmf.resources.card_remove_refused
+import cz.hspinovace.psmf.resources.card_remove_title
 import cz.hspinovace.psmf.resources.card_save
 import cz.hspinovace.psmf.resources.card_save_sends_off
 import cz.hspinovace.psmf.resources.card_second_yellow_hint
 import cz.hspinovace.psmf.resources.card_title
+import cz.hspinovace.psmf.resources.goal_remove_confirm
+import cz.hspinovace.psmf.resources.lineup_number_short
+import cz.hspinovace.psmf.resources.signatures_withdraw_body
+import cz.hspinovace.psmf.ui.common.Choice
 import cz.hspinovace.psmf.ui.common.KeyboardDismissal
 import cz.hspinovace.psmf.ui.common.PsmfTextField
+import cz.hspinovace.psmf.ui.common.Select
 import cz.hspinovace.psmf.ui.theme.PsmfDimens
 import cz.hspinovace.psmf.usecase.CardColour
 import cz.hspinovace.psmf.usecase.CardDraft
@@ -70,34 +91,36 @@ fun CardSheet(
     state: ConsoleUiState,
     onEvent: (ConsoleEvent) -> Unit,
 ) {
+    val correcting = draft.corrects != null
+    val scroll = rememberScrollState()
+    // The refusal is written under Odebrat kartu, the last thing in the sheet, which on a
+    // small phone is below its fold: bring it into view, or the tap seems to do nothing.
+    LaunchedEffect(state.cardRemovalRefused) {
+        if (state.cardRemovalRefused) {
+            withFrameNanos { }
+            scroll.animateScrollTo(scroll.maxValue)
+        }
+    }
     AlertDialog(
         onDismissRequest = { onEvent(ConsoleEvent.CardDismissed) },
-        title = { Text(stringResource(Res.string.card_title)) },
+        title = { Text(stringResource(if (correcting) Res.string.card_correct_title else Res.string.card_title)) },
         text = {
             // A dialog is a window of its own: the screen's keyboard rules do
             // not reach into it.
             KeyboardDismissal {
                 Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    modifier = Modifier.verticalScroll(scroll),
                     verticalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing),
                 ) {
-                    if (draft.appearance == null) {
-                        // Someone with no jersey number: the worked example
-                        // cards a deputy captain by name alone.
-                        Field(
-                            label = stringResource(Res.string.card_person),
-                            value = draft.namedPerson,
-                            onValueChange = { onEvent(ConsoleEvent.CardEdited(draft.copy(namedPerson = it))) },
-                            error =
-                                stringResource(Res.string.card_error_subject).takeIf {
-                                    state.cardProblem(CardProblem.NO_SUBJECT)
-                                },
-                        )
+                    CardSubjectRow(draft, state, onEvent)
+
+                    if (correcting) {
+                        CardKind(draft)
+                    } else {
+                        ColourChips(draft, onEvent)
                     }
 
-                    ColourChips(draft, onEvent)
-
-                    if (draft.isRed) {
+                    if (draft.isRed && !correcting) {
                         DismissalChips(draft, state, onEvent)
                         if (state.cardProblem(CardProblem.NO_DISMISSAL_KIND)) {
                             Problem(stringResource(Res.string.card_error_dismissal))
@@ -132,6 +155,7 @@ fun CardSheet(
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    if (correcting) RemoveCardRow(state, onEvent)
                 }
             }
         },
@@ -152,6 +176,158 @@ fun CardSheet(
         dismissButton = {
             TextButton(onClick = { onEvent(ConsoleEvent.CardDismissed) }) {
                 Text(stringResource(Res.string.action_cancel))
+            }
+        },
+    )
+}
+
+/**
+ * Who the card is for. A new card is for the row it was opened from, so nothing is asked
+ * unless it was opened for someone not in the lineup; a card in the log offers its player.
+ */
+@Composable
+private fun CardSubjectRow(
+    draft: CardDraft,
+    state: ConsoleUiState,
+    onEvent: (ConsoleEvent) -> Unit,
+) {
+    if (draft.corrects != null && draft.appearance != null) {
+        PlayerChoice(draft, state, onEvent)
+    } else if (draft.appearance == null) {
+        // Someone with no jersey number: the worked example
+        // cards a deputy captain by name alone.
+        Field(
+            label = stringResource(Res.string.card_person),
+            value = draft.namedPerson,
+            onValueChange = { onEvent(ConsoleEvent.CardEdited(draft.copy(namedPerson = it))) },
+            error =
+                stringResource(Res.string.card_error_subject).takeIf {
+                    state.cardProblem(CardProblem.NO_SUBJECT)
+                },
+        )
+    }
+}
+
+/**
+ * Who a card in the log is for (0.4.0): any player of the team with no card in this
+ * match, or, for a second yellow and a first yellow one stands on, only its own player,
+ * shown and not offered.
+ */
+@Composable
+private fun PlayerChoice(
+    draft: CardDraft,
+    state: ConsoleUiState,
+    onEvent: (ConsoleEvent) -> Unit,
+) {
+    val label = stringResource(Res.string.card_player)
+    val shirt = Res.string.lineup_number_short
+    val rows = state.cardPlayerChoices
+    if (rows.size > 1) {
+        val choices =
+            rows.map { row ->
+                Choice<AppearanceId?>(
+                    value = row.appearanceId,
+                    text = row.name.asWrittenOnReport,
+                    detail = row.jerseyNumber?.value?.let { stringResource(shirt, it) },
+                )
+            }
+        Select(
+            label = label,
+            choices = choices,
+            selected = draft.appearance,
+            onSelect = { onEvent(ConsoleEvent.CardEdited(draft.copy(appearance = it))) },
+        )
+    } else {
+        rows.singleOrNull()?.let { row ->
+            Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) {
+                Text(label, style = MaterialTheme.typography.labelLarge)
+                Text(row.name.asWrittenOnReport, style = MaterialTheme.typography.bodyLarge)
+            }
+        }
+    }
+}
+
+/**
+ * The colour of a card in the log, and a red's kind, said and not offered: a card of the
+ * wrong colour is removed and recorded again, which the line under it says (0.4.0).
+ */
+@Composable
+private fun CardKind(draft: CardDraft) {
+    val colour = stringResource(if (draft.isRed) Res.string.card_colour_red else Res.string.card_colour_yellow)
+    val kind =
+        when (draft.dismissal) {
+            Dismissal.SECOND_YELLOW -> stringResource(Res.string.card_dismissal_second)
+            Dismissal.STRAIGHT -> stringResource(Res.string.card_dismissal_straight)
+            null -> null
+        }
+    Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) {
+        Text(
+            text = listOfNotNull(colour, kind.takeIf { draft.isRed }).joinToString(" · "),
+            style = MaterialTheme.typography.labelLarge,
+        )
+        Text(
+            text = stringResource(Res.string.card_colour_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/**
+ * Removing the card, under a sheet that corrects one. A first yellow its `2. ŽK` stands
+ * on cannot go yet: the tap says so, in words, instead of asking.
+ */
+@Composable
+private fun RemoveCardRow(
+    state: ConsoleUiState,
+    onEvent: (ConsoleEvent) -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap)) {
+        TextButton(
+            onClick = { onEvent(ConsoleEvent.CardRemovePressed) },
+            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+        ) {
+            Text(stringResource(Res.string.card_remove))
+        }
+        if (state.cardRemovalRefused) Problem(stringResource(Res.string.card_remove_refused))
+    }
+}
+
+/**
+ * Asked before a card is removed from the log (0.4.0), as a goal's removal is
+ * ([RemoveGoalDialog]): it names the card as the log line has it, says that a second
+ * yellow goes whole and that a red takes its sending-off with it, and, on a signed
+ * report, that the signatures go. A No goes back to the sheet.
+ */
+@Composable
+fun RemoveCardDialog(
+    card: CardEvent,
+    line: String,
+    signed: Boolean,
+    onEvent: (ConsoleEvent) -> Unit,
+) {
+    val red = card as? RedCard
+    AlertDialog(
+        onDismissRequest = { onEvent(ConsoleEvent.CardRemoveDismissed) },
+        title = { Text(stringResource(Res.string.card_remove_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(PsmfDimens.itemSpacing)) {
+                Text(stringResource(Res.string.card_remove_body, line))
+                if (red?.dismissal == Dismissal.SECOND_YELLOW) {
+                    Text(stringResource(Res.string.card_remove_body_second_yellow))
+                }
+                if (red?.subject is CardSubject.Player) Text(stringResource(Res.string.card_remove_body_red))
+                if (signed) Text(stringResource(Res.string.signatures_withdraw_body), fontWeight = FontWeight.SemiBold)
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onEvent(ConsoleEvent.CardRemoveConfirmed) }) {
+                Text(stringResource(Res.string.goal_remove_confirm))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { onEvent(ConsoleEvent.CardRemoveDismissed) }) {
+                Text(stringResource(Res.string.card_remove_keep))
             }
         },
     )

@@ -47,6 +47,7 @@ import cz.hspinovace.psmf.domain.RedCard
 import cz.hspinovace.psmf.domain.TeamSide
 import cz.hspinovace.psmf.domain.isPastTheFinalWhistle
 import cz.hspinovace.psmf.resources.Res
+import cz.hspinovace.psmf.resources.card_correct_title
 import cz.hspinovace.psmf.resources.card_dismissal_second
 import cz.hspinovace.psmf.resources.console_card
 import cz.hspinovace.psmf.resources.console_card_other
@@ -126,6 +127,9 @@ fun ConsoleScreen(
     state.goal?.let { GoalSheet(draft = it, state = state, now = now, onEvent = onEvent) }
     state.correcting?.takeIf { state.removingGoal }?.let {
         RemoveGoalDialog(line = it.logLine(state), signed = state.signed, onEvent = onEvent)
+    }
+    state.correctingCard?.takeIf { state.removingCard }?.let {
+        RemoveCardDialog(card = it, line = it.logLine(state), signed = state.signed, onEvent = onEvent)
     }
     state.takeBack?.let { TakeBackDialog(step = it, signed = state.signed, onEvent = onEvent) }
     // Asked before a goal, a card or a whistle is saved on a signed report:
@@ -473,29 +477,45 @@ private fun LogRow(
     onEvent: (ConsoleEvent) -> Unit,
 ) {
     val event = (line as? LogLine.Recorded)?.event
-    val sequence = (event as? GoalEvent)?.sequence
+    val sequence = event?.sequence
     when {
-        event != null && sequence != null -> CorrectableLogRow(event.logLine(state), sequence, onEvent)
-        event != null -> EventLogRow(event.logLine(state))
-        line is LogLine.Whistled -> WhistleLogRow(line.whistle)
+        event is GoalEvent && sequence != null -> {
+            CorrectableLogRow(event.logLine(state), stringResource(Res.string.goal_correct_title)) {
+                onEvent(ConsoleEvent.GoalInLogTapped(sequence))
+            }
+        }
+
+        // Both lines of a second yellow open the same sheet: the two are one action.
+        event is CardEvent && sequence != null -> {
+            CorrectableLogRow(event.logLine(state), stringResource(Res.string.card_correct_title)) {
+                onEvent(ConsoleEvent.CardInLogTapped(sequence))
+            }
+        }
+
+        event != null -> {
+            EventLogRow(event.logLine(state))
+        }
+
+        line is LogLine.Whistled -> {
+            WhistleLogRow(line.whistle)
+        }
     }
 }
 
 /**
- * A goal in the log, which opens the goal sheet filled in with it to be corrected or
- * removed (0.4.0). **The whole row is the target**, at least a touch target tall, and
- * a chevron at its end says it opens -- more than a colour would. A goal from before
- * 0.2.0 has no place in the recording order and is not offered (see
- * [cz.hspinovace.psmf.usecase.CorrectGoal]); whistles stay as they are, and only Undo
- * takes one back.
+ * A goal or a card in the log, which opens its sheet filled in with it to be corrected
+ * or removed (0.4.0). **The whole row is the target**, at least a touch target tall, and
+ * a chevron at its end says it opens -- more than a colour would. One from before 0.2.0
+ * has no place in the recording order and is not offered (see
+ * [cz.hspinovace.psmf.usecase.CorrectGoal], [cz.hspinovace.psmf.usecase.CorrectCard]);
+ * whistles stay as they are, and only Undo takes one back.
  */
 @Composable
 private fun CorrectableLogRow(
     text: String,
-    sequence: Int,
-    onEvent: (ConsoleEvent) -> Unit,
+    label: String,
+    onClick: () -> Unit,
 ) {
-    val label = stringResource(Res.string.goal_correct_title)
     Row(
         modifier =
             Modifier
@@ -504,7 +524,8 @@ private fun CorrectableLogRow(
                 .clickable(
                     onClickLabel = label,
                     role = Role.Button,
-                ) { onEvent(ConsoleEvent.GoalInLogTapped(sequence)) },
+                    onClick = onClick,
+                ),
         horizontalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap),
         verticalAlignment = Alignment.CenterVertically,
     ) {

@@ -48,20 +48,22 @@ import cz.hspinovace.psmf.usecase.BrowseTeams
 import cz.hspinovace.psmf.usecase.BuildConsoleEntry
 import cz.hspinovace.psmf.usecase.BuildLineupEntry
 import cz.hspinovace.psmf.usecase.ConfirmReport
+import cz.hspinovace.psmf.usecase.CorrectCard
 import cz.hspinovace.psmf.usecase.CorrectGoal
 import cz.hspinovace.psmf.usecase.DiscardReport
 import cz.hspinovace.psmf.usecase.EndPeriod
 import cz.hspinovace.psmf.usecase.FinishMatch
-import cz.hspinovace.psmf.usecase.GoalCorrections
 import cz.hspinovace.psmf.usecase.ListFixtures
 import cz.hspinovace.psmf.usecase.LoadTeamRoster
 import cz.hspinovace.psmf.usecase.LogCard
+import cz.hspinovace.psmf.usecase.LogCorrections
 import cz.hspinovace.psmf.usecase.LogGoal
 import cz.hspinovace.psmf.usecase.NewId
 import cz.hspinovace.psmf.usecase.ObserveReportInProgress
 import cz.hspinovace.psmf.usecase.ObserveReports
 import cz.hspinovace.psmf.usecase.RememberCardNumber
 import cz.hspinovace.psmf.usecase.RememberDateOfBirth
+import cz.hspinovace.psmf.usecase.RemoveCard
 import cz.hspinovace.psmf.usecase.RemoveGoal
 import cz.hspinovace.psmf.usecase.RestoreLineupDraft
 import cz.hspinovace.psmf.usecase.SaveAssessment
@@ -183,7 +185,9 @@ private fun Module.factoryOfUseCases() {
     factory { UndoLastEvent(get()) }
     factory { CorrectGoal(get()) }
     factory { RemoveGoal(get()) }
-    factory { GoalCorrections(get(), get()) }
+    factory { CorrectCard(get()) }
+    factory { RemoveCard(get()) }
+    factory { LogCorrections(get(), get(), get(), get()) }
     factory { BuildZouReport(get(), get()) }
     factory { ExportZou() }
     factory { SaveAssessment(get()) }

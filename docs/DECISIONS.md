@@ -5,6 +5,76 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-31 · 0.4.0, Gate 6: a card is corrected or removed from the console's log (prompt 17)
+
+The tester's point 5 on 0.3.1, for cards (`reports/2026-10-31-0.4.0-tester-points.md`,
+§Gate 6), as Gate 5 did it for goals. The 2026-10-31 entry decided that a card's reason,
+minute and player are corrected in place, that its colour is not, and that this is not
+versioning; these are the calls inside it.
+
+**1. The log row opens the card sheet, filled in with the card.** The sheet that writes a
+card, titled *Opravit kartu*, saving with *Uložit*, with *Odebrat kartu* under the reason.
+Use cases `CorrectCard` and `RemoveCard` (`usecase/CardCorrection.kt`). The minute follows
+the card sheet's own rules (a number, `30´+`, `60´+`) and nothing new: in particular there
+is **no check that a first yellow stays before its `2. ŽK`**, which the sheet never had
+for new cards either. **Reverses if** a report with a first yellow after its `2. ŽK` turns
+up (then `CorrectCard` refuses that order, in words).
+
+**2. A card from before 0.2.0 is not offered**, as a goal is not (Gate 5, call 2): Undo
+orders unnumbered events by their minute. **Reverses if** Gate 5's call 2 does.
+
+**3. The player: anyone of the card's team's lineup with no card in this match.** Someone
+not in the lineup (a card by name, `NamedPerson`) keeps that kind: their name is corrected
+as written, and neither kind becomes the other. A card shown to the wrong kind of person
+is removed and recorded again, as one of the wrong colour is. The list is worked out in
+`ConsoleUiState.cardPlayerChoices` from the same facts `CorrectCard` checks. **Reverses if**
+a referee needs to move a card from a team official to a player or back.
+
+**4. A second yellow opens as its red, from either of its two log lines, and is corrected
+whole.** Both cards take the new reason and minute; its player is shown, not offered.
+
+**5. A first yellow its `2. ŽK` stands on keeps its player too**, not only its place:
+giving it to someone else would leave the second yellow without a first exactly as
+removing it would. Its reason and minute can be corrected. *Odebrat kartu* stays on the
+sheet, and the tap says, in the error colour under it, *Tuto ŽK nelze odebrat, dokud platí
+2. ŽK téhož hráče. Nejdřív odeberte 2. ŽK.* -- nothing is asked. A greyed or hidden button
+would not say why.
+
+**6. A red's power play moves only when its minute does**, and then as `LogCard` places a
+written minute: from the start of that minute on the clock, never later than the moment of
+correcting. A red moved to `60´+` loses it; a red that had none gets one only where
+`LogCard` would start one now (never after the final whistle). A new reason or player
+leaves it where it was: the side is the same. **Reverses if** `LogCard`'s placement
+reverses (DECISIONS 2026-10-07, "Two calls inside the card fix").
+
+**7. The colour is said, not offered.** In place of the colour chips: *Žlutá karta*, or
+*Červená karta · 2. ŽK* / *· Přímá ČK*, and one line: *Barvu ani druh karty tu nezměníte:
+kartu odeberte a zapište znovu.*
+
+**8. Removing asks its own question, naming the card as the log line has it**, with a
+sentence that a `2. ŽK` goes whole and one that a red to a player takes its sending-off
+and its power play with it; on a signed report the same question says the signatures go.
+The yes in Material's confirm slot, as Gate 5's goal question. **Reverses if** Gate 5's
+call 5 does.
+
+**9. A correction that changes nothing saves nothing and asks nothing**; the last card
+removed leaves the block unaccounted for, as Undo does, never "no cards".
+
+**10. `LogCorrections` replaces `GoalCorrections`**, Gate 5's call 10 by its own reversal
+condition (a third and a fourth use case): one constructor parameter for the four. The
+view model's handling of a tapped log row moved into an inner class, `FromTheLog`, because
+the class reached detekt's limit of eleven functions; `submitCard` decides new, corrected
+or unchanged through a small sealed type, `CardSave`. No detekt limit was raised.
+
+**11. No record of the correction**, as Gate 5's call 9.
+
+**12. The sheet scrolls to the refusal.** On a 360 dp phone the line under *Odebrat kartu*
+fell below the sheet's fold (found in the renders), so a tap seemed to do nothing; the
+sheet now scrolls to its end when the refusal appears. **Reverses if** the refusal moves
+above the button, or out of the sheet.
+
+---
+
 ## 2026-10-31 · 0.4.0, Gate 5: a goal is corrected or removed from the console's log (prompt 17)
 
 The tester's point 5 on 0.3.1, for goals (`reports/2026-10-31-0.4.0-tester-points.md`,

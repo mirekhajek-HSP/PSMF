@@ -54,15 +54,17 @@ import cz.hspinovace.psmf.ui.withLanguage
 import cz.hspinovace.psmf.usecase.BuildConsoleEntry
 import cz.hspinovace.psmf.usecase.CardColour
 import cz.hspinovace.psmf.usecase.ConfirmReport
+import cz.hspinovace.psmf.usecase.CorrectCard
 import cz.hspinovace.psmf.usecase.CorrectGoal
 import cz.hspinovace.psmf.usecase.EndPeriod
 import cz.hspinovace.psmf.usecase.FinishMatch
-import cz.hspinovace.psmf.usecase.GoalCorrections
 import cz.hspinovace.psmf.usecase.GoalDraft
 import cz.hspinovace.psmf.usecase.GoalProblem
 import cz.hspinovace.psmf.usecase.LogCard
+import cz.hspinovace.psmf.usecase.LogCorrections
 import cz.hspinovace.psmf.usecase.LogGoal
 import cz.hspinovace.psmf.usecase.MinuteDraft
+import cz.hspinovace.psmf.usecase.RemoveCard
 import cz.hspinovace.psmf.usecase.RemoveGoal
 import cz.hspinovace.psmf.usecase.StartMatch
 import cz.hspinovace.psmf.usecase.StartNextPeriod
@@ -204,7 +206,13 @@ class GoalCorrectionFromTheLogTest {
         undoLastEvent = UndoLastEvent(matches),
         endPeriod = EndPeriod(matches),
         startNextPeriod = StartNextPeriod(matches),
-        goalCorrections = GoalCorrections(CorrectGoal(matches), RemoveGoal(matches)),
+        corrections =
+            LogCorrections(
+                CorrectGoal(matches),
+                RemoveGoal(matches),
+                CorrectCard(matches),
+                RemoveCard(matches),
+            ),
         clock = clock,
     )
 

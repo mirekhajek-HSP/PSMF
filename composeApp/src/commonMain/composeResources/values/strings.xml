@@ -135,6 +135,16 @@
     <string name="goal_remove_body">Gól %1$s se odebere ze zápisu. Stav, poločas i výsledek se přepočítají.</string>
     <string name="goal_remove_confirm">Ano, odebrat</string>
     <string name="goal_remove_keep">Ponechat gól</string>
+    <string name="card_correct_title">Opravit kartu</string>
+    <string name="card_player">Hráč</string>
+    <string name="card_colour_note">Barvu ani druh karty tu nezměníte: kartu odeberte a zapište znovu.</string>
+    <string name="card_remove">Odebrat kartu</string>
+    <string name="card_remove_title">Odebrat kartu?</string>
+    <string name="card_remove_body">Karta %1$s se odebere ze zápisu.</string>
+    <string name="card_remove_body_second_yellow">Odeberou se obě karty 2. ŽK: druhá žlutá i červená.</string>
+    <string name="card_remove_body_red">S červenou kartou se ruší i vyloučení i oslabení, které začalo.</string>
+    <string name="card_remove_keep">Ponechat kartu</string>
+    <string name="card_remove_refused">Tuto ŽK nelze odebrat, dokud platí 2. ŽK téhož hráče. Nejdřív odeberte 2. ŽK.</string>
     <string name="console_goal">Gól</string>
     <string name="console_card">Karta</string>
     <string name="console_goal_no_scorer">Gól bez střelce</string>

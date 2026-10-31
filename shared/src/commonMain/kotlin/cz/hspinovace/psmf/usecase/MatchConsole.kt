@@ -239,6 +239,11 @@ data class CardDraft(
     val dismissal: Dismissal? = null,
     val reason: String = "",
     val minute: MinuteDraft = MinuteDraft(),
+    /**
+     * The number of the card in the log this draft corrects (0.4.0); null for a new card.
+     * Its colour and kind are the card's, and do not change: see [CorrectCard].
+     */
+    val corrects: Int? = null,
 ) {
     val isRed: Boolean get() = colour == CardColour.RED
 
@@ -435,7 +440,7 @@ private fun CardEvent.recordedAs(sequence: Int): CardEvent =
         is RedCard -> copy(sequence = sequence)
     }
 
-private fun Match.powerPlayFor(
+internal fun Match.powerPlayFor(
     card: RedCard,
     at: Instant,
     halfLengthMinutes: Int,
@@ -443,14 +448,26 @@ private fun Match.powerPlayFor(
 ): PowerPlay? {
     if (card.subject !is CardSubject.Player) return null
     if (status.isPastTheFinalWhistle || card.minute == Minute.AfterFinalWhistle) return null
-    val asItHappened = clock.minuteAt(at, status, halfLengthMinutes) == card.minute
-    val written = if (asItHappened) null else clock.instantOfMinute(card.minute, halfLengthMinutes)
     return PowerPlay(
         shortHandedSide = card.side,
-        startedAt = written?.let { minOf(it, at) } ?: at,
+        startedAt = powerPlayStart(card.minute, at, halfLengthMinutes),
         dismissedAtMinute = card.minute,
         sequence = sequence,
     )
+}
+
+/**
+ * Where a dismissal written at [minute] starts its ten minutes: at [at] when that is the
+ * minute the clock shows, otherwise at the start of the written minute, never later than [at].
+ */
+internal fun Match.powerPlayStart(
+    minute: Minute,
+    at: Instant,
+    halfLengthMinutes: Int,
+): Instant {
+    val asItHappened = clock.minuteAt(at, status, halfLengthMinutes) == minute
+    val written = if (asItHappened) null else clock.instantOfMinute(minute, halfLengthMinutes)
+    return written?.let { minOf(it, at) } ?: at
 }
 
 /**
@@ -466,8 +483,8 @@ private fun Match.powerPlayFor(
  * anything that does, and among themselves the last is the end of the
  * timeline, exactly as Undo chose before.
  *
- * This is undo, not editing. A goal further back is corrected or removed
- * from the log: [CorrectGoal], [RemoveGoal] (0.4.0).
+ * This is undo, not editing. A goal or a card further back is corrected or
+ * removed from the log: [CorrectGoal], [RemoveGoal], [CorrectCard], [RemoveCard] (0.4.0).
  */
 class UndoLastEvent(
     private val matches: MatchRepository,
@@ -530,7 +547,7 @@ private fun Match.withoutLastUnnumbered(): Match? =
  * Back to null rather than NoneIssued when nothing is left: taking a card
  * back does not amount to the referee affirming that none were issued.
  */
-private fun cardsSectionOf(remaining: List<CardEvent>): CardsSection? =
+internal fun cardsSectionOf(remaining: List<CardEvent>): CardsSection? =
     if (remaining.isEmpty()) null else CardsSection.Issued(remaining)
 
 private fun Match.withoutUnnumberedPowerPlayFor(card: CardEvent): List<PowerPlay> {

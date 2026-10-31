@@ -131,6 +131,16 @@
     <string name="goal_remove_body">Гол %1$s буде видалено з протоколу. Рахунок, перший тайм і результат перерахуються.</string>
     <string name="goal_remove_confirm">Так, видалити</string>
     <string name="goal_remove_keep">Залишити гол</string>
+    <string name="card_correct_title">Виправити картку</string>
+    <string name="card_player">Гравець</string>
+    <string name="card_colour_note">Колір і вид картки тут не змінити: видаліть її й запишіть знову.</string>
+    <string name="card_remove">Видалити картку</string>
+    <string name="card_remove_title">Видалити картку?</string>
+    <string name="card_remove_body">Картку %1$s буде видалено з протоколу.</string>
+    <string name="card_remove_body_second_yellow">Буде видалено обидві картки 2. ŽK: другу жовту й червону.</string>
+    <string name="card_remove_body_red">Разом із червоною скасовується вилучення і гра в меншості, що з нього почалася.</string>
+    <string name="card_remove_keep">Залишити картку</string>
+    <string name="card_remove_refused">Цю ЖК не можна видалити, доки діє 2. ŽK того самого гравця. Спершу видаліть 2. ŽK.</string>
     <string name="console_goal">Гол</string>
     <string name="console_card">Картка</string>
     <string name="console_goal_no_scorer">Гол без автора</string>

@@ -77,15 +77,6 @@ class RemoveGoal(
     }
 }
 
-/**
- * The two ways a goal already in the log changes, for the console, which takes them
- * together: it already takes a use case for each other thing it records.
- */
-class GoalCorrections(
-    val correct: CorrectGoal,
-    val remove: RemoveGoal,
-)
-
 /** [LogGoal]'s rules for a written minute: never `60´+`, and never later than the clock at [now]. */
 private fun Match.mayBeWrittenAt(
     minute: Minute,
