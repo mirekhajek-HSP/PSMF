@@ -1,6 +1,7 @@
 package cz.hspinovace.psmf.ui.console
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,8 +28,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -64,6 +67,7 @@ import cz.hspinovace.psmf.resources.console_start
 import cz.hspinovace.psmf.resources.console_start_next_period
 import cz.hspinovace.psmf.resources.console_undo
 import cz.hspinovace.psmf.resources.console_yellows
+import cz.hspinovace.psmf.resources.goal_correct_title
 import cz.hspinovace.psmf.ui.common.EvenActionContentPadding
 import cz.hspinovace.psmf.ui.common.EvenActionRow
 import cz.hspinovace.psmf.ui.common.PsmfIcons
@@ -120,6 +124,9 @@ fun ConsoleScreen(
 
     state.card?.let { CardSheet(draft = it, state = state, onEvent = onEvent) }
     state.goal?.let { GoalSheet(draft = it, state = state, now = now, onEvent = onEvent) }
+    state.correcting?.takeIf { state.removingGoal }?.let {
+        RemoveGoalDialog(line = it.logLine(state), signed = state.signed, onEvent = onEvent)
+    }
     state.takeBack?.let { TakeBackDialog(step = it, signed = state.signed, onEvent = onEvent) }
     // Asked before a goal, a card or a whistle is saved on a signed report:
     // it takes the signatures back.
@@ -340,7 +347,7 @@ private fun Body(
                 )
             }
         } else {
-            items(log.size) { index -> LogRow(state, log[index]) }
+            items(log.size) { index -> LogRow(state, log[index], onEvent) }
         }
     }
 }
@@ -463,12 +470,56 @@ private fun RowStatus(row: ConsoleRow) {
 private fun LogRow(
     state: ConsoleUiState,
     line: LogLine,
+    onEvent: (ConsoleEvent) -> Unit,
 ) {
-    when (line) {
-        is LogLine.Recorded -> EventLogRow(state, line.event)
-        is LogLine.Whistled -> WhistleLogRow(line.whistle)
+    val event = (line as? LogLine.Recorded)?.event
+    val sequence = (event as? GoalEvent)?.sequence
+    when {
+        event != null && sequence != null -> CorrectableLogRow(event.logLine(state), sequence, onEvent)
+        event != null -> EventLogRow(event.logLine(state))
+        line is LogLine.Whistled -> WhistleLogRow(line.whistle)
     }
 }
+
+/**
+ * A goal in the log, which opens the goal sheet filled in with it to be corrected or
+ * removed (0.4.0). **The whole row is the target**, at least a touch target tall, and
+ * a chevron at its end says it opens -- more than a colour would. A goal from before
+ * 0.2.0 has no place in the recording order and is not offered (see
+ * [cz.hspinovace.psmf.usecase.CorrectGoal]); whistles stay as they are, and only Undo
+ * takes one back.
+ */
+@Composable
+private fun CorrectableLogRow(
+    text: String,
+    sequence: Int,
+    onEvent: (ConsoleEvent) -> Unit,
+) {
+    val label = stringResource(Res.string.goal_correct_title)
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .heightIn(min = PsmfDimens.minTouchTarget)
+                .clickable(
+                    onClickLabel = label,
+                    role = Role.Button,
+                ) { onEvent(ConsoleEvent.GoalInLogTapped(sequence)) },
+        horizontalArrangement = Arrangement.spacedBy(PsmfDimens.labelGap),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(text = text, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        Icon(
+            imageVector = PsmfIcons.KeyboardArrowUp,
+            contentDescription = null,
+            modifier = Modifier.rotate(CHEVRON_TOWARDS_THE_END),
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+/** The arrow up, turned to point along the row: the app draws no separate chevron. */
+private const val CHEVRON_TOWARDS_THE_END = 90f
 
 /**
  * A whistle in the log: its minute as the form writes it, and its name as Undo's
@@ -486,10 +537,18 @@ private fun WhistleLogRow(whistle: LoggedWhistle) {
 }
 
 @Composable
-private fun EventLogRow(
-    state: ConsoleUiState,
-    event: MatchEvent,
-) {
+private fun EventLogRow(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        modifier = Modifier.fillMaxWidth().padding(vertical = PsmfDimens.labelGap),
+    )
+}
+
+/** A goal or a card as the log writes it: `35´ · Novák Jan · 2:0`. Removing a goal names it the same way. */
+@Composable
+internal fun MatchEvent.logLine(state: ConsoleUiState): String {
+    val event = this
     val marker =
         when (event) {
             is GoalEvent -> ""
@@ -534,11 +593,7 @@ private fun EventLogRow(
             }
         }
 
-    Text(
-        text = listOf(event.minute.written, marker, who, detail).filter { it.isNotBlank() }.joinToString(" · "),
-        style = MaterialTheme.typography.bodyMedium,
-        modifier = Modifier.fillMaxWidth().padding(vertical = PsmfDimens.labelGap),
-    )
+    return listOf(event.minute.written, marker, who, detail).filter { it.isNotBlank() }.joinToString(" · ")
 }
 
 private fun CardEvent.subjectName(state: ConsoleUiState): String =

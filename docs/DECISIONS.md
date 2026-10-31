@@ -5,6 +5,79 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-10-31 · 0.4.0, Gate 5: a goal is corrected or removed from the console's log (prompt 17)
+
+The tester's point 5 on 0.3.1, for goals (`reports/2026-10-31-0.4.0-tester-points.md`,
+§Gate 5); cards are Gate 6. The 2026-10-31 entry decided that goals are corrected in
+place and that this is not versioning; these are the calls inside it.
+
+**1. The log row opens the goal sheet, filled in with the goal.** The same sheet that
+writes a goal at its own minute, with the same rules for the minute (never later than
+the clock, never `60´+`, refused in words and never clamped), titled *Opravit gól*,
+saving with *Uložit*, and with *Odebrat gól* under the minute. One sheet, so a goal is
+written and corrected the same way. Use cases `CorrectGoal` and `RemoveGoal`
+(`usecase/GoalCorrection.kt`), each refusing what `LogGoal` refuses. **Reverses if**
+referees want a correction to look different from writing a goal.
+
+**2. A goal is addressed by its place in the recording order, so a goal from before
+0.2.0 is not offered.** Its log row is not a target and has no chevron; Undo still
+takes it back, by the timeline, as before. Offering it would break the one guarantee
+the brief names: Undo orders unnumbered goals by their minute, so correcting one's
+minute would change which old goal Undo reaches first. Such goals exist only in
+reports started under 0.1.x. **Reverses if** a report from 0.1.x has to be corrected
+on a device (then it is corrected as here, and Undo's order for those is said to follow
+the minute written).
+
+**3. The scorer can be anyone in the goal's own team's lineup, a player sent off since
+included, or nobody.** A new goal is scored by someone still on the pitch; a goal
+already in the log may have been scored by a player sent off later, and dropping them
+from the list would make the sheet unable to show who scored. A scorer whose
+appearance has since left the lineup is kept while the minute is corrected, and is not
+offered again once changed. The team is never changed in the sheet: one line under the
+minute says a goal for the other team is removed and recorded there.
+
+**4. A correction that changes nothing saves nothing and asks nothing.** Opening a goal
+on a signed report and pressing *Uložit* without a change keeps the signatures; the
+question about them is for a change. A refused correction saves nothing either.
+
+**5. Removing asks its own question, naming the goal as the log line has it**
+(*Gól 35´ · Novák Jan · 2:0 se odebere ze zápisu*), and on a signed report the same
+question says the signatures go: one question, as Undo's for a whistle is. A No goes
+back to the sheet. The yes is a plain button in Material's confirm slot, as Undo's
+question has it, not the discard question's (Gate 2) filled keep and armed yes: a goal
+removed by mistake is written again at its minute, a discarded report is gone.
+**Reverses if** a goal is removed by mistake in testing.
+
+**6. The whole row is the target, at least a touch target tall, with a chevron at its
+end.** The chevron is the app's arrow-up icon turned a quarter: no new icon path, so
+`PsmfIcons` stays seven icons copied from Material. The text keeps its colour; the
+chevron, the row's height and its button role are what say it opens. Cards in the log
+stay as they were until Gate 6, and whistles stay as they are. **Reverses if** testers
+do not find the rows tappable (then a pencil icon, an eighth path).
+
+**7. A corrected goal keeps its number; a removed goal's number is free again.**
+`Match.nextSequence()` is one more than the largest number in use, so removing the goal
+recorded last lets the next thing recorded take its number, exactly as Undo already
+does. Nothing refers to a removed goal, so nothing can confuse the two.
+
+**8. The recap's line says how, in cs, en and uk.** *Oprava gólu se dělá na obrazovce
+Zápis* named the tab, which now holds the list of reports; it is now *Gól opravíte nebo
+odeberete klepnutím na něj v Průběhu utkání na obrazovce Zápis utkání*, and the same in
+English and Ukrainian with those screens' own names.
+
+**9. No record of the correction.** The report says what the goals now are; the three
+export formats follow because they read the goals. Versioning (analysis §5.3) stays out
+of the demo, as the 2026-10-31 entry says.
+
+**10. The console takes the two as one, `GoalCorrections`.** Two more use cases put
+`ConsoleViewModel`'s constructor over detekt's limit of twelve; the two are one
+concern (a goal already in the log), so they travel together rather than the limit
+being raised for every class. **Reverses if** Gate 6's card corrections make it a
+third and fourth (then one `LogCorrections` for both, or the limit raised with a
+reason in `config/detekt/detekt.yml`).
+
+---
+
 ## 2026-10-31 · 0.4.0, Gate 4: Undo has an outline, and the report's text can be copied (prompt 17)
 
 The tester's points 4 and 6 on 0.3.1 (`reports/2026-10-31-0.4.0-tester-points.md`,

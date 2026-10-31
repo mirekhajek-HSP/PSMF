@@ -13,12 +13,20 @@ import cz.hspinovace.psmf.domain.TeamSide
  * for **any goal after the final whistle**, which has no clock minute to be
  * written at. The minute is entered the way the card sheet takes it -- a
  * number, or `30´+` -- but there is no `60´+`: no goal has one.
+ *
+ * The same sheet corrects a goal already in the log (0.4.0): then [corrects]
+ * names it, and the same rules hold for the minute.
  */
 data class GoalDraft(
     val side: TeamSide,
     /** Null is a goal with no scorer: an own goal, or one nobody could name. */
     val scorer: AppearanceId? = null,
     val minute: MinuteDraft = MinuteDraft(),
+    /**
+     * The recording-order number of the goal in the log this draft corrects
+     * ([CorrectGoal]), or null for a goal not yet recorded (0.4.0).
+     */
+    val corrects: Int? = null,
 ) {
     /** The minute written, or null while it is empty, nonsense, or `60´+`. */
     fun toMinute(): Minute? =

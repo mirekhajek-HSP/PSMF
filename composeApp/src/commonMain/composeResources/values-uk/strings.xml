@@ -123,6 +123,14 @@
     <string name="goal_error_later">Ця хвилина ще не зіграна (найпізніше %1$s).</string>
     <string name="goal_error_not_started">Матч ще не розпочався.</string>
     <string name="goal_save">Записати</string>
+    <string name="goal_correct_title">Виправити гол</string>
+    <string name="goal_correct_save">Зберегти</string>
+    <string name="goal_other_team_note">Гол іншої команди? Видаліть його й запишіть за іншу команду.</string>
+    <string name="goal_remove">Видалити гол</string>
+    <string name="goal_remove_title">Видалити гол?</string>
+    <string name="goal_remove_body">Гол %1$s буде видалено з протоколу. Рахунок, перший тайм і результат перерахуються.</string>
+    <string name="goal_remove_confirm">Так, видалити</string>
+    <string name="goal_remove_keep">Залишити гол</string>
     <string name="console_goal">Гол</string>
     <string name="console_card">Картка</string>
     <string name="console_goal_no_scorer">Гол без автора</string>
@@ -174,7 +182,7 @@
     <string name="recap_title">Підсумок</string>
     <string name="recap_loading">Завантаження протоколу…</string>
     <string name="recap_result">Результат</string>
-    <string name="recap_result_note">Результат обчислюється із записаних голів — рахунок першого тайму зі стану на момент його завершення — і не редагується. Гол виправляють на екрані матчу.</string>
+    <string name="recap_result_note">Результат обчислюється із записаних голів — рахунок першого тайму зі стану на момент його завершення — і не редагується. Щоб виправити або видалити гол, торкніться його в розділі «Хід матчу» на екрані протоколу матчу.</string>
     <string name="recap_half_time">Перший тайм</string>
     <string name="recap_full_time">Кінцевий рахунок</string>
     <string name="recap_document">Протокол у тому вигляді, як буде надіслано</string>

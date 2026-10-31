@@ -252,8 +252,11 @@ class RecapScreenTest {
             onNodeWithText("1:1").assertIsDisplayed()
             onNodeWithText("Konečný výsledek").assertIsDisplayed()
             onNodeWithText("2:1").assertIsDisplayed()
-            // And a line says where a goal is corrected.
-            onNodeWithText("Oprava gólu se dělá na obrazovce Zápis.", substring = true).assertIsDisplayed()
+            // And a line says where, and how, a goal is corrected (0.4.0: from the console's log).
+            onNodeWithText(
+                "Gól opravíte nebo odeberete klepnutím na něj v Průběhu utkání na obrazovce Zápis utkání.",
+                substring = true,
+            ).assertIsDisplayed()
         }
 
     @Test

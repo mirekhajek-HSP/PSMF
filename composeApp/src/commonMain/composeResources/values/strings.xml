@@ -127,6 +127,14 @@
     <string name="goal_error_later">Tato minuta ještě nebyla odehrána (nejpozději %1$s).</string>
     <string name="goal_error_not_started">Utkání ještě nezačalo.</string>
     <string name="goal_save">Zapsat</string>
+    <string name="goal_correct_title">Opravit gól</string>
+    <string name="goal_correct_save">Uložit</string>
+    <string name="goal_other_team_note">Gól jiného týmu? Odeberte ho a zapište ho u druhého týmu.</string>
+    <string name="goal_remove">Odebrat gól</string>
+    <string name="goal_remove_title">Odebrat gól?</string>
+    <string name="goal_remove_body">Gól %1$s se odebere ze zápisu. Stav, poločas i výsledek se přepočítají.</string>
+    <string name="goal_remove_confirm">Ano, odebrat</string>
+    <string name="goal_remove_keep">Ponechat gól</string>
     <string name="console_goal">Gól</string>
     <string name="console_card">Karta</string>
     <string name="console_goal_no_scorer">Gól bez střelce</string>
@@ -178,7 +186,7 @@
     <string name="recap_title">Rekapitulace</string>
     <string name="recap_loading">Načítání zápisu…</string>
     <string name="recap_result">Výsledek</string>
-    <string name="recap_result_note">Výsledek se počítá ze zaznamenaných gólů — poločas ze stavu v okamžiku, kdy skončil první poločas — a nejde upravit. Oprava gólu se dělá na obrazovce Zápis.</string>
+    <string name="recap_result_note">Výsledek se počítá ze zaznamenaných gólů — poločas ze stavu v okamžiku, kdy skončil první poločas — a nejde upravit. Gól opravíte nebo odeberete klepnutím na něj v Průběhu utkání na obrazovce Zápis utkání.</string>
     <string name="recap_half_time">Poločas</string>
     <string name="recap_full_time">Konečný výsledek</string>
     <string name="recap_document">Zápis, jak bude odeslán</string>

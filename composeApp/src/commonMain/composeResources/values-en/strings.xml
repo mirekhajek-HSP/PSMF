@@ -119,6 +119,14 @@
     <string name="goal_error_later">That minute has not been played yet (latest %1$s).</string>
     <string name="goal_error_not_started">The match has not started.</string>
     <string name="goal_save">Write the goal</string>
+    <string name="goal_correct_title">Correct the goal</string>
+    <string name="goal_correct_save">Save</string>
+    <string name="goal_other_team_note">A goal for the other team? Remove it, then record it for the other team.</string>
+    <string name="goal_remove">Remove the goal</string>
+    <string name="goal_remove_title">Remove the goal?</string>
+    <string name="goal_remove_body">The goal %1$s is removed from the report. The running score, half time and the result follow.</string>
+    <string name="goal_remove_confirm">Yes, remove</string>
+    <string name="goal_remove_keep">Keep the goal</string>
     <string name="console_goal">Goal</string>
     <string name="console_card">Card</string>
     <string name="console_goal_no_scorer">Goal with no scorer</string>
@@ -170,7 +178,7 @@
     <string name="recap_title">Recap</string>
     <string name="recap_loading">Loading the report…</string>
     <string name="recap_result">Result</string>
-    <string name="recap_result_note">The result is worked out from the goals recorded — half time from how the match stood when the first half ended — and cannot be edited. A goal is corrected on the match screen.</string>
+    <string name="recap_result_note">The result is worked out from the goals recorded — half time from how the match stood when the first half ended — and cannot be edited. To correct or remove a goal, tap it in the match log on the match console.</string>
     <string name="recap_half_time">Half time</string>
     <string name="recap_full_time">Final score</string>
     <string name="recap_document">The report as it will be sent</string>

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import cz.hspinovace.psmf.data.match.MatchRepository
 import cz.hspinovace.psmf.domain.AppearanceId
 import cz.hspinovace.psmf.domain.Dismissal
+import cz.hspinovace.psmf.domain.GoalEvent
 import cz.hspinovace.psmf.domain.Match
 import cz.hspinovace.psmf.domain.MatchId
 import cz.hspinovace.psmf.domain.Minute
@@ -19,6 +20,7 @@ import cz.hspinovace.psmf.usecase.CardProblem
 import cz.hspinovace.psmf.usecase.ConsoleEntry
 import cz.hspinovace.psmf.usecase.EndPeriod
 import cz.hspinovace.psmf.usecase.FinishMatch
+import cz.hspinovace.psmf.usecase.GoalCorrections
 import cz.hspinovace.psmf.usecase.GoalDraft
 import cz.hspinovace.psmf.usecase.GoalProblem
 import cz.hspinovace.psmf.usecase.LogCard
@@ -49,6 +51,8 @@ data class ConsoleUiState(
      */
     val goal: GoalDraft? = null,
     val goalProblems: List<GoalProblem> = emptyList(),
+    /** The goal the open sheet corrects is to be removed, waiting for the referee to say yes. */
+    val removingGoal: Boolean = false,
     /**
      * A whistle that Undo would take back, waiting for the referee to say
      * yes: taking it back changes the clock, so it asks first.
@@ -69,6 +73,13 @@ data class ConsoleUiState(
     fun cardProblem(kind: CardProblem): Boolean = kind in cardProblems
 
     fun goalProblem(kind: GoalProblem): Boolean = kind in goalProblems
+
+    /** The goal in the log the open sheet corrects; null for a new goal, or with no sheet open. */
+    val correcting: GoalEvent?
+        get() {
+            val sequence = goal?.corrects ?: return null
+            return entry?.log?.firstOrNull { it is GoalEvent && it.sequence == sequence } as? GoalEvent
+        }
 
     /**
      * The player the open card is for already has a yellow in this match.
@@ -140,6 +151,18 @@ sealed interface ConsoleEvent {
 
     data object GoalSubmitted : ConsoleEvent
 
+    /** A goal in the log, tapped: the sheet, filled in with it, to correct or remove it (0.4.0). */
+    data class GoalInLogTapped(
+        val sequence: Int,
+    ) : ConsoleEvent
+
+    /** The sheet's *Odebrat gól*: asks first. */
+    data object GoalRemovePressed : ConsoleEvent
+
+    data object GoalRemoveConfirmed : ConsoleEvent
+
+    data object GoalRemoveDismissed : ConsoleEvent
+
     /** Takes back the last thing recorded -- asking first when that is a whistle. */
     data object UndoPressed : ConsoleEvent
 
@@ -176,6 +199,7 @@ class ConsoleViewModel(
     private val undoLastEvent: UndoLastEvent,
     private val endPeriod: EndPeriod,
     private val startNextPeriod: StartNextPeriod,
+    private val goalCorrections: GoalCorrections,
     private val clock: Clock = Clock.System,
 ) : ViewModel() {
     private val _state = MutableStateFlow(ConsoleUiState())
@@ -343,11 +367,47 @@ class ConsoleViewModel(
             }
 
             ConsoleEvent.GoalDismissed -> {
-                _state.update { it.copy(goal = null, goalProblems = emptyList()) }
+                _state.update { it.copy(goal = null, goalProblems = emptyList(), removingGoal = false) }
             }
 
             ConsoleEvent.GoalSubmitted -> {
                 submitGoal()
+            }
+
+            else -> {
+                return handleGoalCorrectionEvent(event)
+            }
+        }
+        return true
+    }
+
+    /**
+     * A goal already in the log (0.4.0): the sheet opens filled in with it, and
+     * saves a correction or, after asking, removes it. Only a goal with a place in
+     * the recording order is offered (see [cz.hspinovace.psmf.usecase.CorrectGoal]).
+     */
+    private fun handleGoalCorrectionEvent(event: ConsoleEvent): Boolean {
+        when (event) {
+            is ConsoleEvent.GoalInLogTapped -> {
+                val goal = match?.goals?.firstOrNull { it.sequence == event.sequence } ?: return true
+                val draft = GoalDraft(goal.side, goal.scorer, MinuteDraft.of(goal.minute), corrects = event.sequence)
+                _state.update { it.withGoalOpened(draft) }
+            }
+
+            ConsoleEvent.GoalRemovePressed -> {
+                if (_state.value.goal?.corrects != null) _state.update { it.copy(removingGoal = true) }
+            }
+
+            ConsoleEvent.GoalRemoveDismissed -> {
+                _state.update { it.copy(removingGoal = false) }
+            }
+
+            // The question has already said, when it applies, that the signatures
+            // go with the goal: one question, not two.
+            ConsoleEvent.GoalRemoveConfirmed -> {
+                val sequence = _state.value.goal?.corrects ?: return true
+                _state.update { it.copy(removingGoal = false, goal = null, goalProblems = emptyList()) }
+                record { goalCorrections.remove(it, sequence) }
             }
 
             else -> {
@@ -368,11 +428,29 @@ class ConsoleViewModel(
             return
         }
         val current = match ?: return
-        _state.guarded(asksFirst, ConsoleEvent.GoalSubmitted) {
-            viewModelScope.launch {
-                match = logGoal(current, draft.side, draft.scorer, minute, now, entry.halfLengthMinutes)
-                _state.update { it.copy(goal = null, goalProblems = emptyList()) }
-                reload()
+        val corrects = draft.corrects
+        // A correction that changes nothing is not a change: no question, nothing saved.
+        if (draft.changesNothingIn(current, minute)) {
+            _state.update { it.copy(goal = null, goalProblems = emptyList()) }
+        } else {
+            _state.guarded(asksFirst, ConsoleEvent.GoalSubmitted) {
+                viewModelScope.launch {
+                    match =
+                        if (corrects != null) {
+                            goalCorrections.correct(
+                                current,
+                                corrects,
+                                draft.scorer,
+                                minute,
+                                now,
+                                entry.halfLengthMinutes,
+                            )
+                        } else {
+                            logGoal(current, draft.side, draft.scorer, minute, now, entry.halfLengthMinutes)
+                        }
+                    _state.update { it.copy(goal = null, goalProblems = emptyList()) }
+                    reload()
+                }
             }
         }
     }
@@ -429,6 +507,19 @@ private fun ConsoleUiState.sideOf(appearanceId: AppearanceId): TeamSide? {
  * a state to model.
  */
 private fun ConsoleUiState.minuteAt(now: Instant): Minute = entry?.minuteAt(now) ?: Minute.Played(0)
+
+/**
+ * A correction that would leave its goal as it is, or of a goal no longer there:
+ * nothing to save, and nothing to ask a signed report about. False for a new goal.
+ */
+private fun GoalDraft.changesNothingIn(
+    match: Match,
+    minute: Minute,
+): Boolean {
+    val sequence = corrects ?: return false
+    val goal = match.goals.firstOrNull { it.sequence == sequence } ?: return true
+    return goal.scorer == scorer && goal.minute == minute
+}
 
 private fun ConsoleUiState.withGoalOpened(draft: GoalDraft): ConsoleUiState =
     copy(goal = draft, goalProblems = emptyList())

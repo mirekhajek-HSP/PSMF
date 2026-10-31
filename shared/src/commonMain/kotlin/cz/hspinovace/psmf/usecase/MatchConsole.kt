@@ -466,8 +466,8 @@ private fun Match.powerPlayFor(
  * anything that does, and among themselves the last is the end of the
  * timeline, exactly as Undo chose before.
  *
- * This is undo, not editing. Amending a finished report is screen 9 and is
- * out of the demo (DEMO_SCOPE).
+ * This is undo, not editing. A goal further back is corrected or removed
+ * from the log: [CorrectGoal], [RemoveGoal] (0.4.0).
  */
 class UndoLastEvent(
     private val matches: MatchRepository,
