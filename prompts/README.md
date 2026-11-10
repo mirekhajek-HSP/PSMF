@@ -27,7 +27,7 @@ thing was built the way it was; do not re-run them.
 | 15 | What the testers found in 0.3.0, the kits' colours; 0.3.1 (5). One fresh session per gate | WSL container | executed 2026-10-21/22, gate by gate, one commit each; Android APK 0.3.1 (5) built; **proved on the JVM only: the phone checklist and the Mac's iOS build 5 still to do** |
 | 16 | iOS build 5: 0.3.1 to TestFlight; framework sizes without the icon library | Mac | Gate 1 done (`reports/2026-10-22-ios-build-5.md`); uploaded by the owner and with testers, **not recorded**: 18's Part 0 records it |
 | 17 | What the testers found in 0.3.1: the Zápis tab lists reports, discarding one, the captain's tap checks the team, Undo outlined, corrections from the log, copy; 0.4.0 (6). One fresh session per gate | WSL container | executed 2026-10-31, gate by gate, one commit each; verified from a clean build and pushed; Android APK 0.4.0 (6) built; **proved on the JVM only: the phone checklist and the Mac's iOS build 6 still to do** |
-| 18 | iOS build 6: 0.4.0 to TestFlight, the first link of prompt 17; finishes 16's report | Mac | **live, next** |
+| 18 | iOS build 7: 0.4.1 to TestFlight (prompt 17, and Ultraveteránská liga 1A for the PSMF demo), the first link of prompt 17; finishes 16's report. Written for build 6 (0.4.0), which was never built; the file keeps its name | Mac | **live, next; before Thursday 12 November if the iPhone is used at the demo** |
 | 99 | golblok maintenance | separate repo | live, unrelated to this app |
 
 ## Known staleness in the executed ones

@@ -9,11 +9,12 @@ import kotlin.test.assertTrue
 
 /**
  * Reads the **actual seed files that ship in the app**: league 6, all twelve
- * groups, generated from psmf.cz by `tools/league-import`.
+ * groups, and Ultraveteránská liga 1A (for the PSMF demo, DECISIONS
+ * 2026-11-10), generated from psmf.cz by `tools/league-import`.
  *
  * **Nothing here depends on what was scraped**, which changes every run --
  * no team names, no player counts, no particular fixture. Only what every
- * correct import must be true of: twelve groups that load, ids that are
+ * correct import must be true of: thirteen groups that load, ids that are
  * opaque and unique, refs that are unique, kits with labels, pitches that
  * exist, no RP numbers. Content checks live in `PlaceholderSeedDataTest`,
  * against a frozen dataset, and in the importer's own tests, against saved
@@ -44,17 +45,22 @@ class ShippedSeedDataTest {
     }
 
     @Test
-    fun allTwelveGroupsOfLeagueSixLoadThroughTheCatalogue() =
+    fun allTwelveGroupsOfLeagueSixAndUltraveteranskaLiga1ALoadThroughTheCatalogue() =
         runTest {
             val groups = catalog().loadAll()
 
-            assertEquals(('a'..'l').map { "6$it" }, groups.map { it.group.id.value })
-            assertEquals(('A'..'L').map { "6. liga $it" }, groups.map { it.group.name })
-            assertEquals(('A'..'L').map { "6$it" }, groups.map { it.group.reportCode })
+            assertEquals(('a'..'l').map { "6$it" } + "uvl1a", groups.map { it.group.id.value })
+            assertEquals(
+                ('A'..'L').map { "6. liga $it" } + "Ultraveteránská liga 1A",
+                groups.map { it.group.name },
+            )
+            assertEquals(('A'..'L').map { "6$it" } + "UVL 1A", groups.map { it.group.reportCode })
+            // Outside Hanspaulská liga's numbered levels, so never offered as its "1. liga".
+            assertEquals(List(12) { 6 } + listOf(null), groups.map { it.group.leagueLevel })
             groups.forEach { league ->
                 assertTrue(league.teams.isNotEmpty(), "${league.group.name} has no teams")
                 assertTrue(league.fixtures.isNotEmpty(), "${league.group.name} has no fixtures")
-                assertEquals(30, league.group.halfLengthMinutes, "2 x 30 across HL")
+                assertEquals(30, league.group.halfLengthMinutes, "2 x 30 in both competitions")
                 assertEquals(2, league.group.periods)
             }
         }

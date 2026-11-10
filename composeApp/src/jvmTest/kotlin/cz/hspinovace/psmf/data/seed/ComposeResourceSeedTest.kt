@@ -36,14 +36,17 @@ class ComposeResourceSeedTest {
         }
 
     @Test
-    fun allTwelveGroupsOfLeagueSixLoadEndToEnd() =
+    fun allTwelveGroupsOfLeagueSixAndUltraveteranskaLiga1ALoadEndToEnd() =
         runTest {
             // The real catalogue through the real reader: what a phone does
             // on first launch. Until 0.2.0 this was the one invented 6-K;
             // nothing here depends on what psmf.cz said this time.
             val groups = catalog.loadAll()
 
-            assertEquals(('A'..'L').map { "6. liga $it" }, groups.map { it.group.name })
+            assertEquals(
+                ('A'..'L').map { "6. liga $it" } + "Ultraveteránská liga 1A",
+                groups.map { it.group.name },
+            )
             groups.forEach { league ->
                 assertTrue(league.teams.isNotEmpty(), "${league.group.name} has no teams")
                 assertTrue(league.players.isNotEmpty(), "${league.group.name} has no players")

@@ -33,6 +33,8 @@ data class AssembledGroup(
     val teams: List<AssembledTeam>,
     val fixtures: List<ScrapedFixture>,
     val detailedMatches: Int,
+    /** Whose group this is, which decides its id, name, report code and season. */
+    val competition: Competition = Competition.HANSPAULSKA_6,
 )
 
 /**

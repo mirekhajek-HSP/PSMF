@@ -1,11 +1,19 @@
-# Prompt — iOS build 6: 0.4.0 to TestFlight
+# Prompt — iOS build 7: 0.4.1 to TestFlight
 
 **Where:** the MacBook Pro 2018 (Intel) · **Model:** the owner's choice
-**Follows:** `prompts/17`, built and verified on Windows (`6f5c990`). Expect
-**0.4.0 (6)**. Build 5 (0.3.1) is on TestFlight, and a tester has it on an
-iPhone 15 Pro.
+**Follows:** `prompts/17`, built and verified on Windows (`6f5c990`), and
+0.4.1 (7), which adds Ultraveteránská liga 1A for the PSMF demo (DECISIONS
+2026-11-10). Expect **0.4.1 (7)**. Build 5 (0.3.1) is on TestFlight, and a
+tester has it on an iPhone 15 Pro. **0.4.0 (6) was never built for iOS**, so
+there is no build 6; the file keeps its name.
 
-0.4.0 is the testers' six points from 0.3.1:
+**The demo is Thursday 12 November 2026, 18:30, at Mikulovka.** If the
+iPhone is used there, build 7 has to be through TestFlight's processing and
+installed before then: start early.
+
+0.4.1 is 0.4.0's code with new league data: Ultraveteránská liga 1A (the two
+18:30 matches at Mikulova on the 12th) beside league 6, both read from
+psmf.cz on 10 November. 0.4.0 is the testers' six points from 0.3.1:
 - the Zápis tab lists the reports on the phone, signed ones too;
 - any report can be discarded from that list, after a question;
 - the captain's tap under a lineup checks that team's lineup first;
@@ -23,7 +31,7 @@ iOS.**
 ---
 
 ```
-Build 0.4.0 (6) for iOS and upload it to TestFlight. Part 0 finishes build
+Build 0.4.1 (7) for iOS and upload it to TestFlight. Part 0 finishes build
 5's report first. Four parts; the last only if the owner wants it now.
 STOP AND REPORT after each. Work on main; push after each gate.
 
@@ -57,17 +65,17 @@ if you can see it:
   - Gate 3: NOT RUN as a checklist (owner's choice), and that a tester
     used build 5 on an iPhone 15 Pro and reported the six points that
     became prompt 17.
-If App Store Connect shows a build number for 0.3.1 of 6 or higher, STOP:
-build 6 would be refused.
+If App Store Connect shows a build number for 0.3.1 of 7 or higher, STOP:
+build 7 would be refused.
 
 ### GATE 0
   - build 5's report finished; push
 
 ## PART 1 — pull, versions, signing, build, checks
 
-  - git pull to 6f5c990 or later. MARKETING_VERSION 0.4.0 and
-    CURRENT_PROJECT_VERSION 6, Debug and Release, matching Android's
-    versionName and versionCode. If not, STOP.
+  - git pull. MARKETING_VERSION 0.4.1 and CURRENT_PROJECT_VERSION 7, Debug
+    and Release, matching Android's versionName and versionCode. If not,
+    STOP.
   - The team ID comes from the git-ignored Local.xcconfig, as before. After
     a signed build, `git status` shows nothing under iosApp/.
   - ./gradlew :composeApp:linkDebugFrameworkIosArm64 FIRST: the first link
@@ -86,7 +94,8 @@ build 6 would be refused.
   - iosApp/scripts/check-required-reason-apis.sh on the Release build. The
     pasteboard is not a required-reason API; if a new required-reason
     symbol appears anyway, STOP.
-  - League files in the bundle, byte-identical to the repository's (cmp).
+  - League files in the bundle, byte-identical to the repository's (cmp):
+    15 now, uvl1a.json added.
 
 ### GATE 1
   - versions, signing clean, builds green, sizes, check green; push
@@ -109,6 +118,12 @@ Before the update, build 5 should hold one report of each status
 (Rozepsáno, Probíhá, Dohráno, Potvrzeno) and one stray Rozepsáno, a fixture
 tapped by mistake: 0.4.0 must list them, and discard the stray one. No
 schema change since build 5 (still 8), so nothing migrates.
+
+First, the demo's match: Zápasy, Nadcházející, Thursday 12. 11.: at 18:30
+on MIKU3 Klokan club UVL A – Pražačka ultraseniors A, group UVL 1A, and on
+MIKU4 SC Xaverov UVL – Tučňáci UVL. Open the MIKU3 one as far as the
+lineup: both squads are there, with their kits. Then discard that report,
+so the fixture is clean for Thursday.
 
 Then "On the iPhone" at the end of prompt 17's report, steps 1 to 7, in
 this order of importance: 1 (the list after a swipe-away), 6 (the copied
@@ -139,8 +154,8 @@ the lineup's lowest row above the keyboard): never run on an iPhone.
 
 ## Report
 
-reports/<date>-ios-build-6.md, committed and pushed. Open with one sentence:
-did 0.4.0 build for iOS with no change, and did the pasteboard line link?
+reports/<date>-ios-build-7.md, committed and pushed. Open with one sentence:
+did 0.4.1 build for iOS with no change, and did the pasteboard line link?
 Then each gate against its criteria, and, if Part 3 ran, a table of the
 iPhone steps with PASS, FAIL or NOT RUN.
 ```

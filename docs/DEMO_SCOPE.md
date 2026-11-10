@@ -79,6 +79,12 @@ filter is the list's first item and scrolls away with it; a button brings it
 back, and a line at the top says what the list is narrowed to (DECISIONS
 2026-10-08).
 
+**Ultraveteránská liga 1A ships beside league 6**, for the PSMF demo at
+Mikulovka on 12 November 2026 (DECISIONS 2026-11-10): ten teams, its rows
+coded `UVL 1A`. It is not one of Hanspaulská liga's numbered levels, so the
+league select does not offer it; it is listed by day, by pitch and by team
+like any other group.
+
 **One group in view: round and kickoff order** — the order on the paper
 schedule, and what makes the round headings work as navigation. **Several
 groups: by day**, each row naming its group (`6K`). *Odehrané* lists the

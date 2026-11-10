@@ -10,8 +10,12 @@ data class ImportOptions(
     val output: File = File("composeApp/src/commonMain/composeResources/files/leagues"),
     val cache: File = File("tools/league-import/cache"),
     val summary: File = File("tools/league-import/last-run.md"),
-    val seasonPath: String = "/souteze/2026-hanspaulska-liga-podzim/",
-    val league: Int = 6,
+    /**
+     * What a run reads, in this order. **Every competition the files already hold**:
+     * the index is written from the run's groups alone, so a run that left one out
+     * would take it out of the app, and [SeedFiles] refuses it.
+     */
+    val competitions: List<Competition> = listOf(Competition.HANSPAULSKA_6),
     val offline: Boolean = false,
     /**
      * The day the counts stand for. Null, the default: the day the oldest
@@ -22,6 +26,7 @@ data class ImportOptions(
     companion object {
         fun parse(args: Array<String>): ImportOptions {
             var options = ImportOptions()
+            val named = mutableListOf<Competition>()
             val queue = ArrayDeque(args.toList())
             while (queue.isNotEmpty()) {
                 options =
@@ -30,18 +35,23 @@ data class ImportOptions(
                         "--output" -> options.copy(output = File(queue.removeFirst()))
                         "--cache" -> options.copy(cache = File(queue.removeFirst()))
                         "--as-of" -> options.copy(asOf = LocalDate.parse(queue.removeFirst()))
+                        "--competition" -> options.also { named += competitionNamed(queue.removeFirst()) }
                         else -> error("Unknown option '$flag'")
                     }
             }
-            return options
+            return if (named.isEmpty()) options else options.copy(competitions = named)
         }
+
+        private fun competitionNamed(name: String): Competition =
+            Competition.BY_NAME[name] ?: error("Unknown competition '$name'; known: ${Competition.BY_NAME.keys}")
     }
 }
 
 /**
- * One full run: league page, `/hriste/`, then per group its page, its
- * `/dresy/` and every team page. About 170 requests from an empty cache,
- * none from a full one.
+ * One full run: `/hriste/`, then per competition its league page, and per
+ * group its page, its `/dresy/` and every team page. About 170 requests for
+ * league 6 from an empty cache, 13 for Ultraveteránská liga 1, none from a
+ * full one.
  */
 class LeagueImport(
     private val pages: PageSource,
@@ -54,20 +64,26 @@ class LeagueImport(
         existing: ExistingSeed,
         asOf: () -> LocalDate,
     ): SeedOutput {
-        val season = options.seasonPath
-        val groups = Pages.groupsOfLeague(pages.get("$season${options.league}/"), season, options.league)
-        check(groups.isNotEmpty()) { "No groups linked from $season${options.league}/ -- has the site changed?" }
         val pitches = Pages.pitches(pages.get("/hriste/"))
         report.pitches += pitches.map { it.code }
-
-        val assembled =
-            groups.map { slug ->
-                val links = Pages.teamsOfGroup(pages.get("$season$slug/"), season, slug)
-                val kits = Pages.kits(pages.get("$season$slug/dresy/"))
-                val teamPages = links.associate { it.slug to Pages.team(pages.get("$season$slug/tymy/${it.slug}/")) }
-                GroupAssembly(report).assemble(slug, links, kits, teamPages).also { count(it, teamPages) }
-            }
+        val assembled = options.competitions.flatMap { assemble(it) }
         return SeedFiles(existing, report, asOf(), mintId).build(assembled, pitches)
+    }
+
+    private fun assemble(competition: Competition): List<AssembledGroup> {
+        val season = competition.seasonPath
+        val league = competition.league
+        val groups = Pages.groupsOfLeague(pages.get("$season$league/"), season, league)
+        check(groups.isNotEmpty()) { "No groups linked from $season$league/ -- has the site changed?" }
+        return groups.map { slug ->
+            val links = Pages.teamsOfGroup(pages.get("$season$slug/"), season, slug)
+            val kits = Pages.kits(pages.get("$season$slug/dresy/"))
+            val teamPages = links.associate { it.slug to Pages.team(pages.get("$season$slug/tymy/${it.slug}/")) }
+            GroupAssembly(report)
+                .assemble(slug, links, kits, teamPages)
+                .copy(competition = competition)
+                .also { count(it, teamPages) }
+        }
     }
 
     private fun count(
@@ -80,7 +96,7 @@ class LeagueImport(
         }
         report.groups +=
             ImportReport.GroupCounts(
-                groupId = SeedFiles.groupId(group.slug),
+                groupId = group.competition.groupId(group.slug),
                 teams = group.teams.size,
                 players = group.teams.sumOf { it.players.size },
                 fixtures = group.fixtures.size,

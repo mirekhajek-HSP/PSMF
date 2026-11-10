@@ -8,18 +8,30 @@ exists to keep that true.
 ```
 index.json            the only filename the app knows
 venues.json           pitch codes, LEAGUE-WIDE, with names and addresses
-6a.json … 6l.json     league 6, one group each: teams, squads, fixtures
+6a.json … 6l.json     Hanspaulská liga, league 6, one group each: teams, squads, fixtures
+uvl1a.json            Ultraveteránská liga, 1. liga A (the PSMF demo at Mikulovka)
 ```
 
 **These files are generated** from psmf.cz by `tools/league-import`
-(DECISIONS 2026-10-07, "Scrape psmf.cz after all"), for internal testing.
-Re-run it after more rounds; never regenerate by hand. A hand edit to a
-name or a kit is overwritten by the next run; an id is never touched.
+(DECISIONS 2026-10-07, "Scrape psmf.cz after all", and 2026-11-10 for
+Ultraveteránská liga), for internal testing. Re-run it after more rounds;
+never regenerate by hand. A hand edit to a name or a kit is overwritten by
+the next run; an id is never touched.
 
 ```
-./gradlew :league-import:importLeague                       # fetches what is not cached
-./gradlew :league-import:importLeague -PimportArgs=--offline # cache only, no requests
+./gradlew :league-import:importLeague -PimportArgs="--competition hl6 --competition uvl1"
+./gradlew :league-import:importLeague -PimportArgs="--competition hl6 --competition uvl1 --offline"
 ```
+
+**Name every competition these files hold.** The index is written from the
+run's groups alone, so the importer refuses a run that would drop one.
+
+A competition other than Hanspaulská liga has groups of its own: `uvl1a`,
+"Ultraveteránská liga 1A", report code `UVL 1A`, its own season in
+`index.json`. A report code that does not lead with digits keeps the group
+out of Hanspaulská liga's numbered levels (`Group.leagueLevel`), so Zápasy's
+league select never offers it as "1. liga"; its fixtures are listed by day,
+by pitch and by team as any other.
 
 The run reads these files first and **keeps every id whose ref it has
 seen**. Its own account of what it could not reconcile is
@@ -204,8 +216,10 @@ A fixture referring to a code that is not in this file fails the build.
 "periods": 2
 ```
 
-2 × 30 everywhere in Hanspaulská liga as far as anyone knows, but veteran
-and futsal competitions may differ, so both are data. **The league sets
+2 × 30 everywhere in Hanspaulská liga as far as anyone knows, and in
+Ultraveteránská liga too (its results have goals to the 60th minute and
+half-time scores at 30), but other veteran and futsal competitions may
+differ, so both are data. **The league sets
 them. A referee changing the half length is a defect**, so nothing in the
 UI may edit them.
 

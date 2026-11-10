@@ -76,21 +76,27 @@ class SeedFiles(
     ): SeedOutput {
         val onTheSite =
             groups
-                .flatMap { g -> g.teams.flatMap { t -> t.players.map { Triple(groupId(g.slug), t.slug, it.key) } } }
-                .toSet()
+                .flatMap { g ->
+                    g.teams.flatMap { t -> t.players.map { Triple(g.competition.groupId(g.slug), t.slug, it.key) } }
+                }.toSet()
         // Two passes: every player is claimed before anything is called
         // departed, or one who moved to a later group would be carried twice.
         val built = groups.map { group(it, onTheSite) }.map(::withDeparted)
-        val season = existing.index?.groups?.firstOrNull()
+        // The index is written from this run's groups alone: one the files hold and
+        // the run did not read would leave the app without a word.
+        val dropped = existing.groups.map { it.id } - built.map { it.id }.toSet()
+        check(dropped.isEmpty()) {
+            "This run would take $dropped out of index.json: name every competition the files hold (--competition)"
+        }
         return SeedOutput(
             index =
                 SeedIndexDto(
-                    built.map { group ->
+                    built.zip(groups) { group, assembled ->
                         SeedIndexEntryDto(
                             id = group.id,
                             name = group.name,
-                            seasonId = season?.seasonId ?: SEASON_ID,
-                            seasonName = season?.seasonName ?: SEASON_NAME,
+                            seasonId = assembled.competition.seasonId,
+                            seasonName = assembled.competition.seasonName,
                             file = "${group.id}.json",
                         )
                     },
@@ -104,7 +110,8 @@ class SeedFiles(
         assembled: AssembledGroup,
         onTheSite: Set<Triple<String, String, String>>,
     ): SeedGroupDto {
-        val id = groupId(assembled.slug)
+        val competition = assembled.competition
+        val id = competition.groupId(assembled.slug)
         val before = existing.groups.firstOrNull { it.id == id }
         val teamIds =
             SeedIdentity.assign(
@@ -115,7 +122,7 @@ class SeedFiles(
                     }.orEmpty(),
                 assembled.teams.map { it.slug },
             ) { mintId() }
-        val teams = assembled.teams.map { team(id, team = it, teamId = teamIds.getValue(it.slug), before, onTheSite) }
+        val teams = assembled.teams.map { team(assembled, it, teamIds.getValue(it.slug), before, onTheSite) }
         val fixtureRefs = assembled.fixtures.map { "$id-${it.homeSlug}-vs-${it.awaySlug}" }
         val fixtureIds =
             SeedIdentity.assign(
@@ -142,8 +149,8 @@ class SeedFiles(
             }
         return SeedGroupDto(
             id = id,
-            name = "${assembled.slug.substringBefore('-')}. liga ${letterOf(assembled.slug)}",
-            reportCode = "${assembled.slug.substringBefore('-')}${letterOf(assembled.slug)}",
+            name = competition.groupName(assembled.slug),
+            reportCode = competition.reportCode(assembled.slug),
             halfLengthMinutes = HALF_LENGTH,
             periods = PERIODS,
             teams = teams,
@@ -169,17 +176,19 @@ class SeedFiles(
     }
 
     private fun team(
-        groupId: String,
+        group: AssembledGroup,
         team: AssembledTeam,
         teamId: String,
         before: SeedGroupDto?,
         onTheSite: Set<Triple<String, String, String>>,
     ): SeedTeamDto {
+        val competition = group.competition
+        val groupId = competition.groupId(group.slug)
         val previous = before?.teams?.firstOrNull { it.ref == team.slug }
         val kitIds = previous?.kits?.associate { it.label to it.id }.orEmpty()
         val players =
             team.players.map { player ->
-                val ref = refFor(groupId, team.slug, player, onTheSite)
+                val ref = refFor(competition, groupId, team.slug, player, onTheSite)
                 SeedPlayerDto(
                     id = playerIdsByRef[ref] ?: mintId(),
                     ref = ref,
@@ -199,6 +208,7 @@ class SeedFiles(
 
     /** See the class comment, *Refs*. */
     private fun refFor(
+        competition: Competition,
         groupId: String,
         teamSlug: String,
         player: SquadPlayer,
@@ -206,9 +216,14 @@ class SeedFiles(
     ): String {
         val unclaimed = existingPlayers.filter { it.key == player.key && it.dto.ref !in claimedPlayers }
         val sameTeam = unclaimed.firstOrNull { it.groupId == groupId && it.teamRef == teamSlug }
-        // A transfer: the one existing player of that name, no longer on the site where they were.
+        // A transfer: the one existing player of that name in this competition, no
+        // longer on the site where they were. Never from another competition: a
+        // veteran is not the league 6 player who left, whatever their name.
         val moved =
-            unclaimed.singleOrNull()?.takeIf { Triple(it.groupId, it.teamRef, it.key) !in onTheSite }
+            unclaimed
+                .filter { competition.holds(it.groupId) }
+                .singleOrNull()
+                ?.takeIf { Triple(it.groupId, it.teamRef, it.key) !in onTheSite }
         (sameTeam ?: moved)?.let {
             claimedPlayers += it.dto.ref
             givenPlayerRefs += it.dto.ref
@@ -291,15 +306,9 @@ class SeedFiles(
     }
 
     companion object {
-        const val SEASON_ID = "2026-podzim"
-        const val SEASON_NAME = "Hanspaulská liga podzim 2026"
+        /** 2 x 30 in every competition read so far, Ultraveteránská liga included. */
         const val HALF_LENGTH = 30
         const val PERIODS = 2
-
-        /** `6-k` -> `6k`. */
-        fun groupId(slug: String): String = slug.replace("-", "")
-
-        private fun letterOf(slug: String): String = slug.substringAfter('-').uppercase()
 
         private val FIXTURE_ORDER =
             compareBy<SeedFixtureDto>({ it.round }, { it.date }, { it.time }, { it.ref })

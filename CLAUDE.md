@@ -41,7 +41,7 @@ builds only on the Mac.**
 ./gradlew detekt                         # static analysis, must stay green
 ./gradlew :shared:iosSimulatorArm64Test  # Apple Silicon only — SKIPPED, and green, on Intel
 ./gradlew :composeApp:linkDebugFrameworkIosArm64  # the iOS compile check that works on the Intel Mac
-./gradlew :league-import:importLeague    # league 6 from psmf.cz into the seed files; see tools/league-import
+./gradlew :league-import:importLeague -PimportArgs="--competition hl6 --competition uvl1"  # psmf.cz into the seed files; see tools/league-import
 ```
 
 **On the Intel Mac, a green `iosSimulatorArm64Test` ran nothing.** It links

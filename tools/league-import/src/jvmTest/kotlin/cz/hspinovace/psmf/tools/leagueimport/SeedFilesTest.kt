@@ -4,6 +4,7 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalTime
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 /**
@@ -201,6 +202,92 @@ class SeedFilesTest {
                 .players
         assertEquals(listOf("belohlavek-jan"), kept.map { it.ref })
         assertTrue(report.departed.any { "belohlavek-jan" in it })
+    }
+
+    @Test
+    fun aSecondCompetitionGetsGroupsOfItsOwnAndHanspaulskaLigasStayAsTheyWere() {
+        val klokan = team("klokan-club-uvl-a", player("klokan-club-uvl-a", "Koubek", "František"))
+        val tucnaci = team("tucnaci-uvl", player("tucnaci-uvl", "Bělohlávek", "Jan"))
+        val output =
+            run(
+                ExistingSeed.EMPTY,
+                group("6-k", krabice, hustec),
+                group("1-a", klokan, tucnaci).copy(competition = Competition.ULTRAVETERANSKA_1),
+            )
+
+        val (sixK, uvl) = output.groups
+        assertEquals(listOf("6k", "6. liga K", "6K"), listOf(sixK.id, sixK.name, sixK.reportCode))
+        assertEquals(listOf("uvl1a", "Ultraveteránská liga 1A", "UVL 1A"), listOf(uvl.id, uvl.name, uvl.reportCode))
+        assertEquals("uvl1a-klokan-club-uvl-a-vs-tucnaci-uvl", uvl.fixtures.single().ref)
+        assertEquals(
+            listOf(
+                Triple("6k.json", "2026-podzim", "Hanspaulská liga podzim 2026"),
+                Triple("uvl1a.json", "2026-podzim-uvl", "Ultraveteránská liga podzim 2026"),
+            ),
+            output.index.groups.map { Triple(it.file, it.seasonId, it.seasonName) },
+        )
+        // One name in both competitions is two players, as two teams in one group are.
+        assertEquals(
+            "belohlavek-jan-tucnaci-uvl",
+            uvl.teams
+                .single { it.ref == "tucnaci-uvl" }
+                .players
+                .single()
+                .ref,
+        )
+        // Outside Hanspaulská liga's numbered levels, which is how the app keeps it out of "1. liga".
+        assertEquals(
+            listOf(6, null),
+            SeedJson.loadAsTheAppWould(SeedJson.render(output, asOf)).map { it.group.leagueLevel },
+        )
+    }
+
+    @Test
+    fun aPlayerWhoLeavesIsNotTakenForAPlayerOfTheSameNameInAnotherCompetition() {
+        val first = run(ExistingSeed.EMPTY, group("6-k", krabice, hustec))
+        val id =
+            first.groups
+                .single()
+                .teams
+                .single { it.ref == "krabice" }
+                .players
+                .single()
+                .id
+
+        // Bělohlávek is gone from Krabice; a veteran of the same name plays for Tučňáci.
+        val second =
+            run(
+                first.asExisting(),
+                group("6-k", team("krabice"), hustec),
+                group("1-a", team("tucnaci-uvl", player("tucnaci-uvl", "Bělohlávek", "Jan")), team("alte-bande"))
+                    .copy(competition = Competition.ULTRAVETERANSKA_1),
+            )
+
+        val (sixK, uvl) = second.groups
+        val veteran =
+            uvl.teams
+                .single { it.ref == "tucnaci-uvl" }
+                .players
+                .single()
+        assertTrue(veteran.id != id, "the veteran was given the league 6 player's id")
+        assertEquals("belohlavek-jan-tucnaci-uvl", veteran.ref)
+        assertEquals(
+            listOf(id),
+            sixK.teams
+                .single { it.ref == "krabice" }
+                .players
+                .map { it.id },
+        )
+    }
+
+    @Test
+    fun aRunThatWouldDropAGroupTheFilesHoldIsRefused() {
+        val first = run(ExistingSeed.EMPTY, group("6-k", krabice, hustec))
+        val veteransOnly =
+            group("1-a", team("tucnaci-uvl"), team("alte-bande")).copy(competition = Competition.ULTRAVETERANSKA_1)
+
+        val refused = assertFailsWith<IllegalStateException> { run(first.asExisting(), veteransOnly) }
+        assertTrue("6k" in refused.message.orEmpty())
     }
 
     @Test

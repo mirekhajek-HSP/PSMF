@@ -6,6 +6,16 @@ Grouped by what blocks what, not by size. Last updated 2026-10-31.
 
 ## Next
 
+- [ ] **The PSMF demo: Thursday 12 November 2026, 18:30, Mikulovka** (owner,
+      2026-11-10), to PSMF's management. **0.4.1 (7)** carries what plays there
+      then: Ultraveteránská liga 1A, round 8, MIKU3 Klokan club UVL A – Pražačka
+      ultraseniors A and MIKU4 SC Xaverov UVL – Tučňáci UVL, beside league 6,
+      both read from psmf.cz on 10 November (DECISIONS 2026-11-10). Before
+      Thursday, on the phone that goes: install over 0.4.0 without
+      uninstalling; Zápasy shows both 18:30 matches under *Nadcházející*; open
+      the MIKU3 one as far as the lineup, then discard it from the Zápis list so
+      the fixture is clean. **Say at the demo that the data is read from psmf.cz**
+      (DECISIONS 2026-10-07: the PM mentions the scraping before anyone else does).
 - [x] **Prompt 15: what the testers found in 0.3.0, and the kits' colours**,
       0.3.1 (5). Done 2026-10-21/22, seven gates, one commit each ("Prompt 15,
       Gate N:"). `prompts/15-tester-fixes-0.3.1.md`,
@@ -305,8 +315,8 @@ Nothing below can start until the relevant answer lands.
       one, back it up somewhere that is not this machine, and **never let it near
       the container** — losing it means never updating the app on Play again.
       Blocked behind nothing except deciding to do it.
-- [ ] **No date for showing PSMF the demo.** Still none on 2026-10-07. The
-      point of the whole project, and it is not tracked anywhere. It also gates how much polish is worth doing.
+- [x] **No date for showing PSMF the demo.** There is one now: Thursday 12
+      November 2026, 18:30, at Mikulovka (the item at the top of Next).
 
 ## Queued
 

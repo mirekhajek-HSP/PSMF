@@ -1,28 +1,40 @@
 # league-import
 
-Reads **league 6** of Hanspaulská liga from psmf.cz into the app's bundled
-seed files. Decided in `docs/DECISIONS.md`, 2026-10-07, "Scrape psmf.cz after
-all" — read its conditions, they are requirements. Internal testing only.
+Reads **league 6** of Hanspaulská liga, and **1. liga of Ultraveteránská
+liga** (for the PSMF demo), from psmf.cz into the app's bundled seed files.
+Decided in `docs/DECISIONS.md`, 2026-10-07, "Scrape psmf.cz after all" — read
+its conditions, they are requirements — and 2026-11-10. Internal testing only.
 
 ```
-./gradlew :league-import:importLeague                        # a run
-./gradlew :league-import:importLeague -PimportArgs=--offline  # cache only, no requests
-./gradlew :league-import:jvmTest                             # parsers, against saved pages
+./gradlew :league-import:importLeague -PimportArgs="--competition hl6 --competition uvl1"            # a run
+./gradlew :league-import:importLeague -PimportArgs="--competition hl6 --competition uvl1 --offline"  # cache only
+./gradlew :league-import:jvmTest                                                                     # parsers, saved pages
 ```
+
+**Name every competition the seed files hold**, in that order: `hl6`
+(Hanspaulská liga 6, the default when none is named) and `uvl1`
+(Ultraveteránská liga 1). The index is written from the run's groups
+alone, so a run that left one out would take it out of the app, and the
+importer refuses it. Competitions are in `Competition.kt`: where psmf.cz
+files each, and the group id, name, report code and season the app gets
+(`uvl1a`, "Ultraveteránská liga 1A", `UVL 1A`). A player only moves between
+teams of one competition; a veteran is never taken for a league 6 player who
+left, whatever the name.
 
 ## What it reads
 
 | Page | For | Requests |
 |---|---|---|
-| `/souteze/2026-hanspaulska-liga-podzim/6/` | the twelve group slugs | 1 |
 | `/hriste/` | every pitch: code, name, address | 1 |
+| `/souteze/2026-hanspaulska-liga-podzim/6/` | the twelve group slugs | 1 |
 | `…/6-k/` | the group's team slugs | 12 |
 | `…/6-k/dresy/` | each team's kit labels, verbatim | 12 |
 | `…/6-k/tymy/<slug>/` | fixtures, results, *Statistiky* (the squad), match details (lineups, cards) | 144 |
+| `/souteze/2026-ultraveteranska-liga-podzim/1/`, then `1-a/`, its `dresy/` and its ten teams | the same, for one group | 13 |
 
-**170 requests from an empty cache**; a full run took 4 min 43 s on
-2026-10-07. No RP numbers, dates of birth or jersey numbers exist anywhere
-on the site.
+**About 183 requests from an empty cache**; league 6 alone took 4 min 43 s
+on 2026-10-07. No RP numbers, dates of birth or jersey numbers exist
+anywhere on the site.
 
 ## Polite
 

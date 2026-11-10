@@ -48,7 +48,7 @@ kotlin {
 // all and works from the cache alone.
 tasks.register<JavaExec>("importLeague") {
     group = "psmf"
-    description = "Imports league 6 from psmf.cz into the bundled seed files, keeping every existing id."
+    description = "Imports psmf.cz into the seed files (--competition hl6 --competition uvl1), keeping every id."
     classpath = files(tasks.named("jvmJar"), configurations.named("jvmRuntimeClasspath"))
     mainClass.set("cz.hspinovace.psmf.tools.leagueimport.MainKt")
     workingDir = rootDir

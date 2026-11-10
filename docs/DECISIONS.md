@@ -5,6 +5,53 @@ The reversal condition is the point — a decision without one is a preference.
 
 ---
 
+## 2026-11-10 · Ultraveteránská liga 1A for the PSMF demo, league 6 read again, and 0.4.1 (7)
+
+**The owner's request:** the app is shown to PSMF's management on Thursday 12
+November 2026 at 18:30, at Mikulovka, with current data. **What plays there
+then**, read from psmf.cz's group pages on 10 November (every group of all four
+outdoor competitions): **Ultraveteránská liga, 1. liga A, round 8**, two matches at
+18:30, MIKU3 *Klokan club UVL A – Pražačka ultraseniors A* and MIKU4 *SC Xaverov UVL
+– Tučňáci UVL*. (At 19:45 the same ground has Hanspaulská liga 5-F and Veteránská
+liga 3-D.) The app held league 6 only.
+
+Decided:
+
+- **The scope widens past "one whole league"** (2026-10-07) by one: UVL's 1. liga,
+  which is one group of ten teams, imported whole. The same conditions hold:
+  polite, an importer and not a one-off, internal testing only.
+- **Its group is its own**: id `uvl1a`, name *Ultraveteránská liga 1A* (psmf.cz's
+  own title for the group), report code `UVL 1A`, season *Ultraveteránská liga
+  podzim 2026*. "UVL" is PSMF's own abbreviation; its team names carry it.
+  Hanspaulská liga's ids, names and codes do not change. A code that does not lead
+  with digits leaves the group out of HL's numbered levels (`Group.leagueLevel`,
+  built for exactly this), so Zápasy's league select never offers it as "1. liga";
+  it is listed by day, by pitch and by team as any group is. **Not known: what a UVL
+  referee writes in the form's `Liga` field.**
+- **2 × 30, as HL**: its results have goals to the 60th minute and half-time
+  scores after 30. Nothing in the clock or the minute notation changes.
+- **League 6 is read again in the same run**, the whole cache emptied (October's is
+  kept outside the repository), so both competitions are as of 10 November and the
+  yellow counts' `asOf` says so. The October files had fixtures since moved (6-A's
+  round 9 is on Monday 9 November). Every id is kept by its ref, as the importer
+  was built to do after more rounds.
+- **The importer takes competitions** (`--competition hl6 --competition uvl1`;
+  `Competition.kt`), league 6 alone by default. **A run must name every competition
+  the files hold**: the index is written from the run's groups alone, so it refuses a
+  run that would drop one. **A player moves between teams of one competition
+  only**: a league 6 player who left is never handed to a veteran of the same name.
+- **0.4.1 (7)**, both platforms: the same code as 0.4.0 with this data. Build 6
+  (0.4.0) was never built for iOS; `prompts/18` now builds 7.
+- **Say at the demo that the data is read from psmf.cz.** 2026-10-07 asks the PM to
+  mention the scraping before anyone else does; Thursday is that moment.
+
+**Reverses if:** PSMF say a UVL report's `Liga` reads otherwise (one string in
+`Competition.kt`, then a re-run); a UVL match turns out not to be 2 × 30; PSMF object
+to the scraping (2026-10-07); or UVL is not wanted after the demo, in which case it
+goes with a run that names `hl6` alone and the refusal above lifted for that run.
+
+---
+
 ## 2026-10-31 · 0.4.0, Gate 7: the documents, the version, the build (prompt 17)
 
 No behaviour here (`reports/2026-10-31-0.4.0-tester-points.md`, §Gate 7). The calls it left to me:
